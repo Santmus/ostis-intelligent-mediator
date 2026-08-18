@@ -1,0 +1,214 @@
+// =====================================================================
+// scenarios/scenario_request_processing.scs
+// Сценарий: сквозная обработка пользовательского запроса сообществом
+// интеллектуальных систем (от интерпретации до объяснения).
+// Демонстрирует все 8 процессов жизненного цикла π.
+// =====================================================================
+
+section_scenario_request_processing
+=> nrel_main_idtf:
+    [Сценарий. Обработка пользовательского запроса] (* <- lang_ru;; *);
+    [Scenario. User Request Processing] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: request_001;
+<- rrel_key_sc_element: interaction_context_001;
+<- rrel_key_sc_element: community_route_planning;
+<- rrel_key_sc_element: integrated_result_001;;
+
+// ---------------------------------------------------------------------
+// Шаг 1. Пользователь и формулирование запроса.
+// ---------------------------------------------------------------------
+
+user_alice <- concept_end_user;;
+user_alice => nrel_main_idtf:
+    [Алиса] (* <- lang_ru;; *);;
+user_alice => nrel_has_user_model: user_model_alice;;
+user_model_alice <- concept_user_model;;
+user_model_alice => nrel_has_goal: goal_optimal_route;;
+user_model_alice => nrel_has_preference: preference_low_energy;;
+preference_low_energy <- concept_user_preference;;
+preference_low_energy => nrel_main_idtf:
+    [Предпочтение: минимизация энергозатрат] (* <- lang_ru;; *);;
+
+request_001 <- concept_user_request;;
+request_001 <- concept_request_recommendation;;
+request_001 => nrel_main_idtf:
+    [Запрос: подобрать оптимальный маршрут с учётом расхода энергии]
+    (* <- lang_ru;; *);;
+user_alice => nrel_formulates: request_001;;
+request_001 => nrel_has_goal: goal_optimal_route;;
+request_001 => nrel_has_context: interaction_context_001;;
+
+goal_optimal_route <- concept_goal;;
+goal_optimal_route <- concept_goal_optimizational;;
+goal_optimal_route => nrel_main_idtf:
+    [Цель: минимизировать энергозатраты при заданных временных
+     и качественных ограничениях] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Шаг 2. Контекст взаимодействия C = <C_g, C_h, C_s, C_d, C_u>.
+// ---------------------------------------------------------------------
+
+interaction_context_001 <- concept_interaction_context;;
+interaction_context_001 -> rrel_goal_context: goal_optimal_route;;
+interaction_context_001 -> rrel_history_context: history_alice_001;;
+interaction_context_001 -> rrel_system_context: ecosystem_state_001;;
+interaction_context_001 -> rrel_domain_context: domain_logistics;;
+interaction_context_001 -> rrel_user_situation_context:
+    situation_alice_mobile_ru;;
+
+history_alice_001 <- concept_history_context;;
+ecosystem_state_001 <- concept_system_context;;
+domain_logistics <- concept_domain_context;;
+situation_alice_mobile_ru <- concept_user_situation_context;;
+situation_alice_mobile_ru => nrel_main_idtf:
+    [Ситуация: мобильное устройство, русский язык, on-the-go]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Шаг 3. Декомпозиция запроса в подзадачи.
+// ---------------------------------------------------------------------
+
+request_001 => nrel_decomposed_into: subtask_route_candidates;;
+request_001 => nrel_decomposed_into: subtask_energy_estimation;;
+request_001 => nrel_decomposed_into: subtask_ranking;;
+
+subtask_route_candidates <- concept_subtask;;
+subtask_route_candidates <- concept_task_type_planning;;
+subtask_route_candidates => nrel_main_idtf:
+    [Подзадача: формирование множества маршрутов-кандидатов]
+    (* <- lang_ru;; *);;
+
+subtask_energy_estimation <- concept_subtask;;
+subtask_energy_estimation <- concept_task_type_estimation;;
+subtask_energy_estimation => nrel_main_idtf:
+    [Подзадача: оценка энергопотребления каждого кандидата]
+    (* <- lang_ru;; *);;
+subtask_energy_estimation => nrel_subtask_depends_on:
+    subtask_route_candidates;;
+
+subtask_ranking <- concept_subtask;;
+subtask_ranking <- concept_task_type_optimization;;
+subtask_ranking => nrel_main_idtf:
+    [Подзадача: ранжирование маршрутов по критериям пользователя]
+    (* <- lang_ru;; *);;
+subtask_ranking => nrel_subtask_depends_on: subtask_energy_estimation;;
+
+// ---------------------------------------------------------------------
+// Шаг 4. Формирование коалиции и распределение подзадач.
+// ---------------------------------------------------------------------
+
+community_route_planning <- concept_community_of_intelligent_systems;;
+community_route_planning <- concept_hybrid_mode_community;;
+community_route_planning => nrel_main_idtf:
+    [Сообщество: планирование маршрутов]
+    (* <- lang_ru;; *);;
+community_route_planning => nrel_serves_request: request_001;;
+
+intelligent_system_route_planner <- concept_ostis_system;;
+intelligent_system_energy_model  <- concept_hybrid_intelligent_system;;
+intelligent_system_ranker        <- concept_subsymbolic_intelligent_system;;
+
+community_route_planning => nrel_includes: intelligent_system_route_planner;;
+community_route_planning => nrel_includes: intelligent_system_energy_model;;
+community_route_planning => nrel_includes: intelligent_system_ranker;;
+
+intelligent_system_route_planner => nrel_member_of: community_route_planning;;
+intelligent_system_energy_model  => nrel_member_of: community_route_planning;;
+intelligent_system_ranker        => nrel_member_of: community_route_planning;;
+
+subtask_route_candidates  => nrel_assigned_to: intelligent_system_route_planner;;
+subtask_energy_estimation => nrel_assigned_to: intelligent_system_energy_model;;
+subtask_ranking           => nrel_assigned_to: intelligent_system_ranker;;
+
+// Назначение как рефицированный n-арный акт.
+assignment_act_001
+<- concept_process_allocation;
+-> rrel_subtask: subtask_energy_estimation;
+-> rrel_assignee: intelligent_system_energy_model;
+-> rrel_context: interaction_context_001;
+-> rrel_assignment_time: [2025-09-12T14:08:53Z];
+-> rrel_required_confidence: [0.85];
+-> rrel_priority: [high];;
+
+// ---------------------------------------------------------------------
+// Шаг 5. Кооперативная обработка — частичные результаты.
+// ---------------------------------------------------------------------
+
+result_routes      <- concept_processing_result;;
+result_routes      <- concept_partial_result;;
+result_energy      <- concept_processing_result;;
+result_energy      <- concept_partial_result;;
+result_ranking     <- concept_processing_result;;
+result_ranking     <- concept_partial_result;;
+
+intelligent_system_route_planner => nrel_produces: result_routes;;
+intelligent_system_energy_model  => nrel_produces: result_energy;;
+intelligent_system_ranker        => nrel_produces: result_ranking;;
+
+result_routes  => nrel_caused_by_subtask: subtask_route_candidates;;
+result_energy  => nrel_caused_by_subtask: subtask_energy_estimation;;
+result_ranking => nrel_caused_by_subtask: subtask_ranking;;
+
+result_routes  => nrel_obtained_from: intelligent_system_route_planner;;
+result_energy  => nrel_obtained_from: intelligent_system_energy_model;;
+result_ranking => nrel_obtained_from: intelligent_system_ranker;;
+
+result_routes  => nrel_generated_in_context: interaction_context_001;;
+result_energy  => nrel_generated_in_context: interaction_context_001;;
+result_ranking => nrel_generated_in_context: interaction_context_001;;
+
+// Провенансные записи.
+prov_record_result_routes <- concept_provenance_record;;
+result_routes => nrel_has_provenance: prov_record_result_routes;;
+prov_record_result_routes => nrel_recorded_by_sc_agent: agent_provenance_registrar;;
+
+// ---------------------------------------------------------------------
+// Шаг 6-7. Интеграция результатов и объяснение.
+// ---------------------------------------------------------------------
+
+integrated_result_001 <- concept_integrated_result;;
+integrated_result_001 => nrel_main_idtf:
+    [Интегрированный результат: упорядоченный список маршрутов с оценками]
+    (* <- lang_ru;; *);;
+result_routes  => nrel_integrated_in: integrated_result_001;;
+result_energy  => nrel_integrated_in: integrated_result_001;;
+result_ranking => nrel_integrated_in: integrated_result_001;;
+
+explanation_001 <- concept_explanation_global;;
+explanation_001 => nrel_main_idtf:
+    [Глобальное объяснение: цепочка вывода от исходного запроса
+     до итогового ранжирования с указанием весов критериев]
+    (* <- lang_ru;; *);;
+integrated_result_001 => nrel_explained_by: explanation_001;;
+integrated_result_001 => nrel_supported_by_explanation: explanation_001;;
+
+integrated_result_001 => nrel_delivered_to: user_alice;;
+integrated_result_001 => nrel_satisfies: goal_optimal_route;;
+
+// ---------------------------------------------------------------------
+// Шаг 8. Постоценка: обратная связь и обновление доверия.
+// ---------------------------------------------------------------------
+
+feedback_alice_001 <- concept_feedback_explicit_rating;;
+feedback_alice_001 => nrel_main_idtf:
+    [Оценка: пользователь принял рекомендацию (5/5)]
+    (* <- lang_ru;; *);;
+user_alice => nrel_provides_feedback: feedback_alice_001;;
+feedback_alice_001 => nrel_feedback_targets: integrated_result_001;;
+
+trust_update_act_001
+<- concept_process_trust_assessment;
+-> rrel_actor: agent_trust_evaluator;
+-> rrel_input: feedback_alice_001;
+-> rrel_output: trust_level_energy_updated;
+-> rrel_timestamp: [2025-09-12T14:11:00Z];;
+
+trust_level_energy_updated <- concept_trust_level;;
+trust_level_energy_updated => nrel_main_idtf:
+    [Обновлённый уровень доверия системы оценки энергопотребления: 0.89]
+    (* <- lang_ru;; *);;
+intelligent_system_energy_model => nrel_has_trust_level:
+    trust_level_energy_updated;;
+trust_level_energy_updated => nrel_trust_updated_by_feedback:
+    feedback_alice_001;;

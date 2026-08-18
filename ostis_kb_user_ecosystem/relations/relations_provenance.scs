@@ -1,0 +1,119 @@
+// =====================================================================
+// relations/relations_provenance.scs
+// Подмножество R_prov — провенансные отношения, обеспечивающие
+// сквозную трассируемость коллективной обработки. Совместимо с PROV-O.
+// =====================================================================
+
+section_relations_provenance
+=> nrel_main_idtf:
+    [Подраздел. Провенансные отношения R_prov] (* <- lang_ru;; *);
+    [Subsection. Provenance Relations R_prov] (* <- lang_en;; *);
+<- atomic_section;;
+
+nrel_derived_from
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [выведено_из*] (* <- lang_ru;; *);
+    [derived_from*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- transitive_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_processing_result;;
+
+nrel_caused_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [вызвано*] (* <- lang_ru;; *);
+    [caused_by*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_lifecycle_process;;
+
+nrel_based_on_knowledge
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [основано_на_знаниях*] (* <- lang_ru;; *);
+    [based_on_knowledge*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_knowledge_source;;
+
+nrel_supported_by_explanation
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [подтверждается_объяснением*] (* <- lang_ru;; *);
+    [supported_by_explanation*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_explanation;;
+
+nrel_explained_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [объяснено*] (* <- lang_ru;; *);
+    [explained_by*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrated_result;
+=> nrel_second_domain: concept_explanation;;
+
+nrel_has_provenance
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_провенансную_запись*] (* <- lang_ru;; *);
+    [has_provenance*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_provenance_record;;
+
+nrel_recorded_by_sc_agent
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [зафиксировано_sc_агентом*] (* <- lang_ru;; *);
+    [recorded_by_sc_agent*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_provenance_record;
+=> nrel_second_domain: concept_sc_agent;;
+
+// ---------------------------------------------------------------------
+// Цепочечное свойство трассировки.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_derived_from_chain: ...
+(*
+    -> rrel_key_sc_element: nrel_derived_from;;
+    => nrel_main_idtf:
+        [Утв.(цепочечное свойство трассировки)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [derived_from ∘ derived_from ⊑ derived_from.
+            Транзитивное замыкание отношения derived_from остаётся
+            подмножеством derived_from, что обеспечивает возможность
+            восстановления полного пути формирования любого результата
+            от исходного запроса.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_produces_inverse: ...
+(*
+    -> rrel_key_sc_element: nrel_produces;;
+    -> rrel_key_sc_element: nrel_produced_by;;
+    => nrel_main_idtf:
+        [Утв.(обратность авторства результата)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [produces ≡ produced_by⁻¹.
+            Отношения produces и produced_by взаимно обратны
+            (не путать с симметричностью одного отношения): для
+            любых is, r выполняется produces(is, r) ⟺ produced_by(r, is).
+            sc-агенты могут использовать любое из них для навигации
+            по графу провенанса в удобном направлении.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

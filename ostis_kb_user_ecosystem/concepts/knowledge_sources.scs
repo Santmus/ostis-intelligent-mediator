@@ -1,0 +1,104 @@
+// =====================================================================
+// concepts/knowledge_sources.scs
+// Подраздел: источники знаний, на которые опираются процессы
+// коллективной обработки. Подсистема K_s профиля возможностей.
+// =====================================================================
+
+section_concept_knowledge_sources
+=> nrel_main_idtf:
+    [Подраздел. Источники знаний экосистемы] (* <- lang_ru;; *);
+    [Subsection. Ecosystem Knowledge Sources] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_knowledge_source;
+<- rrel_key_sc_element: concept_ontology_artifact;
+<- rrel_key_sc_element: concept_knowledge_graph;;
+
+concept_knowledge_source
+<- sc_node_class;
+=> nrel_main_idtf:
+    [источник знаний] (* <- lang_ru;; *);
+    [knowledge source] (* <- lang_en;; *);;
+
+concept_knowledge_source <= nrel_subdividing: ...
+(*
+    -> concept_source_sc_kb;
+       concept_source_ontology;
+       concept_source_knowledge_graph;
+       concept_source_external_database;
+       concept_source_llm_corpus;
+       concept_source_user_history;
+       concept_source_sensor_stream;
+       concept_source_external_service_api;;
+*);;
+
+concept_source_sc_kb
+<- sc_node_class;
+=> nrel_main_idtf:
+    [база знаний в SC-коде] (* <- lang_ru;; *);;
+concept_source_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [внешняя онтология (OWL/RDF)] (* <- lang_ru;; *);;
+concept_source_knowledge_graph
+<- sc_node_class;
+=> nrel_main_idtf:
+    [граф знаний] (* <- lang_ru;; *);
+=> nrel_main_idtf: [knowledge graph] (* <- lang_en;; *);;
+concept_source_external_database
+<- sc_node_class;
+=> nrel_main_idtf:
+    [внешняя реляционная или NoSQL БД] (* <- lang_ru;; *);;
+concept_source_llm_corpus
+<- sc_node_class;
+=> nrel_main_idtf:
+    [текстовый корпус большой языковой модели] (* <- lang_ru;; *);;
+concept_source_user_history
+<- sc_node_class;
+=> nrel_main_idtf:
+    [история взаимодействий пользователя] (* <- lang_ru;; *);;
+concept_source_sensor_stream
+<- sc_node_class;
+=> nrel_main_idtf:
+    [поток данных сенсоров] (* <- lang_ru;; *);;
+concept_source_external_service_api
+<- sc_node_class;
+=> nrel_main_idtf:
+    [внешний сервисный API] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Граф знаний и онтологический артефакт.
+// ---------------------------------------------------------------------
+
+concept_knowledge_graph
+<- sc_node_class;
+=> nrel_main_idtf: [граф знаний] (* <- lang_ru;; *);;
+
+concept_ontology_artifact
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтологический артефакт-источник] (* <- lang_ru;; *);;
+
+concept_ontology_artifact <= nrel_subdividing: ...
+(*
+    -> concept_foundational_ontology;
+       concept_domain_ontology;
+       concept_task_ontology;
+       concept_application_ontology;;
+*);;
+
+concept_foundational_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [foundational ontology] (* <- lang_ru;; *);;
+concept_domain_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [domain ontology] (* <- lang_ru;; *);;
+concept_task_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [task ontology] (* <- lang_ru;; *);;
+concept_application_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [application ontology] (* <- lang_ru;; *);;

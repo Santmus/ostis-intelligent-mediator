@@ -1,0 +1,231 @@
+// =====================================================================
+// concepts/contexts.scs
+// Подраздел: пятикомпонентный контекст взаимодействия как сущность
+// первого класса. C = <C_g, C_h, C_s, C_d, C_u> (формула 8).
+// Опирается на модель Дея [22] и её современные развития [23; 36; 38].
+// =====================================================================
+
+section_concept_contexts
+=> nrel_main_idtf:
+    [Подраздел. Контекст взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Interaction Context] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_interaction_context;
+<- rrel_key_sc_element: concept_goal_context;
+<- rrel_key_sc_element: concept_history_context;
+<- rrel_key_sc_element: concept_system_context;
+<- rrel_key_sc_element: concept_domain_context;
+<- rrel_key_sc_element: concept_user_situation_context;
+<- rrel_key_sc_element: concept_context_compatibility_function;
+<- rrel_key_sc_element: concept_interaction_event;;
+
+// ---------------------------------------------------------------------
+// Класс контекста взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_interaction_context
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекст взаимодействия] (* <- lang_ru;; *);
+    [interaction context] (* <- lang_en;; *);
+=> nrel_idtf: [C];;
+
+concept_interaction_context <= nrel_inclusion: concept_context_class_group;;
+
+definition -> definition_interaction_context: ...
+(*
+    -> rrel_key_sc_element: concept_interaction_context;;
+    => nrel_main_idtf: [Опр.(контекст взаимодействия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Контекст взаимодействия — самостоятельная онтологическая
+            сущность, представляющая собой пятикомпонентную композицию
+            C = <C_g, C_h, C_s, C_d, C_u>, влияющую на интерпретацию
+            запроса, выбор стратегии его обработки и состав сообщества
+            интеллектуальных систем. Введение пятой составляющей C_u
+            по сравнению с традиционным четырёхкомпонентным контекстом
+            обеспечивает учёт операционной обстановки пользователя.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Композиция контекста по пяти ролевым подконтекстам.
+// ---------------------------------------------------------------------
+
+concept_interaction_context <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Композиция контекста C = <C_g, C_h, C_s, C_d, C_u>]
+       (* <- lang_ru;; *);;
+    -> concept_goal_context;
+       concept_history_context;
+       concept_system_context;
+       concept_domain_context;
+       concept_user_situation_context;;
+*);;
+
+concept_goal_context
+<- sc_node_class;
+=> nrel_main_idtf: [целевой контекст] (* <- lang_ru;; *);
+=> nrel_main_idtf: [goal context] (* <- lang_en;; *);
+=> nrel_idtf: [C_g];;
+
+concept_history_context
+<- sc_node_class;
+=> nrel_main_idtf: [исторический контекст] (* <- lang_ru;; *);
+=> nrel_main_idtf: [history context] (* <- lang_en;; *);
+=> nrel_idtf: [C_h];;
+
+concept_system_context
+<- sc_node_class;
+=> nrel_main_idtf: [системный контекст] (* <- lang_ru;; *);
+=> nrel_main_idtf: [system context] (* <- lang_en;; *);
+=> nrel_idtf: [C_s];;
+
+concept_domain_context
+<- sc_node_class;
+=> nrel_main_idtf: [предметный контекст] (* <- lang_ru;; *);
+=> nrel_main_idtf: [domain context] (* <- lang_en;; *);
+=> nrel_idtf: [C_d];;
+
+concept_user_situation_context
+<- sc_node_class;
+=> nrel_main_idtf: [ситуационный контекст пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user situation context] (* <- lang_en;; *);
+=> nrel_idtf: [C_u];;
+
+// ---------------------------------------------------------------------
+// Функция контекстной совместимости ctx_compat(C, s) (формула 9).
+// ---------------------------------------------------------------------
+
+concept_context_compatibility_function
+<- sc_node_class;
+=> nrel_main_idtf:
+    [функция контекстной совместимости ctx_compat(C, s)] (* <- lang_ru;; *);
+    [context compatibility function] (* <- lang_en;; *);;
+
+definition -> definition_ctx_compat: ...
+(*
+    -> rrel_key_sc_element: concept_context_compatibility_function;;
+    => nrel_main_idtf: [Опр.(ctx_compat)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [ctx_compat(C, s) = Σ_{k ∈ {g,h,s,d,u}} ω_k · sim_k(C_k, profile_k(s)),
+            Σ ω_k = 1. Скалярная мера контекстной совместимости системы s
+            относительно контекста C, вычисляемая как нормализованная
+            взвешенная свёртка покомпонентных оценок:
+            sim_g — совпадение целей и постусловий системы;
+            sim_h — совместимость истории с допустимыми сценариями;
+            sim_s — индикатор доступности и нагрузки;
+            sim_d — согласованность доменных онтологий;
+            sim_u — соответствие модальности интерфейса.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Динамика контекста: отношения эволюции и события.
+// ---------------------------------------------------------------------
+
+concept_interaction_event
+<- sc_node_class;
+=> nrel_main_idtf: [событие взаимодействия] (* <- lang_ru;; *);
+=> nrel_main_idtf: [interaction event] (* <- lang_en;; *);;
+
+concept_interaction_event <= nrel_subdividing: ...
+(*
+    -> concept_event_user_action;
+       concept_event_system_action;
+       concept_event_external_signal;
+       concept_event_resource_change;
+       concept_event_constraint_violation;
+       concept_event_feedback_received;;
+*);;
+
+concept_event_user_action
+<- sc_node_class;
+=> nrel_main_idtf: [событие: действие пользователя] (* <- lang_ru;; *);;
+concept_event_system_action
+<- sc_node_class;
+=> nrel_main_idtf: [событие: действие системы] (* <- lang_ru;; *);;
+concept_event_external_signal
+<- sc_node_class;
+=> nrel_main_idtf: [событие: внешний сигнал] (* <- lang_ru;; *);;
+concept_event_resource_change
+<- sc_node_class;
+=> nrel_main_idtf: [событие: изменение ресурсов] (* <- lang_ru;; *);;
+concept_event_constraint_violation
+<- sc_node_class;
+=> nrel_main_idtf: [событие: нарушение ограничения] (* <- lang_ru;; *);;
+concept_event_feedback_received
+<- sc_node_class;
+=> nrel_main_idtf: [событие: получение обратной связи] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Отношения эволюции контекста.
+// ---------------------------------------------------------------------
+
+nrel_context_updated_by_event
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [обновляется_по_событию*] (* <- lang_ru;; *);
+    [updated_by_event*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_interaction_event;;
+
+nrel_context_inherits_from
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [наследуется_от*] (* <- lang_ru;; *);
+    [inherits_from*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_context_contradicts
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [контекст_противоречит*] (* <- lang_ru;; *);
+    [contradicts_context*] (* <- lang_en;; *);
+<- binary_relation;
+<- symmetric_relation;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_context_dominates_over
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [контекст_доминирует_над*] (* <- lang_ru;; *);
+    [dominates_over*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- transitive_relation;
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_interaction_context;;
+
+// ---------------------------------------------------------------------
+// Ограничение целостности контекста.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_context_completeness: ...
+(*
+    -> rrel_key_sc_element: concept_interaction_context;;
+    => nrel_main_idtf:
+        [Утв.(полнота контекста взаимодействия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для всякого экземпляра C класса concept_interaction_context
+            должны быть заданы все пять подконтекстов посредством
+            ролевых отношений rrel_goal_context, rrel_history_context,
+            rrel_system_context, rrel_domain_context,
+            rrel_user_situation_context. Отсутствие хотя бы одного
+            из них квалифицирует контекст как неполный и предотвращает
+            запуск agent_task_allocator.] (* <- lang_ru;; *);;
+    *);;
+*);;

@@ -1,0 +1,198 @@
+// =====================================================================
+// tests/tests_navigation.scs
+// Тесты навигации по базе знаний. Каждый тест — экземпляр класса
+// concept_test_question с ожидаемым ответом, выраженным как sc-структура
+// либо ссылка на ключевой sc-элемент. Соответствует паттерну
+// general_specification IMS.ostis [спецификации поиска].
+// =====================================================================
+
+section_tests_navigation
+=> nrel_main_idtf:
+    [Подраздел. Тесты навигации по базе знаний] (* <- lang_ru;; *);
+    [Subsection. Knowledge Base Navigation Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- not_enough_formed_structure;
+<- rrel_key_sc_element: concept_test_question;
+<- rrel_key_sc_element: concept_expected_answer;;
+
+// ---------------------------------------------------------------------
+// Корневые классы тестов.
+// ---------------------------------------------------------------------
+
+concept_test_question
+<- sc_node_class;
+=> nrel_main_idtf:
+    [тестовый вопрос к базе знаний] (* <- lang_ru;; *);
+    [test question to knowledge base] (* <- lang_en;; *);;
+
+concept_expected_answer
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ожидаемый ответ на тестовый вопрос] (* <- lang_ru;; *);
+    [expected test answer] (* <- lang_en;; *);;
+
+nrel_expected_answer
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [ожидаемый_ответ*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [expected_answer*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_test_question;
+=> nrel_second_domain: concept_expected_answer;;
+
+nrel_question_subject
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [предмет_вопроса*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [question_subject*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_uses_specification
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [использует_спецификацию_поиска*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+// ---------------------------------------------------------------------
+// Q1: Где определён класс concept_user?
+// ---------------------------------------------------------------------
+
+question_where_defined_user <- concept_test_question;;
+question_where_defined_user => nrel_main_idtf:
+    [Q1. В каком подразделе определён класс concept_user?]
+    (* <- lang_ru;; *);;
+question_where_defined_user => nrel_question_subject: concept_user;;
+question_where_defined_user => nrel_uses_specification:
+    spec_finding_section_for_concept;;
+
+answer_q1 <- concept_expected_answer;;
+answer_q1 => nrel_main_idtf:
+    [section_concept_users (файл concepts/users.scs)]
+    (* <- lang_ru;; *);;
+question_where_defined_user => nrel_expected_answer: answer_q1;;
+
+// ---------------------------------------------------------------------
+// Q2: Перечислите 8 процессов жизненного цикла π.
+// ---------------------------------------------------------------------
+
+question_enumerate_lifecycle_processes <- concept_test_question;;
+question_enumerate_lifecycle_processes => nrel_main_idtf:
+    [Q2. Перечислите 8 процессов жизненного цикла π и
+     соответствующие им sc-агенты посредника.]
+    (* <- lang_ru;; *);;
+question_enumerate_lifecycle_processes => nrel_question_subject:
+    concept_lifecycle_process;;
+
+answer_q2 <- concept_expected_answer;;
+answer_q2 => nrel_main_idtf:
+    [(π_int, agent_request_interpreter),
+     (π_dec, agent_task_decomposer),
+     (π_all, agent_task_allocator),
+     (π_coop, agent_cooperative_executor),
+     (π_intg, agent_result_integrator),
+     (π_exp, agent_explanation_builder),
+     (π_tr, agent_trust_evaluator),
+     (π_rec, agent_coalition_reconfigurator)]
+    (* <- lang_ru;; *);;
+question_enumerate_lifecycle_processes => nrel_expected_answer: answer_q2;;
+
+// ---------------------------------------------------------------------
+// Q3: Композиция контекста C.
+// ---------------------------------------------------------------------
+
+question_context_composition <- concept_test_question;;
+question_context_composition => nrel_main_idtf:
+    [Q3. Какие пять подконтекстов образуют контекст взаимодействия C?]
+    (* <- lang_ru;; *);;
+question_context_composition => nrel_question_subject:
+    concept_interaction_context;;
+
+answer_q3 <- concept_expected_answer;;
+answer_q3 => nrel_main_idtf:
+    [C = <C_g, C_h, C_s, C_d, C_u>:
+     C_g — целевой (concept_goal_context),
+     C_h — исторический (concept_history_context),
+     C_s — системный (concept_system_context),
+     C_d — предметный (concept_domain_context),
+     C_u — ситуационный (concept_user_situation_context)]
+    (* <- lang_ru;; *);;
+question_context_composition => nrel_expected_answer: answer_q3;;
+
+// ---------------------------------------------------------------------
+// Q4: Семь подмножеств отношений R.
+// ---------------------------------------------------------------------
+
+question_relation_subsets <- concept_test_question;;
+question_relation_subsets => nrel_main_idtf:
+    [Q4. На какие семь функциональных подмножеств разбито
+     множество R семантических отношений модели M_int?]
+    (* <- lang_ru;; *);;
+question_relation_subsets => nrel_question_subject: concept_relation_set;;
+
+answer_q4 <- concept_expected_answer;;
+answer_q4 => nrel_main_idtf:
+    [R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust]
+    (* <- lang_ru;; *);;
+question_relation_subsets => nrel_expected_answer: answer_q4;;
+
+// ---------------------------------------------------------------------
+// Q5: Компоненты Cap(s).
+// ---------------------------------------------------------------------
+
+question_capability_profile_composition <- concept_test_question;;
+question_capability_profile_composition => nrel_main_idtf:
+    [Q5. Какие восемь компонентов образуют профиль возможностей Cap(s)
+     интеллектуальной системы?]
+    (* <- lang_ru;; *);;
+question_capability_profile_composition => nrel_question_subject:
+    concept_capability_profile;;
+
+answer_q5 <- concept_expected_answer;;
+answer_q5 => nrel_main_idtf:
+    [Cap(s) = <T_s, In_s, Out_s, Pre_s, Post_s, Q_s, K_s, L_s>]
+    (* <- lang_ru;; *);;
+question_capability_profile_composition => nrel_expected_answer: answer_q5;;
+
+// ---------------------------------------------------------------------
+// Q6: Компоненты вектора доверия.
+// ---------------------------------------------------------------------
+
+question_trust_vector_composition <- concept_test_question;;
+question_trust_vector_composition => nrel_main_idtf:
+    [Q6. Из каких четырёх компонент состоит вектор доверия T(s, τ)?]
+    (* <- lang_ru;; *);;
+question_trust_vector_composition => nrel_question_subject:
+    concept_trust_vector;;
+
+answer_q6 <- concept_expected_answer;;
+answer_q6 => nrel_main_idtf:
+    [T(s, τ) = <t_rel, t_acc, t_sec, t_tr> — надёжность, достоверность,
+     безопасность, прозрачность] (* <- lang_ru;; *);;
+question_trust_vector_composition => nrel_expected_answer: answer_q6;;
+
+// ---------------------------------------------------------------------
+// Спецификация поиска подраздела по концепту (для Q1-style вопросов).
+// ---------------------------------------------------------------------
+
+spec_finding_section_for_concept
+=> nrel_main_idtf:
+    [Обобщённая спецификация для поиска подраздела,
+     в котором определён указанный концепт]
+    (* <- lang_ru;; *);;
+sc_node_structure -> spec_finding_section_for_concept;;
+spec_finding_section_for_concept -> rrel_key_sc_element:
+    nrel_belongs_to_section;;
+general_specification -> spec_finding_section_for_concept;;
+
+general_specification
+<- sc_node_class;
+=> nrel_main_idtf:
+    [обобщённая спецификация поиска] (* <- lang_ru;; *);;
+
+necessary_general_specification
+<- sc_node_class;
+=> nrel_main_idtf:
+    [необходимая обобщённая спецификация поиска] (* <- lang_ru;; *);;
+necessary_general_specification <= nrel_strict_inclusion:
+    general_specification;;

@@ -1,0 +1,217 @@
+// =====================================================================
+// scenarios/scenario_intelligent_tutoring.scs
+// Сценарий: интеллектуальная образовательная экосистема (ITS).
+// Учащийся → диагностика знаний → траектория → объяснение.
+// Опирается на пример из раздела 4 финальной модели (Kazlova, Halavaty).
+// =====================================================================
+
+section_scenario_intelligent_tutoring
+=> nrel_main_idtf:
+    [Сценарий. Интеллектуальная обучающая система] (* <- lang_ru;; *);
+    [Scenario. Intelligent Tutoring System] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: user_student_ivan;
+<- rrel_key_sc_element: request_learning_path;
+<- rrel_key_sc_element: integrated_learning_path_001;
+<- rrel_key_sc_element: community_tutoring_extended;;
+
+// ---------------------------------------------------------------------
+// Учащийся как пользователь экосистемы.
+// ---------------------------------------------------------------------
+
+user_student_ivan <- concept_end_user;;
+user_student_ivan => nrel_main_idtf:
+    [Иван (учащийся, 11 класс)] (* <- lang_ru;; *);;
+user_student_ivan => nrel_has_user_model: user_model_ivan;;
+
+user_model_ivan <- concept_user_model;;
+profile_student_ivan <- concept_user_profile;;
+profile_student_ivan => nrel_main_idtf:
+    [Профиль: 11 класс, школа № 5, профиль физмат] (* <- lang_ru;; *);;
+competence_ivan_algebra <- concept_user_competence;;
+competence_ivan_algebra => nrel_main_idtf:
+    [Компетенция: алгебра 10 кл — освоено 78%]
+    (* <- lang_ru;; *);;
+competence_ivan_geometry <- concept_user_competence;;
+competence_ivan_geometry => nrel_main_idtf:
+    [Компетенция: геометрия 10 кл — освоено 52%
+     (выявлены пробелы в стереометрии)] (* <- lang_ru;; *);;
+preference_ivan_visual <- concept_user_preference;;
+preference_ivan_visual => nrel_main_idtf:
+    [Предпочтение: визуальные объяснения с динамическими построениями]
+    (* <- lang_ru;; *);;
+user_model_ivan => nrel_has_competence: competence_ivan_algebra;;
+user_model_ivan => nrel_has_competence: competence_ivan_geometry;;
+user_model_ivan => nrel_has_preference: preference_ivan_visual;;
+
+// ---------------------------------------------------------------------
+// Запрос.
+// ---------------------------------------------------------------------
+
+request_learning_path <- concept_user_request;;
+request_learning_path <- concept_request_education;;
+request_learning_path => nrel_main_idtf:
+    [Запрос: построить персональную траекторию подготовки
+     к ЕГЭ по математике с приоритетом на стереометрию]
+    (* <- lang_ru;; *);;
+user_student_ivan => nrel_formulates: request_learning_path;;
+
+goal_pass_exam <- concept_goal;;
+goal_pass_exam <- concept_goal_educational;;
+goal_pass_exam => nrel_main_idtf:
+    [Цель: сдать ЕГЭ по математике на ≥ 75 баллов]
+    (* <- lang_ru;; *);;
+request_learning_path => nrel_has_goal: goal_pass_exam;;
+
+// ---------------------------------------------------------------------
+// Контекст обучения.
+// ---------------------------------------------------------------------
+
+interaction_context_tutoring <- concept_interaction_context;;
+interaction_context_tutoring => nrel_main_idtf:
+    [Контекст: учебный, 4 месяца до экзамена, доступно
+     12 учебных модулей и 320 задач, мобильное устройство]
+    (* <- lang_ru;; *);;
+
+domain_secondary_math <- concept_domain_context;;
+domain_secondary_math => nrel_main_idtf:
+    [Предметный контекст: школьная математика 10-11 класса]
+    (* <- lang_ru;; *);;
+system_context_tutoring <- concept_system_context;;
+situation_ivan_mobile <- concept_user_situation_context;;
+situation_ivan_mobile => nrel_main_idtf:
+    [Ситуация: мобильное устройство, занятия 30-40 мин/день]
+    (* <- lang_ru;; *);;
+history_ivan_tests <- concept_history_context;;
+history_ivan_tests => nrel_main_idtf:
+    [История: 24 пройденных диагностических теста за 3 месяца]
+    (* <- lang_ru;; *);;
+
+interaction_context_tutoring -> rrel_goal_context: goal_pass_exam;;
+interaction_context_tutoring -> rrel_history_context: history_ivan_tests;;
+interaction_context_tutoring -> rrel_system_context: system_context_tutoring;;
+interaction_context_tutoring -> rrel_domain_context: domain_secondary_math;;
+interaction_context_tutoring -> rrel_user_situation_context: situation_ivan_mobile;;
+request_learning_path => nrel_has_context: interaction_context_tutoring;;
+
+// ---------------------------------------------------------------------
+// Декомпозиция запроса.
+// ---------------------------------------------------------------------
+
+subtask_diagnose_gaps <- concept_subtask;;
+subtask_diagnose_gaps <- concept_task_type_diagnosis;;
+subtask_diagnose_gaps => nrel_main_idtf:
+    [Подзадача: диагностика пробелов знаний] (* <- lang_ru;; *);;
+
+subtask_select_modules <- concept_subtask;;
+subtask_select_modules <- concept_task_type_recommendation;;
+subtask_select_modules => nrel_main_idtf:
+    [Подзадача: подбор учебных модулей под выявленные пробелы]
+    (* <- lang_ru;; *);;
+subtask_select_modules => nrel_subtask_depends_on: subtask_diagnose_gaps;;
+
+subtask_schedule_plan <- concept_subtask;;
+subtask_schedule_plan <- concept_task_type_planning;;
+subtask_schedule_plan => nrel_main_idtf:
+    [Подзадача: построение расписания занятий с учётом ограничения
+     30-40 мин/день и 4-месячного горизонта] (* <- lang_ru;; *);;
+subtask_schedule_plan => nrel_subtask_depends_on: subtask_select_modules;;
+
+subtask_explain_path <- concept_subtask;;
+subtask_explain_path <- concept_task_type_explanation;;
+subtask_explain_path => nrel_main_idtf:
+    [Подзадача: пояснить учащемуся причины выбора последовательности]
+    (* <- lang_ru;; *);;
+subtask_explain_path => nrel_subtask_depends_on: subtask_schedule_plan;;
+
+request_learning_path => nrel_decomposed_into: subtask_diagnose_gaps;;
+request_learning_path => nrel_decomposed_into: subtask_select_modules;;
+request_learning_path => nrel_decomposed_into: subtask_schedule_plan;;
+request_learning_path => nrel_decomposed_into: subtask_explain_path;;
+
+// ---------------------------------------------------------------------
+// Сообщество ИС обучающей экосистемы.
+// ---------------------------------------------------------------------
+
+community_tutoring_extended <- concept_community_of_intelligent_systems;;
+community_tutoring_extended <- concept_hierarchical_community;;
+community_tutoring_extended => nrel_main_idtf:
+    [Сообщество: интеллектуальные системы тьюторинга] (* <- lang_ru;; *);;
+community_tutoring_extended => nrel_serves_request: request_learning_path;;
+
+system_knowledge_diagnostic <- concept_symbolic_intelligent_system;;
+system_knowledge_diagnostic => nrel_main_idtf:
+    [ИС диагностики знаний (правило-ориентированная)] (* <- lang_ru;; *);;
+
+system_module_recommender <- concept_hybrid_intelligent_system;;
+system_module_recommender => nrel_main_idtf:
+    [ИС рекомендации учебных модулей (онтология + ML)]
+    (* <- lang_ru;; *);;
+
+system_schedule_planner <- concept_rule_based_intelligent_system;;
+system_schedule_planner => nrel_main_idtf:
+    [ИС планирования расписания] (* <- lang_ru;; *);;
+
+system_explanation_generator <- concept_llm_intelligent_system;;
+system_explanation_generator => nrel_main_idtf:
+    [ИС генерации объяснений (LLM с RAG над онтологией)]
+    (* <- lang_ru;; *);;
+
+community_tutoring_extended => nrel_includes: system_knowledge_diagnostic;;
+community_tutoring_extended => nrel_includes: system_module_recommender;;
+community_tutoring_extended => nrel_includes: system_schedule_planner;;
+community_tutoring_extended => nrel_includes: system_explanation_generator;;
+
+subtask_diagnose_gaps => nrel_assigned_to: system_knowledge_diagnostic;;
+subtask_select_modules => nrel_assigned_to: system_module_recommender;;
+subtask_schedule_plan => nrel_assigned_to: system_schedule_planner;;
+subtask_explain_path => nrel_assigned_to: system_explanation_generator;;
+
+// ---------------------------------------------------------------------
+// Частичные результаты и интеграция.
+// ---------------------------------------------------------------------
+
+result_diagnosis <- concept_partial_result;;
+result_diagnosis => nrel_main_idtf:
+    [Результат: выявленные пробелы — стереометрия (объёмы тел вращения,
+     сечения), тригонометрия (преобразования)]
+    (* <- lang_ru;; *);;
+system_knowledge_diagnostic => nrel_produces: result_diagnosis;;
+result_diagnosis => nrel_caused_by_subtask: subtask_diagnose_gaps;;
+
+result_module_set <- concept_partial_result;;
+result_module_set => nrel_main_idtf:
+    [Результат: набор из 8 модулей (4 стереометрия + 2 тригонометрия
+     + 2 повторение алгебры)] (* <- lang_ru;; *);;
+system_module_recommender => nrel_produces: result_module_set;;
+
+result_schedule <- concept_partial_result;;
+result_schedule => nrel_main_idtf:
+    [Результат: расписание на 16 недель,
+     ~35 мин/день, 12 контрольных точек] (* <- lang_ru;; *);;
+system_schedule_planner => nrel_produces: result_schedule;;
+
+result_path_explanation <- concept_partial_result;;
+result_path_explanation => nrel_main_idtf:
+    [Результат: пояснение «почему сначала стереометрия» — учитывает
+     наибольший пробел и зависимость других тем]
+    (* <- lang_ru;; *);;
+system_explanation_generator => nrel_produces: result_path_explanation;;
+
+integrated_learning_path_001 <- concept_integrated_result;;
+integrated_learning_path_001 => nrel_main_idtf:
+    [Интегрированная учебная траектория для Ивана] (* <- lang_ru;; *);;
+result_diagnosis        => nrel_integrated_in: integrated_learning_path_001;;
+result_module_set       => nrel_integrated_in: integrated_learning_path_001;;
+result_schedule         => nrel_integrated_in: integrated_learning_path_001;;
+result_path_explanation => nrel_integrated_in: integrated_learning_path_001;;
+
+explanation_tutoring <- concept_explanation_global;;
+explanation_tutoring => nrel_main_idtf:
+    [Глобальное объяснение траектории с указанием диагностированных
+     пробелов и приоритетов] (* <- lang_ru;; *);;
+integrated_learning_path_001 => nrel_supported_by_explanation:
+    explanation_tutoring;;
+integrated_learning_path_001 => nrel_explained_by: explanation_tutoring;;
+integrated_learning_path_001 => nrel_delivered_to: user_student_ivan;;
+integrated_learning_path_001 => nrel_satisfies: goal_pass_exam;;

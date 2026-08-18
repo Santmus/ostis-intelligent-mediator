@@ -1,0 +1,212 @@
+// =====================================================================
+// concepts/lifecycle_processes.scs
+// Подраздел: процессы жизненного цикла взаимодействия (LifecycleProcess).
+// Восемь процессов π из раздела 3.G финальной модели:
+//   π_int  RequestInterpretation
+//   π_dec  TaskDecomposition
+//   π_all  TaskAllocation
+//   π_coop CooperativeProcessing
+//   π_intg ResultIntegration
+//   π_exp  ExplanationConstruction
+//   π_tr   TrustAssessment
+//   π_rec  CoalitionReconfiguration
+// Согласовано с табл. 3 и принципами OSTIS-посредника [13; 19; 29].
+// =====================================================================
+
+section_concept_lifecycle_processes
+=> nrel_main_idtf:
+    [Подраздел. Процессы жизненного цикла взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Interaction Lifecycle Processes] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_lifecycle_process;
+<- rrel_key_sc_element: concept_process_interpretation;
+<- rrel_key_sc_element: concept_process_decomposition;
+<- rrel_key_sc_element: concept_process_allocation;
+<- rrel_key_sc_element: concept_process_cooperative_processing;
+<- rrel_key_sc_element: concept_process_integration;
+<- rrel_key_sc_element: concept_process_explanation;
+<- rrel_key_sc_element: concept_process_trust_assessment;
+<- rrel_key_sc_element: concept_process_coalition_reconfiguration;;
+
+// ---------------------------------------------------------------------
+// Корневой класс процесса жизненного цикла.
+// ---------------------------------------------------------------------
+
+concept_lifecycle_process
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс жизненного цикла взаимодействия] (* <- lang_ru;; *);
+    [interaction lifecycle process] (* <- lang_en;; *);
+=> nrel_idtf: [π];;
+
+concept_lifecycle_process <= nrel_inclusion: concept_process_class_group;;
+
+definition -> definition_lifecycle_process: ...
+(*
+    -> rrel_key_sc_element: concept_lifecycle_process;;
+    => nrel_main_idtf:
+        [Опр.(процесс жизненного цикла взаимодействия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Процесс жизненного цикла — онтологизированная сущность,
+            представляющая отдельный этап коллективной обработки
+            пользовательского запроса. Каждый процесс связан
+            с участвующими компонентами ролевыми отношениями
+            (rrel_actor, rrel_input, rrel_output, rrel_precondition,
+            rrel_postcondition) и снабжается темпорально-провенансными
+            атрибутами. Реализация процесса делегируется
+            соответствующему sc-агенту посредника.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_lifecycle_process <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение процессов жизненного цикла (Π-set)]
+       (* <- lang_ru;; *);;
+    -> concept_process_interpretation;
+       concept_process_decomposition;
+       concept_process_allocation;
+       concept_process_cooperative_processing;
+       concept_process_integration;
+       concept_process_explanation;
+       concept_process_trust_assessment;
+       concept_process_coalition_reconfiguration;;
+*);;
+
+// ---------------------------------------------------------------------
+// Описание каждого процесса.
+// ---------------------------------------------------------------------
+
+concept_process_interpretation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс интерпретации запроса] (* <- lang_ru;; *);
+    [RequestInterpretation] (* <- lang_en;; *);
+=> nrel_realizes_mapping:
+    [ι : Q_ext × C → Q_form];
+=> nrel_process_description:
+    [Отображение исходного пользовательского запроса в формализованный
+     sc-граф с привязкой к концептам предметной онтологии и текущему
+     контексту; результат — sc-граф запроса с явным указанием цели,
+     контекста и ожидаемого типа результата.];;
+
+concept_process_decomposition
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс декомпозиции запроса] (* <- lang_ru;; *);
+    [TaskDecomposition] (* <- lang_en;; *);
+=> nrel_realizes_mapping: [δ : Q_form → 2^T];
+=> nrel_process_description:
+    [Порождение ориентированного ацикличного графа подзадач T(q)
+     на основе шаблонов декомпозиции, накопленных в базе знаний
+     посредника.];;
+
+concept_process_allocation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс распределения подзадач] (* <- lang_ru;; *);
+    [TaskAllocation] (* <- lang_en;; *);
+=> nrel_realizes_mapping:
+    [α : T × S → 0;1 на основе match(σ, s)];
+=> nrel_process_description:
+    [Семантическое сопоставление подзадач и интеллектуальных систем
+     по функции match(σ, s) с ограничениями коалиционного покрытия
+     и совместимости (12, 13).];;
+
+concept_process_cooperative_processing
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс кооперативной обработки] (* <- lang_ru;; *);
+    [CooperativeProcessing] (* <- lang_en;; *);
+=> nrel_realizes_mapping:
+    [Протокол FIPA ACL над общей sc-памятью];
+=> nrel_process_description:
+    [Параллельное и последовательное исполнение подзадач выбранными
+     системами с обменом промежуточными результатами через общую
+     sc-память; синхронизация осуществляется по графу зависимостей
+     depends_on.];;
+
+concept_process_integration
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс интеграции результатов] (* <- lang_ru;; *);
+    [ResultIntegration] (* <- lang_en;; *);
+=> nrel_realizes_mapping: [ρ : 2^Y × C → Y_int];
+=> nrel_process_description:
+    [Формирование семантически согласованного объединения частичных
+     решений с применением правил агрегации, разрешения конфликтов
+     и валидации ограничений (7).];;
+
+concept_process_explanation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс формирования объяснения] (* <- lang_ru;; *);
+    [ExplanationConstruction] (* <- lang_en;; *);
+=> nrel_process_description:
+    [Построение трассируемой цепочки выводов и провенансных связей,
+     обеспечивающей интерпретируемость; различаются локальные,
+     глобальные, контрастивные и контрфактические объяснения.];;
+
+concept_process_trust_assessment
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс оценки доверия] (* <- lang_ru;; *);
+    [TrustAssessment] (* <- lang_en;; *);
+=> nrel_process_description:
+    [Обновление вектора доверия T(s, τ) = <t_rel, t_acc, t_sec, t_tr>
+     (надёжность, достоверность, безопасность, прозрачность) по
+     результатам сравнения с интегрированным результатом и обратной
+     связью пользователя.];;
+
+concept_process_coalition_reconfiguration
+<- sc_node_class;
+=> nrel_main_idtf:
+    [процесс реконфигурации коалиции] (* <- lang_ru;; *);
+    [CoalitionReconfiguration] (* <- lang_en;; *);
+=> nrel_process_description:
+    [Компенсационный процесс, активируемый при отказе системы,
+     истечении ресурсов или нарушении ограничений F_constr; включает
+     повторное решение задачи (13) при модифицированном множестве S.];;
+
+// ---------------------------------------------------------------------
+// Восьмишаговая итеративная схема исполнения цикла.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_lifecycle_iteration: ...
+(*
+    -> rrel_key_sc_element: concept_lifecycle_process;;
+    => nrel_main_idtf:
+        [Утв.(итеративная восьмишаговая схема исполнения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Алгоритмически жизненный цикл реализуется ostis-системой-
+            посредником по восьмишаговой схеме:
+            (1) семантический разбор запроса и создание ABox-представления
+                concept_user_request;
+            (2) построение и валидация контекста C;
+            (3) декомпозиция на подзадачи и фиксация графа зависимостей;
+            (4) вычисление match(σ, s) и выбор коалиции по задаче (13);
+            (5) запуск кооперативного протокола и обмен промежуточными
+                результатами в общей семантической памяти;
+            (6) семантическая агрегация частичных результатов
+                и разрешение конфликтов;
+            (7) формирование интегрированного результата, его объяснения
+                и предоставление пользователю;
+            (8) постоценка и обновление: уточнение оценок доверия по
+                обратной связи и согласованности, при необходимости —
+                реконфигурация коалиции и повторное выполнение
+                шагов 4–7.
+            Модель допускает обратные связи (например, между шагами
+            6 и 4) и не сводится к линейному протоколу.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Служебное отношение описания процесса.
+// ---------------------------------------------------------------------
+
+nrel_process_description
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [описание_процесса*] (* <- lang_ru;; *);
+<- binary_relation;;

@@ -1,0 +1,203 @@
+// =====================================================================
+// relations/role_relations.scs
+// Ролевые отношения (rrel_*) — параметры n-арных sc-конструкций,
+// фиксирующих акты взаимодействия, назначения, обмена знаниями,
+// контекстную композицию и коллективные решения.
+// =====================================================================
+
+section_role_relations
+=> nrel_main_idtf:
+    [Подраздел. Ролевые отношения] (* <- lang_ru;; *);
+    [Subsection. Role Relations] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Базовые роли в жизненном цикле.
+// ---------------------------------------------------------------------
+
+rrel_actor
+<- sc_node_role_relation;
+=> nrel_main_idtf: [актор'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [actor'] (* <- lang_en;; *);
+=> nrel_description:
+    [Ролевое отношение, связывающее акт взаимодействия с его участником — сущностью, которая инициирует, выполняет или принимает действие: пользователем, интеллектуальной системой или программным агентом. Актор определяется в рамках конкретного акта и несёт ответственность за порождаемые им результаты и провенансные записи.] (* <- lang_ru;; *);
+=> nrel_description:
+    [Role relation denoting an entity participating in an action, process, or interaction act.] (* <- lang_en;; *);
+=> nrel_first_domain: concept_interaction_act;
+=> nrel_second_domain: concept_actor;;
+
+
+rrel_initiator
+<- sc_node_role_relation;
+=> nrel_main_idtf: [инициатор'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [initiator'] (* <- lang_en;; *);;
+
+rrel_responder
+<- sc_node_role_relation;
+=> nrel_main_idtf: [респондент'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [responder'] (* <- lang_en;; *);;
+
+rrel_input
+<- sc_node_role_relation;
+=> nrel_main_idtf: [вход'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [input'] (* <- lang_en;; *);;
+
+rrel_output
+<- sc_node_role_relation;
+=> nrel_main_idtf: [выход'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [output'] (* <- lang_en;; *);;
+
+rrel_precondition
+<- sc_node_role_relation;
+=> nrel_main_idtf: [предусловие'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [precondition'] (* <- lang_en;; *);;
+
+rrel_postcondition
+<- sc_node_role_relation;
+=> nrel_main_idtf: [постусловие'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [postcondition'] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Роли акта обмена знаниями.
+// ---------------------------------------------------------------------
+
+rrel_sender
+<- sc_node_role_relation;
+=> nrel_main_idtf: [отправитель'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [sender'] (* <- lang_en;; *);;
+
+rrel_receiver
+<- sc_node_role_relation;
+=> nrel_main_idtf: [получатель'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [receiver'] (* <- lang_en;; *);;
+
+rrel_payload
+<- sc_node_role_relation;
+=> nrel_main_idtf: [содержание_знания'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [knowledge_payload'] (* <- lang_en;; *);;
+
+rrel_act_type
+<- sc_node_role_relation;
+=> nrel_main_idtf: [тип_акта'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [act_type'] (* <- lang_en;; *);;
+
+rrel_timestamp
+<- sc_node_role_relation;
+=> nrel_main_idtf: [время_выполнения'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [timestamp'] (* <- lang_en;; *);;
+
+rrel_message_id
+<- sc_node_role_relation;
+=> nrel_main_idtf: [идентификатор_сообщения'] (* <- lang_ru;; *);;
+
+rrel_in_reply_to
+<- sc_node_role_relation;
+=> nrel_main_idtf: [в_ответ_на'] (* <- lang_ru;; *);;
+
+rrel_content_language
+<- sc_node_role_relation;
+=> nrel_main_idtf: [язык_содержимого'] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли акта назначения подзадачи.
+// ---------------------------------------------------------------------
+
+rrel_subtask
+<- sc_node_role_relation;
+=> nrel_main_idtf: [подзадача'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [subtask'] (* <- lang_en;; *);;
+
+rrel_assignee
+<- sc_node_role_relation;
+=> nrel_main_idtf: [исполнитель'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [assignee'] (* <- lang_en;; *);;
+
+rrel_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [контекст'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [context'] (* <- lang_en;; *);;
+
+rrel_assignment_time
+<- sc_node_role_relation;
+=> nrel_main_idtf: [время_назначения'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [assignment_time'] (* <- lang_en;; *);;
+
+rrel_required_confidence
+<- sc_node_role_relation;
+=> nrel_main_idtf: [требуемая_достоверность'] (* <- lang_ru;; *);;
+
+rrel_priority
+<- sc_node_role_relation;
+=> nrel_main_idtf: [приоритет'] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли композиции контекста C = <C_g, C_h, C_s, C_d, C_u>.
+// ---------------------------------------------------------------------
+// Ролевое отношение rrel_goal_context.
+// Связывает экземпляр контекста взаимодействия с его целевой
+// составляющей: целями пользователя, ожидаемыми результатами
+// обработки, приоритетами и требованиями к качеству.
+rrel_goal_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [целевой_подконтекст'] (* <- lang_ru;; *);
+=> nrel_description:
+    [Ролевое отношение, связывающее экземпляр контекста взаимодействия
+     с его целевой составляющей, содержащей цели пользователя,
+     ожидаемые результаты обработки, приоритеты и требования
+     к качеству.] (* <- lang_ru;; *);
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_goal_context;;
+rrel_goal_context
+=> nrel_used_in:
+    concept_process_interpretation;
+    concept_process_allocation;
+    concept_context_compatibility_function;
+    concept_process_integration;;
+rrel_goal_context
+=> nrel_supports:
+    concept_context_aware_processing;
+    concept_adaptive_interaction;
+    concept_personalized_processing;;
+
+
+rrel_history_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [исторический_подконтекст'] (* <- lang_ru;; *);;
+rrel_system_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [системный_подконтекст'] (* <- lang_ru;; *);;
+rrel_domain_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [предметный_подконтекст'] (* <- lang_ru;; *);;
+rrel_user_situation_context
+<- sc_node_role_relation;
+=> nrel_main_idtf: [ситуационный_подконтекст'] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли коллективного решения и аргументации.
+// ---------------------------------------------------------------------
+
+rrel_decision_proposal
+<- sc_node_role_relation;
+=> nrel_main_idtf: [вариант_решения'] (* <- lang_ru;; *);;
+rrel_decision_argument
+<- sc_node_role_relation;
+=> nrel_main_idtf: [аргумент_в_пользу'] (* <- lang_ru;; *);;
+rrel_decision_counter_argument
+<- sc_node_role_relation;
+=> nrel_main_idtf: [контраргумент'] (* <- lang_ru;; *);;
+rrel_decision_weight
+<- sc_node_role_relation;
+=> nrel_main_idtf: [вес_голоса'] (* <- lang_ru;; *);;
+rrel_aggregation_strategy
+<- sc_node_role_relation;
+=> nrel_main_idtf: [стратегия_агрегации'] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Ключевой sc-элемент раздела.
+// ---------------------------------------------------------------------
+
+rrel_key_sc_element
+<- sc_node_role_relation;
+=> nrel_main_idtf: [ключевой_sc_элемент'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [key_sc_element'] (* <- lang_en;; *);;

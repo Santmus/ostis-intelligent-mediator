@@ -1,0 +1,68 @@
+// =====================================================================
+// rules/rules_interpretation.scs
+// Множество F_rule (часть π_int) — правила интерпретации запроса.
+// Операционализируются sc-агентом agent_request_interpreter.
+// =====================================================================
+
+section_rules_interpretation
+=> nrel_main_idtf:
+    [Подраздел. Правила интерпретации запроса (π_int)] (* <- lang_ru;; *);
+    [Subsection. Request Interpretation Rules (π_int)] (* <- lang_en;; *);
+<- atomic_section;;
+
+concept_sc_rule
+<- sc_node_class;
+=> nrel_main_idtf:
+    [sc-правило вывода] (* <- lang_ru;; *);
+    [sc-inference rule] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Правило: установить интерпретацию запроса.
+// ---------------------------------------------------------------------
+
+rule -> rule_interpret_request: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(интерпретация запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_user_request(q) ∧ ¬∃g. has_goal(q, g)
+                ∧ active_context(u, C) ∧ formulates(u, q),
+            Then: agent_request_interpreter создаёт
+                  goal_g = ι(q.text, C), has_goal(q, g),
+                  has_context(q, C),
+                  устанавливает тип запроса на основе анализа
+                  естественно-языкового содержимого и
+                  предметной онтологии.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Правило: обогащение запроса предметной онтологией.
+// ---------------------------------------------------------------------
+
+rule -> rule_enrich_request: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обогащение запроса предметной онтологией)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для интерпретированного запроса q установить связи
+            с концептами предметной онтологии посредством отношения
+            nrel_relevant_to: q → C_domain, где C_domain ⊆
+            concept_domain_ontology.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Отношение для связи запроса с релевантными концептами онтологии.
+// ---------------------------------------------------------------------
+
+nrel_relevant_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [релевантен_концепту*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [relevant_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;

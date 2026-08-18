@@ -1,0 +1,130 @@
+// =====================================================================
+// rules/rules_security_privacy.scs
+// Множество F_rule (часть π_sec) — правила безопасности и
+// контроля приватности. Активируются sc-агентами безопасности.
+// =====================================================================
+
+section_rules_security_privacy
+=> nrel_main_idtf:
+    [Подраздел. Правила безопасности и приватности (F_rule_sec)]
+    (* <- lang_ru;; *);
+    [Subsection. Security and Privacy Rules (F_rule_sec)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_enforce_consent_check: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обязательная проверка согласия пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: formulates(u, q) ∧ requires_consent_for(component, pii)
+                ∧ uses(q, pii),
+            Then: убедиться, что ∃c ∈ UserConsentRecord.
+                  consent_covers(c, pii) ∧ valid(c).
+            При отсутствии действующего согласия — создать
+            concept_integrity_violation типа
+            concept_property_consent_compliance и блокировать
+            обработку запроса до получения согласия.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_data_minimization: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(минимизация передаваемых данных)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [При формировании knowledge_exchange_act между sc-агентами:
+            payload должен включать только PII, требуемые для
+            выполнения соответствующей подзадачи (минимальный
+            достаточный набор по принципу purpose_limitation).
+            Лишние PII обнуляются (redaction).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_detect_anomalous_request_rate: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(детектирование аномальной частоты запросов)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: rate(source, target_component, Δt) >
+                k_sigma · baseline_rate(target_component),
+            Then: создать concept_security_incident
+                  (concept_incident_denial_of_service либо
+                  concept_incident_tampering), активировать
+                  agent_coalition_reconfigurator и
+                  agent_provenance_registrar для фиксации
+                  инцидента.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_audit_log_integrity: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(целостность аудит-лога)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Каждая запись провенанса должна быть подписана
+            sc-агентом-источником; модификация существующих
+            экземпляров concept_provenance_record запрещена
+            (append-only). Попытка перезаписи → нарушение
+            concept_property_integrity, эскалация офицеру
+            безопасности.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_right_to_explanation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(право пользователя на объяснение)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Если delivered_to(integrated_result_or_decision, u) ∧
+            request_type(q) ∈ {decision_support, recommendation},
+            то agent_explanation_builder обязан построить
+            explanation_global(e) ∧ explained_by(ir, e). Иначе —
+            нарушение concept_property_right_to_explanation,
+            ir не может быть выдан пользователю.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_check_data_residency: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(проверка локализации данных)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждой ИС s с concept_constraint_data_residency(r)
+            проверить, что использованные источники знаний
+            располагаются в допустимой юрисдикции r. Иначе —
+            подзадача не может быть назначена s; agent_task_allocator
+            пересчитывает match без s.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_apply_access_control_policy: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(применение политики контроля доступа)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для всякого knowledge_exchange_act ke с rrel_sender=s_1
+            и rrel_receiver=s_2 проверить политику
+            access_control_policy(s_2). Если политика типа
+            concept_policy_rbac — проверка ролей; ABAC — атрибутов;
+            capability_based — наличия capability у s_1.
+            Нарушение → ke помечается как concept_incident_elevation
+            _of_privilege.] (* <- lang_ru;; *);;
+    *);;
+*);;

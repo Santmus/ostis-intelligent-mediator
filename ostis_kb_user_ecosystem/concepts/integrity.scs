@@ -1,0 +1,174 @@
+// =====================================================================
+// concepts/integrity.scs
+// Подраздел: ограничения целостности модели и их нарушения.
+// Концептуально соотносится с подходом SHACL [28].
+// =====================================================================
+
+section_concept_integrity
+=> nrel_main_idtf:
+    [Подраздел. Ограничения целостности и их нарушения] (* <- lang_ru;; *);
+    [Subsection. Integrity Constraints and Violations] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_integrity_constraint;
+<- rrel_key_sc_element: concept_integrity_violation;
+<- rrel_key_sc_element: concept_shacl_shape;;
+
+// ---------------------------------------------------------------------
+// Ограничение целостности.
+// ---------------------------------------------------------------------
+
+concept_integrity_constraint
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ограничение целостности] (* <- lang_ru;; *);
+    [integrity constraint] (* <- lang_en;; *);;
+
+concept_integrity_constraint <= nrel_subdividing: ...
+(*
+    -> concept_cardinality_constraint;
+       concept_domain_constraint;
+       concept_range_constraint;
+       concept_disjointness_constraint;
+       concept_acyclicity_constraint;
+       concept_functional_constraint;
+       concept_chain_constraint;
+       concept_existence_constraint;;
+*);;
+
+concept_cardinality_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [кардинальное ограничение] (* <- lang_ru;; *);;
+concept_domain_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение домена] (* <- lang_ru;; *);;
+concept_range_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение области значений] (* <- lang_ru;; *);;
+concept_disjointness_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение дизъюнктности] (* <- lang_ru;; *);;
+concept_acyclicity_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение ацикличности] (* <- lang_ru;; *);;
+concept_functional_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение функциональности] (* <- lang_ru;; *);;
+concept_chain_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [цепочечное ограничение] (* <- lang_ru;; *);;
+concept_existence_constraint
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение существования] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Нарушение целостности.
+// ---------------------------------------------------------------------
+
+concept_integrity_violation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [нарушение целостности] (* <- lang_ru;; *);
+    [integrity violation] (* <- lang_en;; *);;
+
+definition -> definition_integrity_violation: ...
+(*
+    -> rrel_key_sc_element: concept_integrity_violation;;
+    => nrel_main_idtf: [Опр.(нарушение целостности)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Нарушение целостности — экземпляр класса, фиксирующий
+            обнаруженное несоответствие ABox-фрагмента ограничениям
+            F_constr. Создаётся sc-агентом agent_integrity_checker
+            и включается в общую систему провенанса; может инициировать
+            sc-агента agent_coalition_reconfigurator.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// SHACL-совместимые шейпы.
+// ---------------------------------------------------------------------
+
+concept_shacl_shape
+<- sc_node_class;
+=> nrel_main_idtf:
+    [SHACL-шейп валидации] (* <- lang_ru;; *);
+    [SHACL shape] (* <- lang_en;; *);;
+
+concept_shacl_shape <= nrel_subdividing: ...
+(*
+    -> concept_shacl_node_shape;
+       concept_shacl_property_shape;;
+*);;
+
+concept_shacl_node_shape
+<- sc_node_class;
+=> nrel_main_idtf: [NodeShape] (* <- lang_ru;; *);;
+concept_shacl_property_shape
+<- sc_node_class;
+=> nrel_main_idtf: [PropertyShape] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Ключевые интегральные ограничения корректности модели (формулы 4-7).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_formula_4_request_authorship: ...
+(*
+    -> rrel_key_sc_element: concept_user_request;;
+    => nrel_main_idtf:
+        [Утв.(4): авторство и цель запроса] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀q ∈ Request. ∃! u ∈ User. formulates(u, q)
+            ∧ ∃g ∈ Goal. has_goal(q, g).
+            Каждому пользовательскому запросу сопоставлен ровно один
+            автор-пользователь и хотя бы одна декларативная цель.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_formula_5_decomposition_acyclicity: ...
+(*
+    -> rrel_key_sc_element: concept_subtask;;
+    => nrel_main_idtf:
+        [Утв.(5): ацикличность декомпозиции] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [acyclic(depends_on) ∧
+            ∀st ∈ Subtask. executable(st) ∨ decomposable(st).
+            Граф зависимостей подзадач ацикличен; всякая подзадача
+            либо исполнима хотя бы одной системой, либо допускает
+            дальнейшую декомпозицию.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_formula_6_result_provenance: ...
+(*
+    -> rrel_key_sc_element: concept_processing_result;;
+    => nrel_main_idtf:
+        [Утв.(6): провенанс результата обработки] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀r ∈ ProcessingResult. ∃is, ctx, p.
+            produces(is, r) ∧ generated_in_context(r, ctx)
+            ∧ has_provenance(r, p).
+            Каждый результат обработки имеет порождающую систему,
+            контекст порождения и провенансную запись.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_formula_7_integrated_result: ...
+(*
+    -> rrel_key_sc_element: concept_integrated_result;;
+    => nrel_main_idtf:
+        [Утв.(7): корректность интегрированного результата] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀ir ∈ IntegratedResult. (∃e. explained_by(ir, e))
+            ∧ ¬∃c. conflicts_with(ir, c).
+            Каждый интегрированный результат сопровождается объяснением
+            и не должен находиться в неразрешённом конфликте.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

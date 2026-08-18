@@ -1,0 +1,244 @@
+// =====================================================================
+// concepts/ecosystems.scs
+// Подраздел: интеллектуальные экосистемы и их базовые конституенты.
+// Согласовано с [3; 5; 6; 14; 20; 29]. Экосистема — программно-аппаратная
+// среда распределённой обработки информации, единое семантическое
+// пространство для совокупности интеллектуальных компонентов.
+// =====================================================================
+
+section_concept_ecosystems
+=> nrel_main_idtf:
+    [Подраздел. Интеллектуальные экосистемы] (* <- lang_ru;; *);
+    [Subsection. Intelligent Ecosystems] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_intelligent_ecosystem;
+<- rrel_key_sc_element: concept_ecosystem_component;
+<- rrel_key_sc_element: concept_semantic_space;
+<- rrel_key_sc_element: concept_shared_semantic_memory;
+<- rrel_key_sc_element: concept_federated_knowledge_base;
+<- rrel_key_sc_element: concept_ecosystem_state;;
+
+// ---------------------------------------------------------------------
+// Корневой класс экосистемы.
+// ---------------------------------------------------------------------
+
+concept_intelligent_ecosystem
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интеллектуальная экосистема] (* <- lang_ru;; *);
+    [intelligent ecosystem] (* <- lang_en;; *);;
+
+definition -> definition_intelligent_ecosystem: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_ecosystem;;
+    => nrel_main_idtf: [Опр.(интеллектуальная экосистема)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Интеллектуальная экосистема — программно-аппаратная среда,
+            обеспечивающая распределённую обработку информации
+            совокупностью автономных интеллектуальных систем, сервисов,
+            агентов и федеративных баз знаний, функционирующих в едином
+            семантическом пространстве и обменивающихся знаниями
+            в логико-семантическом представлении на основе SC-кода.]
+           (* <- lang_ru;; *);;
+        -> [An intelligent ecosystem is a software-hardware environment
+            providing distributed information processing by a set of
+            autonomous intelligent systems, services, agents and federated
+            knowledge bases operating within a shared semantic space and
+            exchanging knowledge in SC-code based logico-semantic
+            representation.] (* <- lang_en;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// concept_ecosystem_component — корневой класс конституентов.
+// ---------------------------------------------------------------------
+
+concept_ecosystem_component
+<- sc_node_class;
+=> nrel_main_idtf:
+    [компонент интеллектуальной экосистемы] (* <- lang_ru;; *);
+    [ecosystem component] (* <- lang_en;; *);;
+
+concept_ecosystem_component <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение компонентов экосистемы]
+       (* <- lang_ru;; *);;
+    -> concept_intelligent_system;
+       concept_intelligent_service;
+       concept_intelligent_agent;
+       concept_community_of_intelligent_systems;
+       concept_federated_knowledge_base;
+       concept_intelligent_mediator;
+       concept_human_in_the_loop_component;;
+*);;
+
+concept_human_in_the_loop_component
+<- sc_node_class;
+=> nrel_main_idtf:
+    [человек в контуре обработки] (* <- lang_ru;; *);
+    [human-in-the-loop component] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Семантическое пространство и общая семантическая память.
+// ---------------------------------------------------------------------
+
+concept_semantic_space
+<- sc_node_class;
+=> nrel_main_idtf:
+    [семантическое пространство] (* <- lang_ru;; *);
+    [semantic space] (* <- lang_en;; *);;
+
+definition -> definition_semantic_space: ...
+(*
+    -> rrel_key_sc_element: concept_semantic_space;;
+    => nrel_main_idtf: [Опр.(семантическое пространство)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Семантическое пространство — единая логико-семантическая
+            среда представления и обмена знаниями, обеспечивающая
+            смысловую совместимость компонентов экосистемы и являющаяся
+            необходимым условием семантической интероперабельности
+            в условиях коллективной обработки.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_shared_semantic_memory
+<- sc_node_class;
+=> nrel_main_idtf:
+    [общая семантическая память] (* <- lang_ru;; *);
+    [shared semantic memory] (* <- lang_en;; *);;
+
+concept_shared_semantic_memory <= nrel_inclusion: concept_semantic_space;;
+
+definition -> definition_shared_semantic_memory: ...
+(*
+    -> rrel_key_sc_element: concept_shared_semantic_memory;;
+    => nrel_main_idtf: [Опр.(общая семантическая память)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Общая семантическая память (sc-память экосистемы) —
+            распределённая семантическая структура, выраженная в SC-коде
+            и обеспечивающая хранение, навигацию и обмен знаниями
+            между компонентами экосистемы. Реализует операционную
+            основу взаимодействия и носитель провенансных следов
+            коллективной обработки.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Федеративная база знаний.
+// ---------------------------------------------------------------------
+
+concept_federated_knowledge_base
+<- sc_node_class;
+=> nrel_main_idtf:
+    [федеративная база знаний] (* <- lang_ru;; *);
+    [federated knowledge base] (* <- lang_en;; *);;
+
+concept_federated_knowledge_base <= nrel_inclusion: concept_ecosystem_component;;
+
+concept_federated_knowledge_base <= nrel_subdividing: ...
+(*
+    -> concept_domain_kb;
+       concept_task_kb;
+       concept_agent_kb;
+       concept_context_kb;
+       concept_foundational_kb;;
+*);;
+
+concept_domain_kb
+<- sc_node_class;
+=> nrel_main_idtf: [предметная база знаний] (* <- lang_ru;; *);;
+concept_task_kb
+<- sc_node_class;
+=> nrel_main_idtf: [задачная база знаний] (* <- lang_ru;; *);;
+concept_agent_kb
+<- sc_node_class;
+=> nrel_main_idtf: [агентная база знаний] (* <- lang_ru;; *);;
+concept_context_kb
+<- sc_node_class;
+=> nrel_main_idtf: [контекстная база знаний] (* <- lang_ru;; *);;
+concept_foundational_kb
+<- sc_node_class;
+=> nrel_main_idtf:
+    [foundational-уровневая база знаний] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Состояние экосистемы — необходимо для системного контекста C_s.
+// ---------------------------------------------------------------------
+
+concept_ecosystem_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние интеллектуальной экосистемы] (* <- lang_ru;; *);
+    [intelligent ecosystem state] (* <- lang_en;; *);;
+
+concept_ecosystem_state <= nrel_subdividing: ...
+(*
+    -> concept_available_components_state;
+       concept_resource_distribution_state;
+       concept_load_state;
+       concept_topology_state;
+       concept_security_state;;
+*);;
+
+concept_available_components_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние доступных компонентов] (* <- lang_ru;; *);;
+
+concept_resource_distribution_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние распределения ресурсов] (* <- lang_ru;; *);;
+
+concept_load_state
+<- sc_node_class;
+=> nrel_main_idtf: [состояние нагрузки экосистемы] (* <- lang_ru;; *);;
+
+concept_topology_state
+<- sc_node_class;
+=> nrel_main_idtf: [состояние топологии экосистемы] (* <- lang_ru;; *);;
+
+concept_security_state
+<- sc_node_class;
+=> nrel_main_idtf: [состояние политики безопасности] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Топ-уровневое ограничение: каждая экосистема обладает sc-памятью.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_ecosystem_memory: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_ecosystem;;
+    => nrel_main_idtf:
+        [Утв.(экосистема, общая семантическая память)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Каждой интеллектуальной экосистеме сопоставлена ровно одна
+            общая семантическая память посредством функционального
+            отношения nrel_owns_semantic_memory и не менее одного
+            сообщества интеллектуальных систем посредством отношения
+            nrel_hosts_community.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_ecosystem_dynamic_composition: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_ecosystem;;
+    => nrel_main_idtf:
+        [Утв.(динамичность состава экосистемы)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Состав интеллектуальных компонентов экосистемы изменяется
+            в ходе её функционирования. Новые компоненты регистрируются
+            путём публикации в общей sc-памяти их онтологических
+            описаний возможностей (concept_capability_profile)
+            и могут включаться в существующие сообщества без
+            модификации архитектуры посредника.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

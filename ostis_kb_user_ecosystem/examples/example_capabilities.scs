@@ -1,0 +1,115 @@
+// =====================================================================
+// examples/example_capabilities.scs
+// Примеры профилей возможностей Cap(s) = <T_s, In_s, Out_s, Pre_s,
+// Post_s, Q_s, K_s, L_s> для интеллектуальных систем экосистемы
+// Smart Mobility.
+// =====================================================================
+
+section_example_capabilities
+=> nrel_main_idtf:
+    [Подраздел. Примеры профилей возможностей Cap(s)] (* <- lang_ru;; *);
+    [Subsection. Example Capability Profiles] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: capability_energy_estimation;
+<- rrel_key_sc_element: capability_route_planning;;
+
+// ---------------------------------------------------------------------
+// Профиль для intelligent_system_energy_model.
+// ---------------------------------------------------------------------
+
+capability_energy_estimation <- concept_capability_profile;;
+capability_energy_estimation => nrel_main_idtf:
+    [Профиль возможностей: оценка энергопотребления маршрута]
+    (* <- lang_ru;; *);;
+intelligent_system_energy_model => nrel_has_capability_profile:
+    capability_energy_estimation;;
+
+// T_s — класс задач.
+capability_energy_estimation => nrel_applies_to: concept_task_type_estimation;;
+
+// In_s, Out_s — сигнатуры.
+input_signature_route_set <- concept_input_signature;;
+input_signature_route_set => nrel_main_idtf:
+    [Входная сигнатура: множество маршрутов с метаданными
+     (длина, рельеф, погодные условия)] (* <- lang_ru;; *);;
+
+output_signature_energy_vector <- concept_output_signature;;
+output_signature_energy_vector => nrel_main_idtf:
+    [Выходная сигнатура: вектор энергопотребления (кВт·ч) для
+     каждого маршрута] (* <- lang_ru;; *);;
+
+capability_energy_estimation => nrel_input_signature: input_signature_route_set;;
+capability_energy_estimation => nrel_output_signature: output_signature_energy_vector;;
+
+// Pre_s, Post_s.
+precondition_route_set_available <- concept_precondition;;
+precondition_route_set_available => nrel_main_idtf:
+    [Маршрутный набор доступен] (* <- lang_ru;; *);;
+
+postcondition_energy_estimates_produced <- concept_postcondition;;
+postcondition_energy_estimates_produced => nrel_main_idtf:
+    [Энергетические оценки сформированы] (* <- lang_ru;; *);;
+
+capability_energy_estimation => nrel_precondition:
+    precondition_route_set_available;;
+capability_energy_estimation => nrel_postcondition:
+    postcondition_energy_estimates_produced;;
+
+// Q_s — QoS.
+qos_energy_model <- concept_qos_descriptor;;
+qos_energy_model => nrel_main_idtf:
+    [Q_s = (accuracy 0.93, latency 120 мс, cost 0.001 €/req,
+            energy 0.8 Вт/req, explainability medium)]
+    (* <- lang_ru;; *);;
+capability_energy_estimation => nrel_qos_descriptor: qos_energy_model;;
+
+// K_s — зависимости от знаний.
+dep_energy_meteo <- concept_knowledge_dependency;;
+dep_energy_meteo => nrel_main_idtf:
+    [Зависимость от метеоданных API] (* <- lang_ru;; *);;
+dep_energy_road_graph <- concept_knowledge_dependency;;
+dep_energy_road_graph => nrel_main_idtf:
+    [Зависимость от графа дорог OSM] (* <- lang_ru;; *);;
+capability_energy_estimation => nrel_knowledge_dependency: dep_energy_meteo;;
+capability_energy_estimation => nrel_knowledge_dependency: dep_energy_road_graph;;
+
+// L_s — ресурсные ограничения.
+constraint_energy_gpu <- concept_constraint_gpu;;
+constraint_energy_gpu => nrel_main_idtf:
+    [Требует GPU >= 6 ГБ VRAM] (* <- lang_ru;; *);;
+constraint_energy_latency <- concept_constraint_time_window;;
+constraint_energy_latency => nrel_main_idtf:
+    [Окно доступности: 24/7 с допустимой латентностью 200 мс] (* <- lang_ru;; *);;
+capability_energy_estimation => nrel_resource_constraint:
+    constraint_energy_gpu;;
+capability_energy_estimation => nrel_resource_constraint:
+    constraint_energy_latency;;
+
+// ---------------------------------------------------------------------
+// Профиль для intelligent_system_route_planner.
+// ---------------------------------------------------------------------
+
+capability_route_planning <- concept_capability_profile;;
+capability_route_planning => nrel_main_idtf:
+    [Профиль возможностей: планирование маршрутов] (* <- lang_ru;; *);;
+intelligent_system_route_planner => nrel_has_capability_profile:
+    capability_route_planning;;
+capability_route_planning => nrel_applies_to: concept_task_type_planning;;
+
+input_signature_request_with_constraints <- concept_input_signature;;
+input_signature_request_with_constraints => nrel_main_idtf:
+    [Вход: точки A, B и ограничения (время, тип ТС)] (* <- lang_ru;; *);;
+output_signature_route_candidates <- concept_output_signature;;
+output_signature_route_candidates => nrel_main_idtf:
+    [Выход: множество маршрутов-кандидатов] (* <- lang_ru;; *);;
+
+capability_route_planning => nrel_input_signature:
+    input_signature_request_with_constraints;;
+capability_route_planning => nrel_output_signature:
+    output_signature_route_candidates;;
+
+qos_route_planning <- concept_qos_descriptor;;
+qos_route_planning => nrel_main_idtf:
+    [Q_s = (accuracy 0.95, latency 250 мс, explainability high)]
+    (* <- lang_ru;; *);;
+capability_route_planning => nrel_qos_descriptor: qos_route_planning;;

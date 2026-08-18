@@ -1,0 +1,525 @@
+// =====================================================================
+// concepts/interactions.scs
+// Подраздел: сущности взаимодействия — запрос, результат, интегрированный
+// результат, конфликт, цель. Образуют результирующую группу классов
+// E_result и расширения для запросной группы E_request.
+// =====================================================================
+
+section_concept_interactions
+=> nrel_main_idtf:
+    [Подраздел. Взаимодействие пользователя и сообщества ИС] (* <- lang_ru;; *);
+    [Subsection. User-Community Interaction] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_user_request;
+<- rrel_key_sc_element: concept_processing_result;
+<- rrel_key_sc_element: concept_integrated_result;
+<- rrel_key_sc_element: concept_result_conflict;
+<- rrel_key_sc_element: concept_interaction_participant;
+<- rrel_key_sc_element: concept_goal;
+<- rrel_key_sc_element: concept_interaction_entity;
+<- rrel_key_sc_element: concept_interaction_act;
+<- rrel_key_sc_element: concept_actor;
+<- rrel_key_sc_element: concept_intent;
+<- rrel_key_sc_element: concept_processing_failure;;
+
+// ---------------------------------------------------------------------
+// Корневой класс участника взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_interaction_participant
+<- sc_node_class;
+=> nrel_main_idtf:
+    [участник взаимодействия] (* <- lang_ru;; *);
+    [interaction participant] (* <- lang_en;; *);;
+
+concept_interaction_participant <= nrel_subdividing: ...
+(*
+    -> concept_user;
+       concept_intelligent_system;
+       concept_intelligent_agent;
+       concept_intelligent_service;
+       concept_sc_agent;
+       concept_community_of_intelligent_systems;
+       concept_human_in_the_loop_component;;
+*);;
+
+// ---------------------------------------------------------------------
+// Цель как декларативная целевая структура запроса.
+// ---------------------------------------------------------------------
+
+concept_goal
+<- sc_node_class;
+=> nrel_main_idtf: [цель] (* <- lang_ru;; *);
+=> nrel_main_idtf: [goal] (* <- lang_en;; *);;
+
+concept_goal <= nrel_inclusion: concept_intentional_class_group;;
+
+concept_goal <= nrel_subdividing: ...
+(*
+    -> concept_goal_informational;
+       concept_goal_decisional;
+       concept_goal_explanatory;
+       concept_goal_optimizational;
+       concept_goal_diagnostic;
+       concept_goal_educational;;
+*);;
+
+concept_goal_informational
+<- sc_node_class;
+=> nrel_main_idtf: [информационная цель] (* <- lang_ru;; *);;
+concept_goal_decisional
+<- sc_node_class;
+=> nrel_main_idtf: [решенческая цель] (* <- lang_ru;; *);;
+concept_goal_explanatory
+<- sc_node_class;
+=> nrel_main_idtf: [объяснительная цель] (* <- lang_ru;; *);;
+concept_goal_optimizational
+<- sc_node_class;
+=> nrel_main_idtf: [оптимизационная цель] (* <- lang_ru;; *);;
+concept_goal_diagnostic
+<- sc_node_class;
+=> nrel_main_idtf: [диагностическая цель] (* <- lang_ru;; *);;
+concept_goal_educational
+<- sc_node_class;
+=> nrel_main_idtf: [образовательная цель] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Абстрактный класс сущности взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_interaction_entity
+<- sc_node_class;
+=> nrel_main_idtf:
+    [сущность взаимодействия] (* <- lang_ru;; *);
+    [interaction entity] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Акт взаимодействия и его актор — реификационный паттерн n-арных
+// связей (назначение подзадачи, построение объяснения, обмен знаниями
+// и т.п.), см. rrel_actor (role_relations.scs).
+// ---------------------------------------------------------------------
+
+concept_interaction_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт взаимодействия] (* <- lang_ru;; *);
+    [interaction act] (* <- lang_en;; *);;
+concept_interaction_act <= nrel_inclusion: concept_interaction_entity;;
+
+definition -> definition_interaction_act: ...
+(*
+    -> rrel_key_sc_element: concept_interaction_act;;
+    => nrel_main_idtf: [Опр.(акт взаимодействия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт взаимодействия — реифицированное представление
+            единичного события коллективной обработки (назначение
+            подзадачи, построение объяснения, обмен знаниями, оценка
+            доверия и т.п.), связывающее своего актора и иные ролевые
+            параметры (rrel_actor, rrel_input, rrel_output,
+            rrel_precondition, rrel_postcondition) в единую sc-конструкцию,
+            пригодную для провенансной трассировки.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_actor
+<- sc_node_class;
+=> nrel_main_idtf:
+    [актор] (* <- lang_ru;; *);
+    [actor] (* <- lang_en;; *);;
+concept_actor <= nrel_inclusion: concept_interaction_participant;;
+
+definition -> definition_actor: ...
+(*
+    -> rrel_key_sc_element: concept_actor;;
+    => nrel_main_idtf: [Опр.(актор)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Актор — участник взаимодействия (пользователь,
+            интеллектуальная система или программный агент),
+            выступающий в роли rrel_actor в рамках конкретного акта
+            взаимодействия: инициирующий, исполняющий или принимающий
+            действие и несущий ответственность за порождаемые им
+            результаты и провенансные записи.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Пользовательский запрос.
+// ---------------------------------------------------------------------
+
+concept_user_request
+<- sc_node_class;
+=> nrel_main_idtf:
+    [пользовательский запрос] (* <- lang_ru;; *);
+    [user request] (* <- lang_en;; *);;
+concept_user_request <= nrel_inclusion: concept_interaction_entity;;
+concept_user_request <= nrel_inclusion: concept_request_class_group;;
+
+definition -> definition_user_request: ...
+(*
+    -> rrel_key_sc_element: concept_user_request;;
+    => nrel_main_idtf: [Опр.(пользовательский запрос)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Пользовательский запрос — формализованное описание задачи
+            или информационной потребности пользователя, инициирующее
+            процесс коллективной обработки в сообществе интеллектуальных
+            систем; характеризуется семантическим типом, требованиями
+            к достоверности, ассоциированной целью и контекстом.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_user_request <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение запросов по семантическому типу]
+       (* <- lang_ru;; *);;
+    -> concept_request_information;
+       concept_request_recommendation;
+       concept_request_decision_support;
+       concept_request_explanation;
+       concept_request_diagnostic;
+       concept_request_optimization;
+       concept_request_education;;
+*);;
+
+concept_request_information
+<- sc_node_class;
+=> nrel_main_idtf: [информационный запрос] (* <- lang_ru;; *);;
+concept_request_recommendation
+<- sc_node_class;
+=> nrel_main_idtf: [запрос-рекомендация] (* <- lang_ru;; *);;
+concept_request_decision_support
+<- sc_node_class;
+=> nrel_main_idtf:
+    [запрос поддержки принятия решения] (* <- lang_ru;; *);;
+concept_request_explanation
+<- sc_node_class;
+=> nrel_main_idtf: [запрос-объяснение] (* <- lang_ru;; *);;
+concept_request_diagnostic
+<- sc_node_class;
+=> nrel_main_idtf: [диагностический запрос] (* <- lang_ru;; *);;
+concept_request_optimization
+<- sc_node_class;
+=> nrel_main_idtf: [оптимизационный запрос] (* <- lang_ru;; *);;
+concept_request_education
+<- sc_node_class;
+=> nrel_main_idtf: [образовательный запрос] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Намерение (Intent) — интерпретация запроса в понятиях онтологии,
+// отличная и от исходной формулировки запроса, и от цели: семантическая
+// гипотеза j = <g, o, a, Γ, y, π>, проверяемая по контексту и при
+// необходимости подтверждаемая пользователем; основание декомпозиции
+// на подзадачи и выбора компетенций.
+// ---------------------------------------------------------------------
+
+concept_intent
+<- sc_node_class;
+=> nrel_main_idtf:
+    [намерение] (* <- lang_ru;; *);
+    [intent] (* <- lang_en;; *);
+=> nrel_idtf: [j];;
+concept_intent <= nrel_inclusion: concept_request_class_group;;
+
+definition -> definition_intent: ...
+(*
+    -> rrel_key_sc_element: concept_intent;;
+    => nrel_main_idtf: [Опр.(намерение)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Намерение j = <g, o, a, Γ, y, π> — интерпретация
+            пользовательского запроса в понятиях онтологии предметной
+            области, где g — цель, o — объект предметной области,
+            a — требуемое действие, Γ — ограничения и условия
+            допустимости, y — требуемый тип результата, а π — приоритет
+            или режим обработки. Намерение отличается как от исходной
+            формулировки запроса (сохраняющей форму обращения
+            пользователя), так и от цели (задающей требуемое состояние
+            и критерий приемлемости): оно является семантической
+            гипотезой, формируемой частичным отображением
+            ι: Q × U_t × C ⇀ J и уточняемой по контексту вплоть до
+            запроса на уточнение при недостатке сведений или
+            наличии нескольких несовместимых интерпретаций.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_intent_object
+<- sc_node_class;
+=> nrel_main_idtf:
+    [объект предметной области намерения] (* <- lang_ru;; *);
+    [intent domain object] (* <- lang_en;; *);;
+
+concept_intent_constraint
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ограничение намерения] (* <- lang_ru;; *);
+    [intent constraint] (* <- lang_en;; *);;
+
+definition -> definition_intent_constraint: ...
+(*
+    -> rrel_key_sc_element: concept_intent_constraint;;
+    => nrel_main_idtf:
+        [Опр.(ограничение намерения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Компонента Γ намерения и одновременно множество требований
+            к результату R_q кортежа запроса q = <U, I, C, R_q>: единый
+            класс требований к форме представления, сроку получения,
+            степени детализации, достоверности, объяснимости,
+            конфиденциальности и допустимому уровню автономности
+            интеллектуальной системы.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_intent_constraint <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение ограничений намерения по типу]
+       (* <- lang_ru;; *);;
+    -> concept_constraint_result_format;
+       concept_constraint_deadline;
+       concept_constraint_detail_level;
+       concept_constraint_required_confidence;
+       concept_constraint_explainability;
+       concept_constraint_confidentiality;
+       concept_constraint_autonomy_level;;
+*);;
+
+concept_constraint_result_format
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: форма представления] (* <- lang_ru;; *);;
+concept_constraint_deadline
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: срок получения] (* <- lang_ru;; *);;
+concept_constraint_detail_level
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: степень детализации] (* <- lang_ru;; *);;
+concept_constraint_required_confidence
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: требуемая достоверность] (* <- lang_ru;; *);;
+concept_constraint_explainability
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: объяснимость] (* <- lang_ru;; *);;
+concept_constraint_confidentiality
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: конфиденциальность] (* <- lang_ru;; *);;
+concept_constraint_autonomy_level
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение: допустимый уровень автономности]
+    (* <- lang_ru;; *);;
+
+concept_expected_result_type
+<- sc_node_class;
+=> nrel_main_idtf:
+    [требуемый тип результата] (* <- lang_ru;; *);
+    [expected result type] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Результат обработки и интегрированный результат.
+// ---------------------------------------------------------------------
+
+concept_processing_result
+<- sc_node_class;
+=> nrel_main_idtf:
+    [результат обработки] (* <- lang_ru;; *);
+    [processing result] (* <- lang_en;; *);;
+concept_processing_result <= nrel_inclusion: concept_interaction_entity;;
+concept_processing_result <= nrel_inclusion: concept_result_class_group;;
+
+concept_processing_result <= nrel_subdividing: ...
+(*
+    -> concept_partial_result;
+       concept_intermediate_result;
+       concept_final_result;
+       concept_alternative_result;;
+*);;
+
+concept_partial_result
+<- sc_node_class;
+=> nrel_main_idtf: [частичный результат] (* <- lang_ru;; *);;
+concept_intermediate_result
+<- sc_node_class;
+=> nrel_main_idtf: [промежуточный результат] (* <- lang_ru;; *);;
+concept_final_result
+<- sc_node_class;
+=> nrel_main_idtf: [итоговый результат] (* <- lang_ru;; *);;
+concept_alternative_result
+<- sc_node_class;
+=> nrel_main_idtf: [альтернативный результат] (* <- lang_ru;; *);;
+
+concept_integrated_result
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интегрированный результат] (* <- lang_ru;; *);
+    [integrated result] (* <- lang_en;; *);;
+concept_integrated_result <= nrel_inclusion: concept_processing_result;;
+
+// ---------------------------------------------------------------------
+// Конфликт результатов и его виды.
+// ---------------------------------------------------------------------
+
+concept_result_conflict
+<- sc_node_class;
+=> nrel_main_idtf:
+    [конфликт результатов] (* <- lang_ru;; *);
+    [result conflict] (* <- lang_en;; *);;
+concept_result_conflict <= nrel_inclusion: concept_meta_result_class_group;;
+
+concept_result_conflict <= nrel_subdividing: ...
+(*
+    -> concept_semantic_inconsistency;
+       concept_logical_contradiction;
+       concept_interpretive_divergence;
+       concept_value_conflict;
+       concept_constraint_violation_conflict;
+       concept_provenance_conflict;;
+*);;
+
+concept_semantic_inconsistency
+<- sc_node_class;
+=> nrel_main_idtf: [семантическая несогласованность] (* <- lang_ru;; *);
+=> nrel_main_idtf: [semantic inconsistency] (* <- lang_en;; *);
+<= nrel_inclusion: concept_result_conflict;;
+
+concept_logical_contradiction
+<- sc_node_class;
+=> nrel_main_idtf: [логическое противоречие] (* <- lang_ru;; *);
+=> nrel_main_idtf: [logical contradiction] (* <- lang_en;; *);
+<= nrel_inclusion: concept_result_conflict;;
+
+concept_interpretive_divergence
+<- sc_node_class;
+=> nrel_main_idtf: [интерпретационное расхождение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [interpretive divergence] (* <- lang_en;; *);
+<= nrel_inclusion: concept_result_conflict;;
+
+concept_value_conflict
+<- sc_node_class;
+=> nrel_main_idtf: [ценностный конфликт] (* <- lang_ru;; *);;
+concept_constraint_violation_conflict
+<- sc_node_class;
+=> nrel_main_idtf: [конфликт нарушения ограничения] (* <- lang_ru;; *);;
+concept_provenance_conflict
+<- sc_node_class;
+=> nrel_main_idtf: [провенансный конфликт] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Условие конфликтности результатов (формула 14).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_conflict_condition: ...
+(*
+    -> rrel_key_sc_element: concept_result_conflict;;
+    => nrel_main_idtf:
+        [Утв.(условие конфликтности частичных результатов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [conflict(res_i, res_j) ← inconsistent(·) ∨
+            incompatible_context(·) ∨ violated_constraint(·).
+            Интеграция результата допускается лишь при достаточной
+            provenance-структуре, выполнении ограничений целостности
+            и отсутствии неразрешённых конфликтов; разрешение
+            выполняется аргументационным выводом или взвешенным
+            голосованием с учётом доверия.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Структурированный отказ ⊥ = <c, ρ, a>. Один из трёх возможных
+// исходов функции медиации M: Q × P_fin(S) × C → R ∪ Q_clar ∪ {⊥}
+// наряду с согласованным результатом и запросом на уточнение.
+// Обеспечивает: невозможность корректного решения никогда не
+// маскируется под успешно обработанный запрос.
+// ---------------------------------------------------------------------
+
+concept_processing_failure
+<- sc_node_class;
+=> nrel_main_idtf:
+    [структурированный отказ] (* <- lang_ru;; *);
+    [processing failure] (* <- lang_en;; *);
+=> nrel_idtf: [⊥];;
+concept_processing_failure <= nrel_inclusion: concept_meta_result_class_group;;
+
+definition -> definition_processing_failure: ...
+(*
+    -> rrel_key_sc_element: concept_processing_failure;;
+    => nrel_main_idtf: [Опр.(структурированный отказ)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [⊥ = <c, ρ, a> — информативный отказ обработки запроса,
+            где c ∈ C_fail — машинно-обрабатываемый код причины из
+            конечного множества; ρ — рекомендация по восстановлению
+            (запрос на уточнение из Q_clar либо описание
+            восстановительного действия); a — запись аудита,
+            включаемая в граф происхождения R_prov. Отказ является
+            терминальным управляемым состоянием обработки, а не
+            пустым или неопределённым ответом.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_failure_cause
+<- sc_node_class;
+=> nrel_main_idtf:
+    [код причины отказа] (* <- lang_ru;; *);
+    [failure cause code] (* <- lang_en;; *);
+=> nrel_idtf: [c];;
+
+concept_failure_cause <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение множества C_fail] (* <- lang_ru;; *);;
+    -> concept_cause_ambiguous;
+       concept_cause_no_competence;
+       concept_cause_constraint_violation;
+       concept_cause_unresolved_conflict;
+       concept_cause_access_denied;
+       concept_cause_timeout;;
+*);;
+
+concept_cause_ambiguous
+<- sc_node_class;
+=> nrel_main_idtf: [причина: неоднозначность] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Ambiguous] (* <- lang_en;; *);;
+concept_cause_no_competence
+<- sc_node_class;
+=> nrel_main_idtf: [причина: отсутствие компетенции] (* <- lang_ru;; *);
+=> nrel_main_idtf: [No_Competence] (* <- lang_en;; *);;
+concept_cause_constraint_violation
+<- sc_node_class;
+=> nrel_main_idtf: [причина: нарушение ограничения] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Constraint_Violation] (* <- lang_en;; *);;
+concept_cause_unresolved_conflict
+<- sc_node_class;
+=> nrel_main_idtf: [причина: неразрешённый конфликт] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Unresolved_Conflict] (* <- lang_en;; *);;
+concept_cause_access_denied
+<- sc_node_class;
+=> nrel_main_idtf: [причина: отказ в доступе] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Access_Denied] (* <- lang_en;; *);;
+concept_cause_timeout
+<- sc_node_class;
+=> nrel_main_idtf: [причина: истечение времени] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Timeout] (* <- lang_en;; *);;
+
+concept_recovery_action
+<- sc_node_class;
+=> nrel_main_idtf:
+    [рекомендация по восстановлению] (* <- lang_ru;; *);
+    [recovery recommendation] (* <- lang_en;; *);
+=> nrel_idtf: [ρ];;
+
+concept_recovery_action <= nrel_subdividing: ...
+(*
+    -> concept_recovery_clarification_request;
+       concept_recovery_restorative_action;;
+*);;
+
+concept_recovery_clarification_request
+<- sc_node_class;
+=> nrel_main_idtf:
+    [рекомендация: запрос на уточнение] (* <- lang_ru;; *);;
+concept_recovery_restorative_action
+<- sc_node_class;
+=> nrel_main_idtf:
+    [рекомендация: восстановительное действие] (* <- lang_ru;; *);;

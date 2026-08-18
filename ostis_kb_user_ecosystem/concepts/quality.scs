@@ -1,0 +1,134 @@
+// =====================================================================
+// concepts/quality.scs
+// Подраздел: показатели качества и прозрачности модели.
+// Параметры прозрачности π_proc, π_dec, π_data (формула 15).
+// Показатели качества — компоненты вектора Q_s.
+// =====================================================================
+
+section_concept_quality
+=> nrel_main_idtf:
+    [Подраздел. Показатели качества и прозрачности] (* <- lang_ru;; *);
+    [Subsection. Quality and Transparency Indicators] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_quality_indicator;
+<- rrel_key_sc_element: concept_transparency_indicator;
+<- rrel_key_sc_element: concept_pi_proc;
+<- rrel_key_sc_element: concept_pi_dec;
+<- rrel_key_sc_element: concept_pi_data;;
+
+concept_quality_indicator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [показатель качества] (* <- lang_ru;; *);
+    [quality indicator] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Показатели прозрачности.
+// ---------------------------------------------------------------------
+
+concept_transparency_indicator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [показатель прозрачности взаимодействия] (* <- lang_ru;; *);
+    [transparency indicator] (* <- lang_en;; *);;
+
+concept_transparency_indicator <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Тройка показателей π = <π_proc, π_dec, π_data>] (* <- lang_ru;; *);;
+    -> concept_pi_proc;
+       concept_pi_dec;
+       concept_pi_data;;
+*);;
+
+concept_pi_proc
+<- sc_node_class;
+=> nrel_main_idtf:
+    [π_proc — прозрачность процессов] (* <- lang_ru;; *);
+=> nrel_idtf: [pi_proc];
+=> nrel_metric_formula:
+    [π_proc = |Proc^trace| / |Proc| — доля процессов, для которых
+     зафиксированы провенансные отношения];;
+
+concept_pi_dec
+<- sc_node_class;
+=> nrel_main_idtf:
+    [π_dec — прозрачность актов принятия решений] (* <- lang_ru;; *);
+=> nrel_idtf: [pi_dec];
+=> nrel_metric_formula:
+    [π_dec = |Dec^trace| / |Dec|];;
+
+concept_pi_data
+<- sc_node_class;
+=> nrel_main_idtf:
+    [π_data — прозрачность используемых данных] (* <- lang_ru;; *);
+=> nrel_idtf: [pi_data];
+=> nrel_metric_formula:
+    [π_data = |Data^trace| / |Data|];;
+
+definition -> definition_transparency_indicators: ...
+(*
+    -> rrel_key_sc_element: concept_transparency_indicator;;
+    => nrel_main_idtf:
+        [Опр.(показатели прозрачности π)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Прозрачность модели характеризуется тройкой
+            π = <π_proc, π_dec, π_data>, где Proc, Dec, Data — множества
+            процессов, актов принятия решений и используемых данных,
+            а верхний индекс trace указывает подмножество, для которого
+            зафиксированы провенансные отношения, согласуемые с PROV-O.
+            Целевое значение π_• = 1 соответствует полностью наблюдаемой
+            коллективной обработке.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Метрические свойства модели.
+// ---------------------------------------------------------------------
+
+concept_model_metric
+<- sc_node_class;
+=> nrel_main_idtf: [метрика модели] (* <- lang_ru;; *);;
+
+concept_model_metric <= nrel_subdividing: ...
+(*
+    -> concept_metric_completeness;
+       concept_metric_consistency;
+       concept_metric_coverage;
+       concept_metric_modularity;
+       concept_metric_reusability;
+       concept_metric_coupling;
+       concept_metric_cohesion;;
+*);;
+
+concept_metric_completeness
+<- sc_node_class;
+=> nrel_main_idtf: [полнота онтологии] (* <- lang_ru;; *);;
+concept_metric_consistency
+<- sc_node_class;
+=> nrel_main_idtf: [непротиворечивость онтологии] (* <- lang_ru;; *);;
+concept_metric_coverage
+<- sc_node_class;
+=> nrel_main_idtf: [покрытие предметной области] (* <- lang_ru;; *);;
+concept_metric_modularity
+<- sc_node_class;
+=> nrel_main_idtf: [модульность онтологии] (* <- lang_ru;; *);;
+concept_metric_reusability
+<- sc_node_class;
+=> nrel_main_idtf: [переиспользуемость] (* <- lang_ru;; *);;
+concept_metric_coupling
+<- sc_node_class;
+=> nrel_main_idtf: [связность между модулями] (* <- lang_ru;; *);;
+concept_metric_cohesion
+<- sc_node_class;
+=> nrel_main_idtf: [внутренняя согласованность модуля] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Служебное отношение для записи формулы метрики.
+// ---------------------------------------------------------------------
+
+nrel_metric_formula
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [формула_метрики*] (* <- lang_ru;; *);
+<- binary_relation;;

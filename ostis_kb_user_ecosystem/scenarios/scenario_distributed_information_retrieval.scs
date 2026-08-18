@@ -1,0 +1,195 @@
+// =====================================================================
+// scenarios/scenario_distributed_information_retrieval.scs
+// Сценарий: распределённый информационный поиск — декомпозиция
+// сложного исследовательского запроса между ИС разных предметных
+// областей. Иллюстрирует переиспользование онтологий разных доменов.
+// =====================================================================
+
+section_scenario_distributed_information_retrieval
+=> nrel_main_idtf:
+    [Сценарий. Распределённый информационный поиск] (* <- lang_ru;; *);
+    [Scenario. Distributed Information Retrieval] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: request_research_query;
+<- rrel_key_sc_element: integrated_research_result;;
+
+user_researcher <- concept_domain_expert;;
+user_researcher => nrel_main_idtf:
+    [Исследователь — материаловед] (* <- lang_ru;; *);;
+
+request_research_query <- concept_user_request;;
+request_research_query <- concept_request_information;;
+request_research_query => nrel_main_idtf:
+    [Запрос: подобрать материал для гибкого солнечного модуля,
+     учесть электрохимическую стабильность, экономическую
+     доступность и патентную чистоту]
+    (* <- lang_ru;; *);;
+user_researcher => nrel_formulates: request_research_query;;
+
+goal_material_selection <- concept_goal;;
+goal_material_selection <- concept_goal_informational;;
+goal_material_selection => nrel_main_idtf:
+    [Цель: получить ранжированный список материалов-кандидатов
+     с детальным обоснованием по 3 критериям]
+    (* <- lang_ru;; *);;
+request_research_query => nrel_has_goal: goal_material_selection;;
+
+// Контекст с акцентом на мультидоменность.
+interaction_context_research <- concept_interaction_context;;
+interaction_context_research => nrel_main_idtf:
+    [Контекст: 3 предметных подонтологии (материалы,
+     электрохимия, патентное право)]
+    (* <- lang_ru;; *);;
+
+domain_materials <- concept_domain_context;;
+domain_materials => nrel_main_idtf: [Предметная область: материалы] (* <- lang_ru;; *);;
+domain_electrochem <- concept_domain_context;;
+domain_electrochem => nrel_main_idtf:
+    [Предметная область: электрохимия] (* <- lang_ru;; *);;
+domain_patents <- concept_domain_context;;
+domain_patents => nrel_main_idtf:
+    [Предметная область: патентное право] (* <- lang_ru;; *);;
+situation_researcher_workstation <- concept_user_situation_context;;
+situation_researcher_workstation => nrel_main_idtf:
+    [Ситуация: исследовательская станция, длинная сессия]
+    (* <- lang_ru;; *);;
+history_researcher_queries <- concept_history_context;;
+state_research_environment <- concept_system_context;;
+
+interaction_context_research -> rrel_goal_context: goal_material_selection;;
+interaction_context_research -> rrel_history_context: history_researcher_queries;;
+interaction_context_research -> rrel_system_context: state_research_environment;;
+interaction_context_research -> rrel_domain_context: domain_materials;;
+interaction_context_research -> rrel_user_situation_context:
+    situation_researcher_workstation;;
+request_research_query => nrel_has_context: interaction_context_research;;
+
+// Декомпозиция запроса.
+subtask_search_materials_kb <- concept_subtask;;
+subtask_search_materials_kb <- concept_task_type_search;;
+subtask_search_materials_kb => nrel_main_idtf:
+    [Подзадача: поиск в БЗ материалов по параметрам гибкости
+     и прозрачности] (* <- lang_ru;; *);;
+
+subtask_electrochem_screen <- concept_subtask;;
+subtask_electrochem_screen <- concept_task_type_estimation;;
+subtask_electrochem_screen => nrel_main_idtf:
+    [Подзадача: оценка электрохимической стабильности кандидатов]
+    (* <- lang_ru;; *);;
+subtask_electrochem_screen => nrel_subtask_depends_on: subtask_search_materials_kb;;
+
+subtask_economic_eval <- concept_subtask;;
+subtask_economic_eval <- concept_task_type_estimation;;
+subtask_economic_eval => nrel_main_idtf:
+    [Подзадача: оценка экономической доступности (LCA + market)]
+    (* <- lang_ru;; *);;
+subtask_economic_eval => nrel_subtask_depends_on: subtask_search_materials_kb;;
+
+subtask_patent_clearance <- concept_subtask;;
+subtask_patent_clearance <- concept_task_type_diagnosis;;
+subtask_patent_clearance => nrel_main_idtf:
+    [Подзадача: проверка патентной чистоты]
+    (* <- lang_ru;; *);;
+subtask_patent_clearance => nrel_subtask_depends_on: subtask_search_materials_kb;;
+
+subtask_final_ranking <- concept_subtask;;
+subtask_final_ranking <- concept_task_type_recommendation;;
+subtask_final_ranking => nrel_main_idtf:
+    [Подзадача: финальное ранжирование по 3 критериям]
+    (* <- lang_ru;; *);;
+subtask_final_ranking => nrel_subtask_depends_on: subtask_electrochem_screen;;
+subtask_final_ranking => nrel_subtask_depends_on: subtask_economic_eval;;
+subtask_final_ranking => nrel_subtask_depends_on: subtask_patent_clearance;;
+
+request_research_query => nrel_decomposed_into: subtask_search_materials_kb;;
+request_research_query => nrel_decomposed_into: subtask_electrochem_screen;;
+request_research_query => nrel_decomposed_into: subtask_economic_eval;;
+request_research_query => nrel_decomposed_into: subtask_patent_clearance;;
+request_research_query => nrel_decomposed_into: subtask_final_ranking;;
+
+// Сообщество ИС из разных доменов.
+community_research <- concept_community_of_intelligent_systems;;
+community_research <- concept_federated_community;;
+community_research => nrel_serves_request: request_research_query;;
+
+system_materials_kb <- concept_repository_intelligent_system;;
+system_materials_kb => nrel_main_idtf:
+    [ИС БЗ материалов (PubChem + Materials Project)]
+    (* <- lang_ru;; *);;
+system_electrochem_simulator <- concept_hybrid_intelligent_system;;
+system_electrochem_simulator => nrel_main_idtf:
+    [ИС электрохимического моделирования]
+    (* <- lang_ru;; *);;
+system_economic_analyst <- concept_symbolic_intelligent_system;;
+system_economic_analyst => nrel_main_idtf:
+    [ИС экономической оценки (LCA)]
+    (* <- lang_ru;; *);;
+system_patent_checker <- concept_llm_intelligent_system;;
+system_patent_checker => nrel_main_idtf:
+    [ИС проверки патентов (LLM + RAG над патентной БЗ)]
+    (* <- lang_ru;; *);;
+system_ranker_research <- concept_neuro_symbolic_intelligent_system;;
+system_ranker_research => nrel_main_idtf:
+    [ИС ранжирования (нейросимвольное многокритериальное)]
+    (* <- lang_ru;; *);;
+
+community_research => nrel_includes: system_materials_kb;;
+community_research => nrel_includes: system_electrochem_simulator;;
+community_research => nrel_includes: system_economic_analyst;;
+community_research => nrel_includes: system_patent_checker;;
+community_research => nrel_includes: system_ranker_research;;
+
+subtask_search_materials_kb => nrel_assigned_to: system_materials_kb;;
+subtask_electrochem_screen  => nrel_assigned_to: system_electrochem_simulator;;
+subtask_economic_eval       => nrel_assigned_to: system_economic_analyst;;
+subtask_patent_clearance    => nrel_assigned_to: system_patent_checker;;
+subtask_final_ranking       => nrel_assigned_to: system_ranker_research;;
+
+// Результаты.
+result_candidates <- concept_partial_result;;
+result_candidates => nrel_main_idtf:
+    [Кандидаты: 23 материала (perovskite, OPV, флексионные silicon)]
+    (* <- lang_ru;; *);;
+system_materials_kb => nrel_produces: result_candidates;;
+
+result_stability <- concept_partial_result;;
+result_stability => nrel_main_idtf:
+    [Электрохимическая стабильность: вектор оценок (>2000 ч цикл)
+     для 23 кандидатов] (* <- lang_ru;; *);;
+system_electrochem_simulator => nrel_produces: result_stability;;
+
+result_economics <- concept_partial_result;;
+result_economics => nrel_main_idtf:
+    [Экономика: $/Wp для каждого кандидата] (* <- lang_ru;; *);;
+system_economic_analyst => nrel_produces: result_economics;;
+
+result_patent_clearance <- concept_partial_result;;
+result_patent_clearance => nrel_main_idtf:
+    [Патентная чистота: 18 чистых, 5 с обременениями
+     (с указанием конкретных патентов)] (* <- lang_ru;; *);;
+system_patent_checker => nrel_produces: result_patent_clearance;;
+
+result_final_ranking_research <- concept_partial_result;;
+result_final_ranking_research => nrel_main_idtf:
+    [Финальный ранг: top-3 материалов с Pareto-доминированием]
+    (* <- lang_ru;; *);;
+system_ranker_research => nrel_produces: result_final_ranking_research;;
+
+integrated_research_result <- concept_integrated_result;;
+integrated_research_result => nrel_main_idtf:
+    [Интегрированный результат: топ-3 рекомендованных материала
+     для гибких солнечных модулей с детальным обоснованием
+     по 3 критериям и аудит-логом источников] (* <- lang_ru;; *);;
+result_candidates       => nrel_integrated_in: integrated_research_result;;
+result_stability        => nrel_integrated_in: integrated_research_result;;
+result_economics        => nrel_integrated_in: integrated_research_result;;
+result_patent_clearance => nrel_integrated_in: integrated_research_result;;
+result_final_ranking_research => nrel_integrated_in: integrated_research_result;;
+
+explanation_research <- concept_explanation_global;;
+explanation_research => nrel_main_idtf:
+    [Объяснение: для каждого top-3 материала — обоснование по 3
+     критериям, ссылка на источник в БЗ материалов, патентный
+     статус и полная provenance-цепочка] (* <- lang_ru;; *);;
+integrated_research_result => nrel_supported_by_explanation: explanation_research;;
+integrated_research_result => nrel_delivered_to: user_researcher;;

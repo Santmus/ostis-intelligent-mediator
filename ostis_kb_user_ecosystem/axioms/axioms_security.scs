@@ -1,0 +1,86 @@
+// =====================================================================
+// axioms/axioms_security.scs
+// Терминологические аксиомы и ограничения безопасности.
+// Дополняют F_ax / F_constr для подсистемы security_privacy.
+// =====================================================================
+
+section_axioms_security
+=> nrel_main_idtf:
+    [Подраздел. Аксиомы безопасности и приватности] (* <- lang_ru;; *);
+    [Subsection. Security and Privacy Axioms] (* <- lang_en;; *);
+<- atomic_section;;
+
+axiom -> axiom_pii_processing_requires_consent: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(обработка PII требует действующего согласия)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀c ∈ EcosystemComponent, ∀p ∈ PersonalData.
+            processes_personal_data(c, p) →
+            ∃u ∈ User, ∃cn ∈ UserConsentRecord.
+              consent_covers(cn, p) ∧ valid(cn) ∧ owner(p, u).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_audit_log_append_only: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(append-only аудит-лог)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Экземпляры concept_provenance_record не подлежат
+            модификации после создания. Допустимы только добавления
+            новых записей. Нарушение → concept_property_integrity_violation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_decision_requires_explanation: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(право пользователя на объяснение решения)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀d ∈ CollectiveDecision. delivered_to(d, u) →
+            ∃e ∈ Explanation. supported_by_explanation(d, e).
+            Свойство concept_property_right_to_explanation
+            требует наличия объяснения для всех коллективных
+            решений, предъявляемых пользователю.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_data_residency_compliance: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(соответствие требованиям локализации данных)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀s ∈ IntelligentSystem, ∀L ∈ ResourceConstraint.
+            has_resource_constraint(s, L) ∧ L = data_residency(r) →
+            ∀k ∈ KnowledgeSource. uses(s, k) →
+            location(k) = r.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_no_unauthorized_payload: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(payload не содержит избыточных PII)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀ke ∈ KnowledgeExchangeAct. payload(ke) ⊆
+            required_pii(σ, rrel_receiver(ke)).
+            Принцип data_minimization формализован как
+            ограничение целостности.] (* <- lang_ru;; *);;
+    *);;
+*);;

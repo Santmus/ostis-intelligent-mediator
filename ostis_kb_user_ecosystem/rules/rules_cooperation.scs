@@ -1,0 +1,58 @@
+// =====================================================================
+// rules/rules_cooperation.scs
+// Множество F_rule (часть π_coop) — правила кооперативной обработки.
+// Операционализируются sc-агентом agent_cooperative_executor.
+// =====================================================================
+
+section_rules_cooperation
+=> nrel_main_idtf:
+    [Подраздел. Правила кооперативной обработки (π_coop)] (* <- lang_ru;; *);
+    [Subsection. Cooperative Processing Rules (π_coop)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_dispatch_ready_subtask: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(запуск готовой подзадачи)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: assigned_to(σ, s) ∧ subtask_status(σ, proposed)
+                ∧ ∀σ'. depends_on(σ, σ')
+                       → subtask_status(σ', completed),
+            Then: установить subtask_status(σ, in_progress)
+                  и отправить σ системе s через коммуникативный
+                  акт concept_act_request.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_register_partial_result: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(регистрация частичного результата)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [При получении частичного результата r от системы s
+            по подзадаче σ создать concept_partial_result(r),
+            produces(s, r), caused_by_subtask(r, σ),
+            generated_in_context(r, C); затем установить
+            subtask_status(σ, completed).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_propagate_to_dependent: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(пропагация результатов зависимым подзадачам)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждой подзадачи σ' такой, что depends_on(σ', σ)
+            и subtask_status(σ, completed), сделать частичный
+            результат r доступным как вход σ' через создание
+            knowledge exchange act с rrel_payload(r).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

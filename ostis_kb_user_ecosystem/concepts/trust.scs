@@ -1,0 +1,184 @@
+// =====================================================================
+// concepts/trust.scs
+// Подраздел: модель доверия в сообществе интеллектуальных систем.
+// T(s, τ) = <t_rel(s,τ), t_acc(s,τ), t_sec(s,τ), t_tr(s,τ)>
+// (part2.tex, eq:trust_vector). Версия согласована с диссертацией
+// (более позднее уточнение относительно первоначальной статьи):
+// вместо <история, согласованность, репутация, соответствие
+// компетенций> — <надёжность, достоверность, безопасность,
+// прозрачность>, явно связывающие вектор доверия с требованиями
+// Req_17 (многокомпонентное доверие), Req_19-Req_20 (безопасность,
+// управляемая автономность). Согласовано с trustworthy multi-agent
+// AI [17; 18] и моделями Sabater-Sierra [40].
+// =====================================================================
+
+section_concept_trust
+=> nrel_main_idtf:
+    [Подраздел. Модель доверия в сообществе ИС] (* <- lang_ru;; *);
+    [Subsection. Trust Model in a Community of Intelligent Systems]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_trust_level;
+<- rrel_key_sc_element: concept_trust_vector;
+<- rrel_key_sc_element: concept_trust_component_reliability;
+<- rrel_key_sc_element: concept_trust_component_accuracy;
+<- rrel_key_sc_element: concept_trust_component_security;
+<- rrel_key_sc_element: concept_trust_component_transparency;
+<- rrel_key_sc_element: concept_trust_aggregation_function;;
+
+// ---------------------------------------------------------------------
+// Уровень доверия как первоклассная сущность.
+// ---------------------------------------------------------------------
+
+concept_trust_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [уровень доверия] (* <- lang_ru;; *);
+    [trust level] (* <- lang_en;; *);;
+concept_trust_level <= nrel_inclusion: concept_meta_result_class_group;;
+
+definition -> definition_trust_level: ...
+(*
+    -> rrel_key_sc_element: concept_trust_level;;
+    => nrel_main_idtf: [Опр.(уровень доверия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Уровень доверия — количественная или качественная оценка
+            надёжности интеллектуальной системы, агрегирующая
+            надёжность (историю доступности и корректности ответов),
+            достоверность (метрики качества на тестовых и исторических
+            данных), безопасность (соответствие политикам доступа и
+            частоту инцидентов) и прозрачность (эмпирически
+            наблюдаемую частоту предоставления обоснования по
+            запросу). Записывается кортежем
+            T(s, τ) = <t_rel(s,τ), t_acc(s,τ), t_sec(s,τ), t_tr(s,τ)>,
+            четыре компоненты со значениями от 0 до 1.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Векторный кортеж доверия.
+// ---------------------------------------------------------------------
+
+concept_trust_vector
+<- sc_node_class;
+=> nrel_main_idtf:
+    [векторный кортеж доверия T(s, τ)] (* <- lang_ru;; *);
+    [trust vector] (* <- lang_en;; *);;
+
+concept_trust_vector <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Композиция кортежа T(s, τ) = <t_rel, t_acc, t_sec, t_tr>]
+       (* <- lang_ru;; *);;
+    -> concept_trust_component_reliability;
+       concept_trust_component_accuracy;
+       concept_trust_component_security;
+       concept_trust_component_transparency;;
+*);;
+
+concept_trust_component_reliability
+<- sc_node_class;
+=> nrel_main_idtf:
+    [надёжность t_rel] (* <- lang_ru;; *);
+    [reliability component] (* <- lang_en;; *);
+=> nrel_idtf: [t_rel];
+=> nrel_component_description:
+    [История доступности системы s и корректности её ответов;
+     обновляется по индикатору успешности ν_rel исхода взаимодействия.];;
+
+concept_trust_component_accuracy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [достоверность t_acc] (* <- lang_ru;; *);
+    [accuracy component] (* <- lang_en;; *);
+=> nrel_idtf: [t_acc];
+=> nrel_component_description:
+    [Метрики качества системы s на тестовых и исторических данных;
+     обновляется по достигнутой точности результата q_res.];;
+
+concept_trust_component_security
+<- sc_node_class;
+=> nrel_main_idtf:
+    [безопасность t_sec] (* <- lang_ru;; *);
+    [security component] (* <- lang_en;; *);
+=> nrel_idtf: [t_sec];
+=> nrel_component_description:
+    [Соответствие системы s политикам доступа и частота инцидентов
+     безопасности; обновляется по индикатору отсутствия инцидента
+     ν_sec.];;
+
+concept_trust_component_transparency
+<- sc_node_class;
+=> nrel_main_idtf:
+    [прозрачность t_tr] (* <- lang_ru;; *);
+    [transparency component] (* <- lang_en;; *);
+=> nrel_idtf: [t_tr];
+=> nrel_component_description:
+    [Эмпирически наблюдаемая частота, с которой система s фактически
+     сопровождает свои результаты обоснованием по запросу — история
+     поведения, отслеживаемая по журналу взаимодействий, а не
+     статическое архитектурное свойство; не подменяет объяснение e
+     в составе конкретного результата; обновляется по индикатору
+     предоставления обоснования ν_tr.];;
+
+// ---------------------------------------------------------------------
+// Функция агрегации доверия trust(s, τ, h).
+// ---------------------------------------------------------------------
+
+concept_trust_aggregation_function
+<- sc_node_class;
+=> nrel_main_idtf:
+    [функция агрегации доверия trust(s, τ, h)] (* <- lang_ru;; *);
+    [trust aggregation function] (* <- lang_en;; *);;
+
+definition -> definition_trust_aggregation: ...
+(*
+    -> rrel_key_sc_element: concept_trust_aggregation_function;;
+    => nrel_main_idtf:
+        [Опр.(агрегация доверия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [trust(s, τ, h) = Σ_k λ_k · t_k, где
+            λ = (λ_rel, λ_acc, λ_sec, λ_tr), Σ λ_k = 1. Веса λ_k
+            задаются экспертно либо обучаются по обратной связи
+            пользователей. Скалярное значение trust(s, τ, h)
+            встраивается в функцию match(σ, s) (11) и инкрементально
+            обновляется агентом agent_trust_evaluator по мере
+            накопления провенансной истории.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Самонастраивание модели доверия.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_trust_self_calibration: ...
+(*
+    -> rrel_key_sc_element: concept_trust_vector;;
+    => nrel_main_idtf:
+        [Утв.(самонастраивание модели доверия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [При устойчиво успешном взаимодействии компоненты вектора
+            доверия асимптотически возрастают, а при систематических
+            отказах — убывают: снижение доли успешных исходов снижает
+            t_rel; рост числа инцидентов безопасности снижает t_sec,
+            что автоматически уменьшает вероятность назначения
+            подзадач системе s через функцию (11) без внешнего
+            вмешательства. Модель доверия самонастраивается на основе
+            провенансного следа коллективной обработки.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Служебное отношение описания компонента.
+// ---------------------------------------------------------------------
+
+nrel_component_description
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [описание_компонента*] (* <- lang_ru;; *);
+<- binary_relation;;

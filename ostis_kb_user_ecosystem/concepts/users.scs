@@ -1,0 +1,276 @@
+// =====================================================================
+// concepts/users.scs
+// Подраздел: пользователи интеллектуальной экосистемы и их
+// онтологические модели. Расширяет интенциональную группу классов
+// E_user, E_goal модели M_int. Учитывает [4; 26].
+// =====================================================================
+
+section_concept_users
+=> nrel_main_idtf:
+    [Подраздел. Пользователи интеллектуальной экосистемы] (* <- lang_ru;; *);
+    [Subsection. Users of an Intelligent Ecosystem] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_user;
+<- rrel_key_sc_element: concept_user_model;
+<- rrel_key_sc_element: concept_user_goal;
+<- rrel_key_sc_element: concept_user_preference;
+<- rrel_key_sc_element: concept_user_competence;
+<- rrel_key_sc_element: concept_user_interaction_history;
+<- rrel_key_sc_element: concept_user_profile;
+<- rrel_key_sc_element: concept_user_persona;
+<- rrel_key_sc_element: concept_cognitive_load_estimate;
+<- rrel_key_sc_element: concept_user_feedback;;
+
+// ---------------------------------------------------------------------
+// concept_user — субъект взаимодействия с экосистемой.
+// ---------------------------------------------------------------------
+
+concept_user
+<- sc_node_class;
+=> nrel_main_idtf:
+    [пользователь] (* <- lang_ru;; *);
+    [user] (* <- lang_en;; *);
+=> nrel_idtf: [E_user];;
+
+concept_user
+<= nrel_inclusion: concept_interaction_participant;;
+concept_user
+<= nrel_inclusion: concept_intentional_class_group;;
+
+definition -> definition_user: ...
+(*
+    -> rrel_key_sc_element: concept_user;;
+    => nrel_main_idtf: [Опр.(пользователь)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Пользователь — субъект взаимодействия с интеллектуальной
+            экосистемой, обладающий идентифицируемым множеством целей,
+            предпочтений, компетенций и историей взаимодействий,
+            представленных в виде онтологической модели пользователя
+            в общей семантической памяти.] (* <- lang_ru;; *);;
+        -> [User is a subject of interaction with an intelligent ecosystem
+            characterised by an identifiable set of goals, preferences,
+            competencies and an interaction history represented as an
+            ontological user model.] (* <- lang_en;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение пользователей по ролям.
+// ---------------------------------------------------------------------
+
+concept_user <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение пользователей по типу роли]
+       (* <- lang_ru;; *);;
+    -> concept_end_user;
+       concept_domain_expert;
+       concept_knowledge_engineer;
+       concept_system_administrator;
+       concept_decision_maker;
+       concept_evaluator_user;
+       concept_anonymous_user;;
+*);;
+
+concept_end_user
+<- sc_node_class;
+=> nrel_main_idtf: [конечный пользователь] (* <- lang_ru;; *);
+=> nrel_main_idtf: [end user] (* <- lang_en;; *);;
+
+concept_domain_expert
+<- sc_node_class;
+=> nrel_main_idtf: [эксперт предметной области] (* <- lang_ru;; *);
+=> nrel_main_idtf: [domain expert] (* <- lang_en;; *);;
+
+concept_knowledge_engineer
+<- sc_node_class;
+=> nrel_main_idtf: [инженер знаний] (* <- lang_ru;; *);
+=> nrel_main_idtf: [knowledge engineer] (* <- lang_en;; *);;
+
+concept_system_administrator
+<- sc_node_class;
+=> nrel_main_idtf: [администратор системы] (* <- lang_ru;; *);
+=> nrel_main_idtf: [system administrator] (* <- lang_en;; *);;
+
+concept_decision_maker
+<- sc_node_class;
+=> nrel_main_idtf: [лицо, принимающее решение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [decision maker] (* <- lang_en;; *);;
+
+concept_evaluator_user
+<- sc_node_class;
+=> nrel_main_idtf: [пользователь-оценщик результата] (* <- lang_ru;; *);
+=> nrel_main_idtf: [evaluator user] (* <- lang_en;; *);;
+
+concept_anonymous_user
+<- sc_node_class;
+=> nrel_main_idtf: [анонимный пользователь] (* <- lang_ru;; *);
+=> nrel_main_idtf: [anonymous user] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// concept_user_model — онтологическая модель пользователя.
+// ---------------------------------------------------------------------
+
+concept_user_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модель пользователя] (* <- lang_ru;; *);
+    [user model] (* <- lang_en;; *);;
+
+concept_user_model
+<= nrel_inclusion: concept_ontological_artifact;;
+
+definition -> definition_user_model: ...
+(*
+    -> rrel_key_sc_element: concept_user_model;;
+    => nrel_main_idtf: [Опр.(модель пользователя)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Модель пользователя — онтологическое представление целей,
+            предпочтений, компетенций, истории взаимодействий и
+            ситуационных характеристик пользователя, используемое
+            интеллектуальными системами экосистемы для адаптивной
+            обработки запросов и формирования персональных
+            рекомендаций.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_ontological_artifact
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтологический артефакт] (* <- lang_ru;; *);
+    [ontological artifact] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Композиция модели пользователя (атрибутный уровень).
+// ---------------------------------------------------------------------
+
+concept_user_model <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Композиционное разбиение модели пользователя]
+       (* <- lang_ru;; *);;
+    -> concept_user_profile;
+       concept_user_goal;
+       concept_user_preference;
+       concept_user_competence;
+       concept_user_interaction_history;
+       concept_user_persona;
+       concept_cognitive_load_estimate;
+       concept_user_consent_record;;
+*);;
+
+concept_user_profile
+<- sc_node_class;
+=> nrel_main_idtf: [профиль пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user profile] (* <- lang_en;; *);;
+
+concept_user_goal
+<- sc_node_class;
+=> nrel_main_idtf: [цель пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user goal] (* <- lang_en;; *);;
+concept_user_goal <= nrel_inclusion: concept_goal;;
+
+concept_user_preference
+<- sc_node_class;
+=> nrel_main_idtf: [пользовательское предпочтение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user preference] (* <- lang_en;; *);;
+
+concept_user_competence
+<- sc_node_class;
+=> nrel_main_idtf: [компетенция пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user competence] (* <- lang_en;; *);;
+
+concept_user_interaction_history
+<- sc_node_class;
+=> nrel_main_idtf:
+    [история взаимодействия пользователя] (* <- lang_ru;; *);
+    [user interaction history] (* <- lang_en;; *);;
+concept_user_interaction_history
+<= nrel_inclusion: concept_provenance_record;;
+
+concept_user_persona
+<- sc_node_class;
+=> nrel_main_idtf: [персона пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user persona] (* <- lang_en;; *);;
+
+concept_cognitive_load_estimate
+<- sc_node_class;
+=> nrel_main_idtf:
+    [оценка когнитивной нагрузки пользователя] (* <- lang_ru;; *);
+    [cognitive load estimate] (* <- lang_en;; *);;
+
+concept_user_consent_record
+<- sc_node_class;
+=> nrel_main_idtf:
+    [запись согласия пользователя на обработку данных] (* <- lang_ru;; *);
+    [user consent record] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Обратная связь пользователя как первоклассная сущность.
+// ---------------------------------------------------------------------
+
+concept_user_feedback
+<- sc_node_class;
+=> nrel_main_idtf:
+    [обратная связь пользователя] (* <- lang_ru;; *);
+    [user feedback] (* <- lang_en;; *);;
+
+concept_user_feedback <= nrel_subdividing: ...
+(*
+    -> concept_feedback_explicit_rating;
+       concept_feedback_implicit_signal;
+       concept_feedback_correction;
+       concept_feedback_complaint;;
+*);;
+
+concept_feedback_explicit_rating
+<- sc_node_class;
+=> nrel_main_idtf: [явная оценка] (* <- lang_ru;; *);;
+concept_feedback_implicit_signal
+<- sc_node_class;
+=> nrel_main_idtf: [неявный поведенческий сигнал] (* <- lang_ru;; *);;
+concept_feedback_correction
+<- sc_node_class;
+=> nrel_main_idtf: [пользовательская коррекция результата] (* <- lang_ru;; *);;
+concept_feedback_complaint
+<- sc_node_class;
+=> nrel_main_idtf: [жалоба пользователя] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Ограничение: каждому пользователю сопоставлена ровно одна модель.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_user_model_uniqueness: ...
+(*
+    -> rrel_key_sc_element: concept_user;;
+    => nrel_main_idtf: [Утв.(пользователь, единственность модели пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Каждому экземпляру класса «пользователь» сопоставлен ровно
+            один экземпляр класса «модель пользователя» посредством
+            функционального отношения nrel_has_user_model. Нарушение
+            требования рассматривается как нарушение целостности
+            (concept_integrity_violation) и обрабатывается sc-агентом
+            проверки согласованности.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ограничение: модель пользователя должна содержать как минимум один
+// зафиксированный пользовательский цель.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_user_model_has_goal: ...
+(*
+    -> rrel_key_sc_element: concept_user_model;;
+    => nrel_main_idtf: [Утв.(модель пользователя, наличие цели)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Модель пользователя содержит хотя бы один экземпляр класса
+            «цель пользователя»; в противном случае модель считается
+            неполной и не может использоваться функцией match(σ, s)
+            при выборе исполнителя подзадачи.] (* <- lang_ru;; *);;
+    *);;
+*);;

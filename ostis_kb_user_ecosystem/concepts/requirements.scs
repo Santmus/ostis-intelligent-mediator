@@ -1,0 +1,454 @@
+// =====================================================================
+// concepts/requirements.scs
+// Подраздел: слой прослеживаемости требований к концептуальной модели
+// взаимодействия. Формализует определение Req_i = <r_i, crit_i>
+// (раздел 2.1 диссертации) и матрицу трассировки: проблема (гл. 1) →
+// требование → элемент модели (Elem_i) → критерий верификации (Crit_i).
+// Двадцать требований Req_1..Req_20 сгруппированы в шесть классов.
+// Каждое требование связывается отношением nrel_satisfies_requirement
+// с конкретными элементами онтологического ядра, реализующими его —
+// операционализация двусторонней прослеживаемости, на которой
+// диссертация делает методологический акцент (табл. tbl:req_matrix,
+// tbl:verification), но которая ранее не была представлена в SC-коде
+// отдельными sc-элементами.
+// =====================================================================
+
+section_concept_requirements
+=> nrel_main_idtf:
+    [Подраздел. Требования к концептуальной модели и прослеживаемость]
+    (* <- lang_ru;; *);
+    [Subsection. Model Requirements and Traceability] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_requirement;
+<- rrel_key_sc_element: concept_requirement_conceptual;
+<- rrel_key_sc_element: concept_requirement_architectural;
+<- rrel_key_sc_element: concept_requirement_semantic;
+<- rrel_key_sc_element: concept_requirement_adaptivity;
+<- rrel_key_sc_element: concept_requirement_transparency_trust;
+<- rrel_key_sc_element: concept_requirement_security_privacy;;
+
+// ---------------------------------------------------------------------
+// Корневой класс требования Req_i = <r_i, crit_i>.
+// ---------------------------------------------------------------------
+
+concept_requirement
+<- sc_node_class;
+=> nrel_main_idtf:
+    [требование к концептуальной модели] (* <- lang_ru;; *);
+    [model requirement] (* <- lang_en;; *);;
+
+definition -> definition_requirement: ...
+(*
+    -> rrel_key_sc_element: concept_requirement;;
+    => nrel_main_idtf: [Опр.(требование к концептуальной модели)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Требование к концептуальной модели взаимодействия —
+            формализованная пара Req_i = <r_i, crit_i>, где r_i —
+            текстовая формулировка инвариантного свойства, которому
+            должна удовлетворять модель, а crit_i — формально
+            проверяемый критерий выполнения данного свойства.
+            Переход от проблемы (гл. 1) к требованию выполнялся по
+            схеме: проблема → негативное следствие → требуемое
+            свойство модели → критерий проверки, что обеспечивает
+            двустороннюю прослеживаемость между проблемами,
+            требованиями и конструкциями модели.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_requirement <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение требований на шесть классов]
+       (* <- lang_ru;; *);;
+    -> concept_requirement_conceptual;
+       concept_requirement_architectural;
+       concept_requirement_semantic;
+       concept_requirement_adaptivity;
+       concept_requirement_transparency_trust;
+       concept_requirement_security_privacy;;
+*);;
+
+concept_requirement_conceptual
+<- sc_node_class;
+=> nrel_main_idtf:
+    [концептуальное требование (Req_1-Req_3)] (* <- lang_ru;; *);;
+concept_requirement_architectural
+<- sc_node_class;
+=> nrel_main_idtf:
+    [архитектурное требование (Req_4-Req_7)] (* <- lang_ru;; *);;
+concept_requirement_semantic
+<- sc_node_class;
+=> nrel_main_idtf:
+    [семантическое требование (Req_8-Req_11)] (* <- lang_ru;; *);;
+concept_requirement_adaptivity
+<- sc_node_class;
+=> nrel_main_idtf:
+    [требование адаптивности и персонализации (Req_12-Req_14)]
+    (* <- lang_ru;; *);;
+concept_requirement_transparency_trust
+<- sc_node_class;
+=> nrel_main_idtf:
+    [требование прозрачности, объяснимости и доверия (Req_15-Req_18)]
+    (* <- lang_ru;; *);;
+concept_requirement_security_privacy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [требование безопасности и приватности (Req_19-Req_20)]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Отношения прослеживаемости. Не входят ни в одно из семи подмножеств
+// R (структурные/интенциональные/контекстные/задачные/исполнительные/
+// провенансные/доверия): это метамодельный слой над M_int, связывающий
+// его с процессом верификации (раздел sec:verification), а не часть
+// самой формальной модели предметной области.
+// ---------------------------------------------------------------------
+
+nrel_requirement_text
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [текст_требования*] (* <- lang_ru;; *);
+    [requirement_text*] (* <- lang_en;; *);
+<- binary_relation;
+=> nrel_first_domain: concept_requirement;;
+
+nrel_verification_criterion
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [критерий_верификации*] (* <- lang_ru;; *);
+    [verification_criterion*] (* <- lang_en;; *);
+<- binary_relation;
+=> nrel_first_domain: concept_requirement;;
+
+nrel_requirement_source
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [источник_требования*] (* <- lang_ru;; *);
+    [requirement_source*] (* <- lang_en;; *);
+<- binary_relation;
+=> nrel_first_domain: concept_requirement;;
+
+nrel_satisfies_requirement
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [реализует_требование*] (* <- lang_ru;; *);
+    [satisfies_requirement*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_second_domain: concept_requirement;;
+
+// =======================================================================
+// Класс I. Концептуальные требования (Req_1-Req_3).
+// =======================================================================
+
+requirement_Req_1
+<- concept_requirement_conceptual;
+=> nrel_main_idtf: [Req_1] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Намеренно-ориентированное взаимодействие.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Для любого q ∈ Q_valid существует интерпретация намерения либо
+     процедура уточнения.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+
+concept_process_interpretation => nrel_satisfies_requirement: requirement_Req_1;;
+concept_intent => nrel_satisfies_requirement: requirement_Req_1;;
+concept_recovery_clarification_request => nrel_satisfies_requirement: requirement_Req_1;;
+
+requirement_Req_2
+<- concept_requirement_conceptual;
+=> nrel_main_idtf: [Req_2] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Опосредованность и единая точка координации.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Функция медиации M определена для допустимых запросов и
+     возвращает результат, уточнение либо состояние отказа.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+
+concept_intelligent_mediator => nrel_satisfies_requirement: requirement_Req_2;;
+
+requirement_Req_3
+<- concept_requirement_conceptual;
+=> nrel_main_idtf: [Req_3] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Целостность и согласованность результата.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Определены функция агрегации, процедура верификации и условия
+     признания результата согласованным.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+
+concept_process_integration => nrel_satisfies_requirement: requirement_Req_3;;
+concept_integrated_result => nrel_satisfies_requirement: requirement_Req_3;;
+
+// =======================================================================
+// Класс II. Архитектурные требования (Req_4-Req_7).
+// =======================================================================
+
+requirement_Req_4
+<- concept_requirement_architectural;
+=> nrel_main_idtf: [Req_4] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Декомпозируемость пользовательской задачи.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Существует граф подзадач T(q) в виде DAG для каждого q ∈ Q_valid.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+
+concept_process_decomposition => nrel_satisfies_requirement: requirement_Req_4;;
+concept_subtask_dependency_graph => nrel_satisfies_requirement: requirement_Req_4;;
+
+requirement_Req_5
+<- concept_requirement_architectural;
+=> nrel_main_idtf: [Req_5] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Семантическое распределение подзадач.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Для каждой пары (σ, s): match(σ, s | C) ≥ θ, permit = 1,
+     available = 1.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+
+concept_process_allocation => nrel_satisfies_requirement: requirement_Req_5;;
+concept_capability_profile => nrel_satisfies_requirement: requirement_Req_5;;
+affirmation_assign_admissibility => nrel_satisfies_requirement: requirement_Req_5;;
+
+requirement_Req_6
+<- concept_requirement_architectural;
+=> nrel_main_idtf: [Req_6] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Открытость и эволюционность состава сообщества.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Операция добавления интеллектуальной системы сохраняет
+     ограничения F и не нарушает инварианты модели.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+
+concept_community_of_intelligent_systems => nrel_satisfies_requirement: requirement_Req_6;;
+affirmation_ecosystem_dynamic_composition => nrel_satisfies_requirement: requirement_Req_6;;
+
+requirement_Req_7
+<- concept_requirement_architectural;
+=> nrel_main_idtf: [Req_7] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Завершаемость обработки.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [При конечном множестве подзадач существует конечная убывающая
+     мера Φ; при исчерпании ресурсов или тайм-аута достигается
+     терминальное состояние.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+
+concept_lifecycle_process => nrel_satisfies_requirement: requirement_Req_7;;
+concept_process_coalition_reconfiguration => nrel_satisfies_requirement: requirement_Req_7;;
+concept_processing_failure => nrel_satisfies_requirement: requirement_Req_7;;
+
+// =======================================================================
+// Класс III. Семантические требования (Req_8-Req_11).
+// =======================================================================
+
+requirement_Req_8
+<- concept_requirement_semantic;
+=> nrel_main_idtf: [Req_8] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Онтологическая обоснованность.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Для каждой сущности e определён тип как класс онтологии.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Недостаточность посредников; семантическое рассогласование]
+    (* <- lang_ru;; *);;
+
+concept_ontological_interaction_model => nrel_satisfies_requirement: requirement_Req_8;;
+
+requirement_Req_9
+<- concept_requirement_semantic;
+=> nrel_main_idtf: [Req_9] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Интерпретация пользовательского намерения.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Для каждого q ∈ Q_valid определена интерпретация ι(q) либо
+     процедура уточнения.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Недостаточность посредников; семантическое рассогласование]
+    (* <- lang_ru;; *);;
+
+concept_intent => nrel_satisfies_requirement: requirement_Req_9;;
+nrel_interprets => nrel_satisfies_requirement: requirement_Req_9;;
+
+requirement_Req_10
+<- concept_requirement_semantic;
+=> nrel_main_idtf: [Req_10] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Семантическая медиация.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Для каждой пары компонентов, связанных общей онтологией или
+     допустимым отображением, определена функция медиации.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Недостаточность посредников; семантическое рассогласование]
+    (* <- lang_ru;; *);;
+
+concept_relation_set => nrel_satisfies_requirement: requirement_Req_10;;
+concept_strategy_ontology_alignment_based => nrel_satisfies_requirement: requirement_Req_10;;
+
+requirement_Req_11
+<- concept_requirement_semantic;
+=> nrel_main_idtf: [Req_11] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Непротиворечивость модели.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Система ограничений целостности выполнима.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Недостаточность посредников; семантическое рассогласование]
+    (* <- lang_ru;; *);;
+
+concept_axiom_set => nrel_satisfies_requirement: requirement_Req_11;;
+concept_constraint_set => nrel_satisfies_requirement: requirement_Req_11;;
+
+// =======================================================================
+// Класс IV. Требования адаптивности и персонализации (Req_12-Req_14).
+// =======================================================================
+
+requirement_Req_12
+<- concept_requirement_adaptivity;
+=> nrel_main_idtf: [Req_12] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Единая динамическая модель пользователя.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Профиль пользователя обновляется и используется всеми функциями
+     посредника.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+
+concept_user_model => nrel_satisfies_requirement: requirement_Req_12;;
+
+requirement_Req_13
+<- concept_requirement_adaptivity;
+=> nrel_main_idtf: [Req_13] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Контекстно-ориентированная адаптация.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Контекст C — явный аргумент функций интерпретации, распределения
+     и агрегации.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+
+concept_interaction_context => nrel_satisfies_requirement: requirement_Req_13;;
+concept_context_compatibility_function => nrel_satisfies_requirement: requirement_Req_13;;
+
+requirement_Req_14
+<- concept_requirement_adaptivity;
+=> nrel_main_idtf: [Req_14] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Согласование целей пользователя и характеристик компонентов.]
+    (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Определено отображение целей в метрики компонентов.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+
+concept_capability_match_function => nrel_satisfies_requirement: requirement_Req_14;;
+
+// =======================================================================
+// Класс V. Требования прозрачности, объяснимости и доверия
+// (Req_15-Req_18).
+// =======================================================================
+
+requirement_Req_15
+<- concept_requirement_transparency_trust;
+=> nrel_main_idtf: [Req_15] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Сквозная трассируемость решений.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Существует граф трассируемости для любого результата.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Прозрачность и объяснимость; распределённость ответственности]
+    (* <- lang_ru;; *);;
+
+concept_provenance_record => nrel_satisfies_requirement: requirement_Req_15;;
+
+requirement_Req_16
+<- concept_requirement_transparency_trust;
+=> nrel_main_idtf: [Req_16] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Объяснимость результатов и распределения подзадач.]
+    (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Существует конструкция объяснения для любого значимого решения.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Прозрачность и объяснимость; распределённость ответственности]
+    (* <- lang_ru;; *);;
+
+concept_explanation => nrel_satisfies_requirement: requirement_Req_16;;
+concept_process_explanation => nrel_satisfies_requirement: requirement_Req_16;;
+
+requirement_Req_17
+<- concept_requirement_transparency_trust;
+=> nrel_main_idtf: [Req_17] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Многокомпонентное доверие.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [T(s, τ) — вектор из четырёх компонент со значениями от 0 до 1,
+     обновляется по результатам взаимодействия.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Прозрачность и объяснимость; распределённость ответственности]
+    (* <- lang_ru;; *);;
+
+concept_trust_vector => nrel_satisfies_requirement: requirement_Req_17;;
+concept_trust_level => nrel_satisfies_requirement: requirement_Req_17;;
+
+requirement_Req_18
+<- concept_requirement_transparency_trust;
+=> nrel_main_idtf: [Req_18] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Идентифицируемость ответственности.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Анализ графа трассируемости определяет ответственные компоненты.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Прозрачность и объяснимость; распределённость ответственности]
+    (* <- lang_ru;; *);;
+
+concept_participant_role => nrel_satisfies_requirement: requirement_Req_18;;
+
+// =======================================================================
+// Класс VI. Требования безопасности и приватности (Req_19-Req_20).
+// =======================================================================
+
+requirement_Req_19
+<- concept_requirement_security_privacy;
+=> nrel_main_idtf: [Req_19] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Централизованная политика доступа и контроля.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Любая передача данных фиксируется и подчинена единой политике.]
+    (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Приватность и безопасность] (* <- lang_ru;; *);;
+
+concept_access_control_policy => nrel_satisfies_requirement: requirement_Req_19;;
+concept_property_data_minimization => nrel_satisfies_requirement: requirement_Req_19;;
+
+requirement_Req_20
+<- concept_requirement_security_privacy;
+=> nrel_main_idtf: [Req_20] (* <- lang_ru;; *);
+=> nrel_requirement_text:
+    [Управляемая автономность и человеческий надзор.] (* <- lang_ru;; *);
+=> nrel_verification_criterion:
+    [Определены границы автономности, классы подтверждаемых действий,
+     процедуры реагирования.] (* <- lang_ru;; *);
+=> nrel_requirement_source:
+    [Приватность и безопасность] (* <- lang_ru;; *);;
+
+concept_route_escalation => nrel_satisfies_requirement: requirement_Req_20;;
+concept_human_in_the_loop_component => nrel_satisfies_requirement: requirement_Req_20;;

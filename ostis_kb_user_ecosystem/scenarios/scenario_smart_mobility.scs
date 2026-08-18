@@ -1,0 +1,64 @@
+// =====================================================================
+// scenarios/scenario_smart_mobility.scs
+// Сценарий: интеллектуальная экосистема Smart Mobility как
+// контейнер для всех остальных сценариев. Иллюстрирует уровень
+// экосистемы и общей семантической памяти.
+// =====================================================================
+
+section_scenario_smart_mobility
+=> nrel_main_idtf:
+    [Сценарий. Интеллектуальная экосистема Smart Mobility]
+    (* <- lang_ru;; *);
+    [Scenario. Smart Mobility Intelligent Ecosystem]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: ecosystem_smart_mobility;
+<- rrel_key_sc_element: shared_memory_smart_mobility;
+<- rrel_key_sc_element: mediator_smart_mobility;;
+
+ecosystem_smart_mobility <- concept_intelligent_ecosystem;;
+ecosystem_smart_mobility => nrel_main_idtf:
+    [Интеллектуальная экосистема Smart Mobility] (* <- lang_ru;; *);;
+ecosystem_smart_mobility => nrel_main_idtf:
+    [Smart Mobility Intelligent Ecosystem] (* <- lang_en;; *);;
+
+shared_memory_smart_mobility <- concept_shared_semantic_memory;;
+shared_memory_smart_mobility => nrel_main_idtf:
+    [Общая семантическая память экосистемы Smart Mobility]
+    (* <- lang_ru;; *);;
+ecosystem_smart_mobility => nrel_owns_semantic_memory:
+    shared_memory_smart_mobility;;
+
+ecosystem_smart_mobility => nrel_hosts_community: community_route_planning;;
+ecosystem_smart_mobility => nrel_hosts_community: community_route_planning_v2;;
+
+// Интеллектуальный посредник экосистемы.
+mediator_smart_mobility <- concept_intelligent_mediator;;
+mediator_smart_mobility => nrel_main_idtf:
+    [Посредник экосистемы Smart Mobility] (* <- lang_ru;; *);;
+mediator_smart_mobility => nrel_publishes_to: shared_memory_smart_mobility;;
+
+// Регистрация sc-агентов посредника.
+mediator_smart_mobility => nrel_includes: agent_request_interpreter;;
+mediator_smart_mobility => nrel_includes: agent_task_decomposer;;
+mediator_smart_mobility => nrel_includes: agent_task_allocator;;
+mediator_smart_mobility => nrel_includes: agent_cooperative_executor;;
+mediator_smart_mobility => nrel_includes: agent_result_integrator;;
+mediator_smart_mobility => nrel_includes: agent_explanation_builder;;
+mediator_smart_mobility => nrel_includes: agent_trust_evaluator;;
+mediator_smart_mobility => nrel_includes: agent_coalition_reconfigurator;;
+mediator_smart_mobility => nrel_includes: agent_integrity_checker;;
+mediator_smart_mobility => nrel_includes: agent_provenance_registrar;;
+mediator_smart_mobility => nrel_includes: agent_context_updater;;
+mediator_smart_mobility => nrel_includes: agent_conflict_detector;;
+
+// Регистрация компонентов экосистемы.
+ecosystem_smart_mobility <= nrel_section_decomposition:
+{
+    intelligent_system_route_planner;
+    intelligent_system_energy_model;
+    intelligent_system_ranker;
+    intelligent_system_ranker_alt;
+    service_recommender_001;
+    mediator_smart_mobility
+};;

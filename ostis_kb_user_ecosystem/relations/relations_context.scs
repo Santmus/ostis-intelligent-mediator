@@ -1,0 +1,70 @@
+// =====================================================================
+// relations/relations_context.scs
+// Подмножество R_ctx — отношения включения в контекст и его эволюции.
+// =====================================================================
+
+section_relations_context
+=> nrel_main_idtf:
+    [Подраздел. Контекстные отношения R_ctx] (* <- lang_ru;; *);
+    [Subsection. Context Relations R_ctx] (* <- lang_en;; *);
+<- atomic_section;;
+
+nrel_has_context
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_контекст*] (* <- lang_ru;; *);
+    [has_context*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_executed_in_context
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [выполняется_в_контексте*] (* <- lang_ru;; *);
+    [executed_in_context*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_lifecycle_process;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_generated_in_context
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [порождено_в_контексте*] (* <- lang_ru;; *);
+    [generated_in_context*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_active_context
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [активный_контекст_пользователя*] (* <- lang_ru;; *);
+    [active_context*] (* <- lang_en;; *);
+<- binary_relation;
+<- functional_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_context_for_community
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [контекст_сообщества*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_community_of_intelligent_systems;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_context_compatibility
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [контекстная_совместимость*] (* <- lang_ru;; *);
+    [context_compatibility*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_interaction_context;
+=> nrel_second_domain: concept_intelligent_system;;

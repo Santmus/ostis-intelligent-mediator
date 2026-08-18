@@ -1,0 +1,26 @@
+// =====================================================================
+// definitions/definitions_processes.scs
+// Аккумулирующий подраздел определений жизненного цикла и процессов.
+// =====================================================================
+
+section_definitions_processes
+=> nrel_main_idtf:
+    [Подраздел. Определения жизненного цикла и процессов] (* <- lang_ru;; *);
+    [Subsection. Lifecycle and Process Definitions] (* <- lang_en;; *);
+<- non_atomic_section;
+<- rrel_key_sc_element: definition_lifecycle_process;
+<- rrel_key_sc_element: definition_decomposition_pattern;
+<- rrel_key_sc_element: definition_dependency_graph;
+<- rrel_key_sc_element: definition_subtask;
+<- rrel_key_sc_element: definition_user_request;
+<- rrel_key_sc_element: definition_recommendation;
+<- rrel_key_sc_element: definition_collective_decision;
+<- rrel_key_sc_element: definition_argumentation_framework;
+<- rrel_key_sc_element: definition_explanation;
+<- rrel_key_sc_element: definition_explanation_construction_act;
+<- rrel_key_sc_element: definition_knowledge_exchange_act;
+<- rrel_key_sc_element: definition_provenance_record;
+<- rrel_key_sc_element: definition_service_publication;
+<- rrel_key_sc_element: affirmation_lifecycle_iteration;
+<- rrel_key_sc_element: affirmation_subtask_executability;
+<- rrel_key_sc_element: affirmation_conflict_condition;;

@@ -1,0 +1,128 @@
+// =====================================================================
+// axioms/axioms_taxonomy.scs
+// Множество F_ax — терминологические аксиомы и таксономические
+// ограничения, формализующие декларативный слой модели. Аксиомы
+// записаны в форме, согласуемой с дескриптивной логикой SROIQ.
+// =====================================================================
+
+section_axioms_taxonomy
+=> nrel_main_idtf:
+    [Подраздел. Терминологические аксиомы F_ax] (* <- lang_ru;; *);
+    [Subsection. Terminological Axioms F_ax] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Класс sc-аксиомы.
+// ---------------------------------------------------------------------
+
+concept_sc_axiom
+<- sc_node_class;
+=> nrel_main_idtf:
+    [sc-аксиома (терминологическая)] (* <- lang_ru;; *);
+    [terminological sc-axiom] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Аксиомы покрытия и таксономии.
+// ---------------------------------------------------------------------
+
+axiom -> axiom_user_disjoint_from_intelligent_system: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(пользователь и ИС дизъюнктны)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [User ⊓ IntelligentSystem ⊑ ⊥.
+            Класс пользователей и класс интеллектуальных систем
+            дизъюнктны: один и тот же экземпляр не может одновременно
+            принадлежать обоим классам.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_integrated_disjoint_from_conflict: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(интегрированный результат и конфликт дизъюнктны)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [IntegratedResult ⊓ ResultConflict ⊑ ⊥.
+            Интегрированный результат не может быть одновременно
+            конфликтом результатов: при наличии неразрешённого
+            конфликта результат не считается интегрированным.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_request_has_goal: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(запрос имеет хотя бы одну цель)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Request ⊑ (≥ 1 has_goal.Goal).
+            Каждому пользовательскому запросу сопоставлена не менее
+            одной декларативной цели.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_is_has_capability_profile: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(ИС обладает профилем возможностей)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [IntelligentSystem ⊑ ∃has_capability_profile.CapabilityProfile.
+            Каждая интеллектуальная система обладает хотя бы одним
+            профилем возможностей.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_assigned_to_domain_range: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(домен/значение nrel_assigned_to)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∃assigned_to.⊤ ⊑ Subtask ∧ ⊤ ⊑ ∀assigned_to.IntelligentSystem.
+            Источник отношения nrel_assigned_to всегда подзадача;
+            цель — всегда интеллектуальная система.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_acyclic_dependency: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(ацикличность графа зависимостей подзадач)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Subtask ⊓ ∃depends_on⁺.Self ⊑ ⊥.
+            В графе зависимостей подзадач не должно быть циклов;
+            нарушение порождает экземпляр concept_integrity_violation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_explanation_disjoint_taxonomy: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(дизъюнктность типов объяснений)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Local_explanation ⊓ Global_explanation ⊑ ⊥ ∧
+            Local_explanation ⊓ Counterfactual_explanation ⊑ ⊥ ∧
+            Local_explanation ⊓ Contrastive_explanation ⊑ ⊥
+            (и аналогично для пар остальных типов из таксономии
+            объяснений).] (* <- lang_ru;; *);;
+    *);;
+*);;

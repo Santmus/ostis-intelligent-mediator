@@ -1,0 +1,81 @@
+// =====================================================================
+// rules/rules_allocation.scs
+// Множество F_rule (часть π_all) — правила распределения подзадач
+// и формирования коалиции. Операционализируются sc-агентом
+// agent_task_allocator. Реализуют формулы (11)-(13).
+// =====================================================================
+
+section_rules_allocation
+=> nrel_main_idtf:
+    [Подраздел. Правила распределения подзадач (π_all)] (* <- lang_ru;; *);
+    [Subsection. Subtask Allocation Rules (π_all)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_compute_match_function: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(вычисление функции match(σ, s))] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_subtask(σ) ∧ ¬assigned_to(σ, _)
+                ∧ concept_intelligent_system(s)
+                ∧ has_capability_profile(s, Cap_s),
+            Then: вычислить
+                  match(σ, s) = w_T·sim_T(τ_σ, T_s)
+                              + w_I·sim_I(In_σ, In_s)
+                              + w_O·sim_O(Out_σ, Out_s)
+                              + w_C·ctx_compat(C, s)
+                              + w_Q·qos_score(s, τ_σ)
+                              + w_R·trust(s, τ_σ, h).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_assignment_admissibility: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(допустимость назначения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [assign(σ, s) ← match(σ, s) ≥ θ ∧ valid(C, L_s).
+            При выполнении условия порождается экземпляр n-арной
+            конструкции act_of_subtask_assignment со связями
+            rrel_subtask, rrel_assignee, rrel_context,
+            rrel_assignment_time, rrel_required_confidence,
+            rrel_priority.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_coalition_optimization: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(оптимизация коалиции для запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [χ* = arg max_{χ : T(q) → S} Σ_{σ ∈ T(q)} match(σ, χ(σ))
+            s.t. coverage(χ, T(q)) ∧ consistent(C, χ).
+            При нахождении χ* формируется
+            concept_community_of_intelligent_systems и устанавливаются
+            связи nrel_includes для каждой ИС-участницы и
+            nrel_assigned_to для каждой подзадачи.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_handle_no_admissible_assignment: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(нет допустимого назначения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: ∀s ∈ S. ¬(match(σ, s) ≥ θ ∧ valid(C, L_s)),
+            Then: запустить rule_recursive_decomposition для σ
+                  либо инициировать concept_integrity_violation
+                  и вернуть управление agent_task_decomposer.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

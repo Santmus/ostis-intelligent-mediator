@@ -1,0 +1,16 @@
+// =====================================================================
+// definitions/definitions_trust.scs
+// Аккумулирующий подраздел определений модели доверия.
+// =====================================================================
+
+section_definitions_trust
+=> nrel_main_idtf:
+    [Подраздел. Определения модели доверия и качества] (* <- lang_ru;; *);
+    [Subsection. Trust and Quality Definitions] (* <- lang_en;; *);
+<- non_atomic_section;
+<- rrel_key_sc_element: definition_trust_level;
+<- rrel_key_sc_element: definition_trust_aggregation;
+<- rrel_key_sc_element: definition_transparency_indicators;
+<- rrel_key_sc_element: affirmation_trust_self_calibration;
+<- rrel_key_sc_element: definition_unified_representation;
+<- rrel_key_sc_element: affirmation_minimal_completeness;;

@@ -1,0 +1,15 @@
+// =====================================================================
+// definitions/definitions_capabilities.scs
+// Аккумулирующий подраздел определений онтологии возможностей и
+// функции семантической применимости.
+// =====================================================================
+
+section_definitions_capabilities
+=> nrel_main_idtf:
+    [Подраздел. Определения онтологии возможностей] (* <- lang_ru;; *);
+    [Subsection. Capability Ontology Definitions] (* <- lang_en;; *);
+<- non_atomic_section;
+<- rrel_key_sc_element: definition_capability_profile;
+<- rrel_key_sc_element: definition_capability_match;
+<- rrel_key_sc_element: affirmation_assign_admissibility;
+<- rrel_key_sc_element: affirmation_coalition_optimization;;

@@ -1,0 +1,8 @@
+.DS_Store
+
+# сборочные и тестовые артефакты ostis_ps_user_ecosystem
+ostis_ps_user_ecosystem/build/
+ostis_ps_user_ecosystem/repo/
+
+# пока не версионируем диаграммы из этого репозитория
+Диаграммы к диссертации/

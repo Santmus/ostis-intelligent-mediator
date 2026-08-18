@@ -1,0 +1,84 @@
+// =====================================================================
+// relations/relations_task.scs
+// Подмножество R_task — отношения декомпозиции и зависимости подзадач.
+// =====================================================================
+
+section_relations_task
+=> nrel_main_idtf:
+    [Подраздел. Задачные отношения R_task] (* <- lang_ru;; *);
+    [Subsection. Task Relations R_task] (* <- lang_en;; *);
+<- atomic_section;;
+
+nrel_decomposed_into
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [декомпозируется_на*] (* <- lang_ru;; *);
+    [decomposed_into*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_subtask;;
+
+nrel_subtask_depends_on
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [подзадача_зависит_от*] (* <- lang_ru;; *);
+    [depends_on*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- transitive_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_subtask;;
+
+nrel_subtask_of_subtask
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [подзадача_от_подзадачи*] (* <- lang_ru;; *);
+    [composite_subtask_of*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- transitive_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_subtask;;
+
+nrel_subtask_status
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [статус_подзадачи*] (* <- lang_ru;; *);
+    [subtask_status*] (* <- lang_en;; *);
+<- binary_relation;
+<- functional_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_subtask_status;;
+
+nrel_subtask_priority
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [приоритет_подзадачи*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_priority_level;;
+
+nrel_uses_decomposition_pattern
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [использует_шаблон_декомпозиции*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_task_decomposition_pattern;;
+
+nrel_route_selected_for
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [выбран_маршрут*] (* <- lang_ru;; *);
+    [route_selected_for*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_processing_route;;

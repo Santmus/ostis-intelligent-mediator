@@ -1,0 +1,190 @@
+// =====================================================================
+// relations/relations_intentional.scs
+// Подмножество R_goal — интенциональные отношения, связывающие
+// пользователя, цели и запросы.
+// =====================================================================
+
+section_relations_intentional
+=> nrel_main_idtf:
+    [Подраздел. Интенциональные отношения R_goal] (* <- lang_ru;; *);
+    [Subsection. Intentional Relations R_goal] (* <- lang_en;; *);
+<- atomic_section;;
+
+nrel_formulates
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [формулирует*] (* <- lang_ru;; *);
+    [formulates*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user;
+=> nrel_second_domain: concept_user_request;;
+
+nrel_has_goal
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_цель*] (* <- lang_ru;; *);
+    [has_goal*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_goal;;
+
+nrel_satisfies
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [удовлетворяет_цели*] (* <- lang_ru;; *);
+    [satisfies*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrated_result;
+=> nrel_second_domain: concept_goal;;
+
+nrel_has_user_model
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_модель_пользователя*] (* <- lang_ru;; *);
+    [has_user_model*] (* <- lang_en;; *);
+<- binary_relation;
+<- functional_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user;
+=> nrel_second_domain: concept_user_model;;
+
+nrel_has_preference
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_предпочтение*] (* <- lang_ru;; *);
+    [has_preference*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_preference;;
+
+nrel_has_competence
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_компетенцию*] (* <- lang_ru;; *);
+    [has_competence*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_competence;;
+
+nrel_has_history
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_историю*] (* <- lang_ru;; *);
+    [has_history*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_interaction_history;;
+
+nrel_provides_feedback
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [предоставляет_обратную_связь*] (* <- lang_ru;; *);
+    [provides_feedback*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user;
+=> nrel_second_domain: concept_user_feedback;;
+
+nrel_feedback_targets
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [обратная_связь_по*] (* <- lang_ru;; *);
+    [feedback_targets*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_feedback;
+=> nrel_second_domain: concept_processing_result;;
+
+// ---------------------------------------------------------------------
+// Намерение: интерпретация запроса ι(q) и компоненты кортежа
+// j = <g, o, a, Γ, y, π>.
+// ---------------------------------------------------------------------
+
+nrel_interprets
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [интерпретируется_как*] (* <- lang_ru;; *);
+    [interprets*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_intent;;
+
+nrel_intent_goal
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_цель*] (* <- lang_ru;; *);
+    [intent_has_goal*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_goal;;
+
+nrel_intent_object
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_объект*] (* <- lang_ru;; *);
+    [intent_has_object*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_intent_object;;
+
+nrel_intent_action
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_действие*] (* <- lang_ru;; *);
+    [intent_has_action*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_task_type;;
+
+nrel_intent_constraint
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_ограничение*] (* <- lang_ru;; *);
+    [intent_has_constraint*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_intent_constraint;;
+
+nrel_intent_result_type
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_требуемый_тип_результата*] (* <- lang_ru;; *);
+    [intent_has_result_type*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_expected_result_type;;
+
+nrel_intent_priority
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [намерение_имеет_приоритет*] (* <- lang_ru;; *);
+    [intent_has_priority*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intent;
+=> nrel_second_domain: concept_priority_level;;
+
+nrel_has_requirement
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_требование_к_результату*] (* <- lang_ru;; *);
+    [has_requirement*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_intent_constraint;;

@@ -1,0 +1,15 @@
+// =====================================================================
+// definitions/definitions_security.scs
+// Аккумулирующий подраздел определений и утверждений по безопасности
+// и приватности.
+// =====================================================================
+
+section_definitions_security
+=> nrel_main_idtf:
+    [Подраздел. Определения и утверждения безопасности]
+    (* <- lang_ru;; *);
+    [Subsection. Security and Privacy Definitions] (* <- lang_en;; *);
+<- non_atomic_section;
+<- rrel_key_sc_element: definition_secure_interaction;
+<- rrel_key_sc_element: definition_adaptive_interface;
+<- rrel_key_sc_element: affirmation_adaptive_cognitive_load;;

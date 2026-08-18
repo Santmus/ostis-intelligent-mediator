@@ -1,0 +1,136 @@
+// =====================================================================
+// axioms/axioms_logical_properties.scs
+// Логические свойства отношений модели: функциональность,
+// транзитивность, симметричность, ацикличность, обратимость.
+// =====================================================================
+
+section_axioms_logical_properties
+=> nrel_main_idtf:
+    [Подраздел. Логические свойства отношений] (* <- lang_ru;; *);
+    [Subsection. Logical Properties of Relations] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Метаклассы свойств отношений (re-declared at the section level for
+// navigation and reasoner setup).
+// ---------------------------------------------------------------------
+
+binary_relation
+<- sc_node_class;
+=> nrel_main_idtf: [бинарное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [binary_relation] (* <- lang_en;; *);;
+
+oriented_relation
+<- sc_node_class;
+=> nrel_main_idtf: [ориентированное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [oriented_relation] (* <- lang_en;; *);;
+
+symmetric_relation
+<- sc_node_class;
+=> nrel_main_idtf: [симметричное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [symmetric_relation] (* <- lang_en;; *);;
+
+reflexive_relation
+<- sc_node_class;
+=> nrel_main_idtf: [рефлексивное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [reflexive_relation] (* <- lang_en;; *);;
+
+antireflexive_relation
+<- sc_node_class;
+=> nrel_main_idtf: [антирефлексивное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [antireflexive_relation] (* <- lang_en;; *);;
+
+transitive_relation
+<- sc_node_class;
+=> nrel_main_idtf: [транзитивное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [transitive_relation] (* <- lang_en;; *);;
+
+functional_relation
+<- sc_node_class;
+=> nrel_main_idtf: [функциональное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [functional_relation] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Сводный список логических свойств основных отношений модели.
+// ---------------------------------------------------------------------
+
+axiom -> axiom_formulates_functional: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(функциональность formulates)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Funct(formulates): каждому пользователю в данном временном
+            срезе сопоставляется не более одного активного запроса
+            (исторически — последовательность запросов с уникальной
+            принадлежностью каждого).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_depends_on_transitive: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(транзитивность depends_on)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Trans(depends_on): зависимости подзадач транзитивно
+            замыкаются для агента кооперативного исполнения.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_inclusion_transitive: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(транзитивность inclusion)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Trans(nrel_inclusion).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_conflicts_with_symmetric: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(симметричность conflicts_with)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Sym(conflicts_with): отношение конфликтности симметрично.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_owns_memory_functional: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(функциональность nrel_owns_semantic_memory)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Funct(nrel_owns_semantic_memory): каждая экосистема владеет
+            ровно одной общей семантической памятью.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_has_user_model_functional: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(функциональность nrel_has_user_model)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Funct(nrel_has_user_model): пользователь обладает ровно
+            одной моделью пользователя.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_derived_from_chain: ...
+(*
+    => nrel_main_idtf:
+        [Акс.(цепочечное свойство derived_from)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [derived_from ∘ derived_from ⊑ derived_from.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

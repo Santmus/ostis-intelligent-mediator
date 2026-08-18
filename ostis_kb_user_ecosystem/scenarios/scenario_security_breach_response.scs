@@ -1,0 +1,189 @@
+// =====================================================================
+// scenarios/scenario_security_breach_response.scs
+// Сценарий: реагирование сообщества ИС на инцидент безопасности
+// в интеллектуальной экосистеме. Демонстрирует подсистему
+// security_privacy и аргументационное разрешение.
+// =====================================================================
+
+section_scenario_security_breach_response
+=> nrel_main_idtf:
+    [Сценарий. Реагирование на инцидент безопасности]
+    (* <- lang_ru;; *);
+    [Scenario. Security Breach Response] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: security_incident_001;
+<- rrel_key_sc_element: collective_response_decision;;
+
+// ---------------------------------------------------------------------
+// Инцидент безопасности.
+// ---------------------------------------------------------------------
+
+security_incident_001 <- concept_security_incident;;
+security_incident_001 => nrel_main_idtf:
+    [Инцидент: аномальный пакет запросов к ИС energy_model
+     (5400 req/min, превышает базовую линию в 27 раз),
+     признак brute-force атаки на API] (* <- lang_ru;; *);;
+
+user_security_officer <- concept_system_administrator;;
+user_security_officer => nrel_main_idtf:
+    [Офицер безопасности экосистемы] (* <- lang_ru;; *);;
+
+request_incident_response <- concept_user_request;;
+request_incident_response <- concept_request_decision_support;;
+request_incident_response => nrel_main_idtf:
+    [Запрос: диагностировать инцидент, оценить риск
+     и подготовить план реагирования]
+    (* <- lang_ru;; *);;
+user_security_officer => nrel_formulates: request_incident_response;;
+
+goal_contain_incident <- concept_goal;;
+goal_contain_incident <- concept_goal_decisional;;
+goal_contain_incident => nrel_main_idtf:
+    [Цель: остановить распространение инцидента
+     и сохранить доступность ключевых сервисов]
+    (* <- lang_ru;; *);;
+request_incident_response => nrel_has_goal: goal_contain_incident;;
+
+// Контекст.
+interaction_context_security <- concept_interaction_context;;
+interaction_context_security => nrel_main_idtf:
+    [Контекст: производственная среда, peak-hour, отсутствует
+     дублирующая ИС для energy_model] (* <- lang_ru;; *);;
+state_security_environment <- concept_system_context;;
+state_security_environment => nrel_main_idtf:
+    [Состояние: нагрузка экосистемы 84%, MTTR_target ≤ 15 мин]
+    (* <- lang_ru;; *);;
+domain_security <- concept_domain_context;;
+domain_security => nrel_main_idtf:
+    [Предметная область: кибербезопасность интеллектуальных систем]
+    (* <- lang_ru;; *);;
+
+interaction_context_security -> rrel_goal_context: goal_contain_incident;;
+interaction_context_security -> rrel_system_context: state_security_environment;;
+interaction_context_security -> rrel_domain_context: domain_security;;
+interaction_context_security -> rrel_history_context: history_security_incidents;;
+interaction_context_security -> rrel_user_situation_context: situation_soc_console;;
+
+history_security_incidents <- concept_history_context;;
+history_security_incidents => nrel_main_idtf:
+    [История: 2 инцидента за квартал, MTTR_avg = 9.2 мин] (* <- lang_ru;; *);;
+situation_soc_console <- concept_user_situation_context;;
+situation_soc_console => nrel_main_idtf:
+    [Ситуация: SOC, мульти-монитор, ночная смена] (* <- lang_ru;; *);;
+
+request_incident_response => nrel_has_context: interaction_context_security;;
+
+// Декомпозиция.
+subtask_classify_attack <- concept_subtask;;
+subtask_classify_attack <- concept_task_type_classification;;
+subtask_classify_attack => nrel_main_idtf:
+    [Подзадача: классифицировать тип атаки] (* <- lang_ru;; *);;
+
+subtask_estimate_blast <- concept_subtask;;
+subtask_estimate_blast <- concept_task_type_estimation;;
+subtask_estimate_blast => nrel_main_idtf:
+    [Подзадача: оценить blast radius инцидента] (* <- lang_ru;; *);;
+
+subtask_propose_containment <- concept_subtask;;
+subtask_propose_containment <- concept_task_type_planning;;
+subtask_propose_containment => nrel_main_idtf:
+    [Подзадача: предложить план изоляции] (* <- lang_ru;; *);;
+subtask_propose_containment => nrel_subtask_depends_on: subtask_classify_attack;;
+subtask_propose_containment => nrel_subtask_depends_on: subtask_estimate_blast;;
+
+subtask_validate_privacy <- concept_subtask;;
+subtask_validate_privacy <- concept_task_type_diagnosis;;
+subtask_validate_privacy => nrel_main_idtf:
+    [Подзадача: проверить, не были ли скомпрометированы PII]
+    (* <- lang_ru;; *);;
+
+request_incident_response => nrel_decomposed_into: subtask_classify_attack;;
+request_incident_response => nrel_decomposed_into: subtask_estimate_blast;;
+request_incident_response => nrel_decomposed_into: subtask_propose_containment;;
+request_incident_response => nrel_decomposed_into: subtask_validate_privacy;;
+
+// ИС безопасности.
+system_attack_classifier <- concept_subsymbolic_intelligent_system;;
+system_attack_classifier => nrel_main_idtf:
+    [ИС классификации атак (ML на сетевых паттернах)]
+    (* <- lang_ru;; *);;
+system_blast_radius_estimator <- concept_hybrid_intelligent_system;;
+system_blast_radius_estimator => nrel_main_idtf:
+    [ИС оценки blast radius] (* <- lang_ru;; *);;
+system_containment_planner <- concept_rule_based_intelligent_system;;
+system_containment_planner => nrel_main_idtf:
+    [ИС планирования изоляции (политики SOAR)]
+    (* <- lang_ru;; *);;
+system_privacy_auditor <- concept_symbolic_intelligent_system;;
+system_privacy_auditor => nrel_main_idtf:
+    [ИС аудита приватности (онтология GDPR/ФЗ-152)]
+    (* <- lang_ru;; *);;
+
+community_security <- concept_community_of_intelligent_systems;;
+community_security <- concept_hierarchical_community;;
+community_security => nrel_serves_request: request_incident_response;;
+community_security => nrel_includes: system_attack_classifier;;
+community_security => nrel_includes: system_blast_radius_estimator;;
+community_security => nrel_includes: system_containment_planner;;
+community_security => nrel_includes: system_privacy_auditor;;
+
+subtask_classify_attack     => nrel_assigned_to: system_attack_classifier;;
+subtask_estimate_blast      => nrel_assigned_to: system_blast_radius_estimator;;
+subtask_propose_containment => nrel_assigned_to: system_containment_planner;;
+subtask_validate_privacy    => nrel_assigned_to: system_privacy_auditor;;
+
+// Результаты.
+result_attack_class <- concept_partial_result;;
+result_attack_class => nrel_main_idtf:
+    [Атака: API brute-force с медленным наращиванием rate
+     (тип STRIDE: Tampering + DoS)] (* <- lang_ru;; *);;
+system_attack_classifier => nrel_produces: result_attack_class;;
+
+result_blast_radius <- concept_partial_result;;
+result_blast_radius => nrel_main_idtf:
+    [Blast radius: ограничен energy_model; deg degradation
+     для 12% запросов экосистемы]
+    (* <- lang_ru;; *);;
+system_blast_radius_estimator => nrel_produces: result_blast_radius;;
+
+result_containment_plan <- concept_partial_result;;
+result_containment_plan => nrel_main_idtf:
+    [Изоляция: rate-limit 100 req/min для подозрительных IP +
+     активация дублирующей energy_model_v2 из репозитория]
+    (* <- lang_ru;; *);;
+system_containment_planner => nrel_produces: result_containment_plan;;
+
+result_privacy_audit <- concept_partial_result;;
+result_privacy_audit => nrel_main_idtf:
+    [Аудит: PII не скомпрометированы (energy_model не оперирует PII)]
+    (* <- lang_ru;; *);;
+system_privacy_auditor => nrel_produces: result_privacy_audit;;
+
+// Коллективное решение.
+collective_response_decision <- concept_collective_decision;;
+collective_response_decision => nrel_main_idtf:
+    [Реагирование: rate-limit + горячая замена energy_model;
+     PII не затронуты, нотификация GDPR не требуется]
+    (* <- lang_ru;; *);;
+
+resolution_security
+<- concept_strategy_argumentation_based;
+-> rrel_decision_proposal: collective_response_decision;
+-> rrel_decision_argument: result_containment_plan;
+-> rrel_decision_argument: result_privacy_audit;
+-> rrel_context: interaction_context_security;
+-> rrel_decision_weight: [0.95];;
+collective_response_decision => nrel_aggregated_by: resolution_security;;
+
+result_attack_class      => nrel_integrated_in: collective_response_decision;;
+result_blast_radius      => nrel_integrated_in: collective_response_decision;;
+result_containment_plan  => nrel_integrated_in: collective_response_decision;;
+result_privacy_audit     => nrel_integrated_in: collective_response_decision;;
+
+explanation_security <- concept_explanation_global;;
+explanation_security => nrel_main_idtf:
+    [Объяснение: классификация → blast radius → план изоляции →
+     PII-аудит. Полный аудит-лог зафиксирован в провенансе.]
+    (* <- lang_ru;; *);;
+collective_response_decision => nrel_supported_by_explanation: explanation_security;;
+collective_response_decision => nrel_delivered_to: user_security_officer;;

@@ -1,0 +1,110 @@
+// =====================================================================
+// rules/rules_user_adaptation.scs
+// Правила адаптации интерфейса и представления интегрированного
+// результата под модель пользователя. Активируются адаптивным
+// интерфейсом и agent_explanation_builder.
+// =====================================================================
+
+section_rules_user_adaptation
+=> nrel_main_idtf:
+    [Подраздел. Правила адаптации под пользователя (F_rule_adapt)]
+    (* <- lang_ru;; *);
+    [Subsection. User Adaptation Rules (F_rule_adapt)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_choose_presentation_template: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(выбор шаблона представления)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: cognitive_load(u) ≤ θ_low ∧ situation ∈ {desktop},
+            Then: использовать concept_template_detailed_report;
+            Elif: cognitive_load(u) > θ_high ∨ situation ∈ {mobile, on-the-go},
+            Then: использовать concept_template_executive_summary;
+            Else: concept_template_decision_card.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_choose_modality: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(выбор модальности взаимодействия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: rrel_user_situation_context указывает на ограничение
+                визуального восприятия,
+            Then: использовать concept_modality_voice;
+            Elif: пользователь предпочитает визуальные объяснения
+                  (preference_visual),
+            Then: concept_modality_visual;
+            Default: concept_modality_text.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_progressive_disclosure: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(прогрессивное раскрытие сложных объяснений)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Если глубина provenance-цепочки объяснения > 4 шагов
+            ИЛИ количество частичных результатов > 5,
+            адаптивный интерфейс представляет верхний уровень
+            (executive summary) с возможностью развёртывания
+            каждого шага по требованию пользователя.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_simplify_terminology_for_end_user: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(упрощение терминологии для конечного пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: u ∈ concept_end_user ∧ ¬(u ∈ concept_domain_expert),
+            Then: применить concept_strategy_simplification ко всем
+            техническим терминам объяснения; сопоставить термины
+            с глоссарием домена; ввести подсказки на hover.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_user_feedback_to_user_model: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обновление модели пользователя по обратной связи)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: provides_feedback(u, f) ∧ feedback_targets(f, r) ∧
+                feedback_type(f) ∈ {explicit_rating, correction},
+            Then: обновить competence(u), preference(u),
+                  interaction_history(u) с учётом f; пересчитать
+                  cognitive_load(u) по последним 10 взаимодействиям.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_context_aware_layout: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(контекстно-зависимая компоновка)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: rrel_user_situation_context включает индикатор
+                «night-shift» ИЛИ low-light,
+            Then: применить тёмную тему; снизить количество
+                  одновременно показываемых элементов; увеличить
+                  размер шрифта на 10%.] (* <- lang_ru;; *);;
+    *);;
+*);;

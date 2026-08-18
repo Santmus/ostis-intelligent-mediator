@@ -1,0 +1,204 @@
+// =====================================================================
+// concepts/competency_registry.scs
+// Подраздел: реестр компетенций сообщества интеллектуальных систем
+// K = <S, Cap, IO, Pol, Stat, Prov> (раздел sec:architecture, формула
+// eq:competency_registry). Динамическое хранилище метаданных участников,
+// поддерживающее регистрацию, публикацию компетенций, временное
+// исключение и версионность — в отличие от фиксированного справочника.
+// =====================================================================
+
+section_concept_competency_registry
+=> nrel_main_idtf:
+    [Подраздел. Реестр компетенций сообщества] (* <- lang_ru;; *);
+    [Subsection. Community Competency Registry] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_competency_registry;
+<- rrel_key_sc_element: concept_registry_entry;
+<- rrel_key_sc_element: concept_registry_entry_status;;
+
+// ---------------------------------------------------------------------
+// Реестр компетенций K = <S, Cap, IO, Pol, Stat, Prov>.
+// ---------------------------------------------------------------------
+
+concept_competency_registry
+<- sc_node_class;
+=> nrel_main_idtf:
+    [реестр компетенций] (* <- lang_ru;; *);
+    [competency registry] (* <- lang_en;; *);
+=> nrel_idtf: [K];;
+
+definition -> definition_competency_registry: ...
+(*
+    -> rrel_key_sc_element: concept_competency_registry;;
+    => nrel_main_idtf: [Опр.(реестр компетенций)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Реестр компетенций K = <S, Cap, IO, Pol, Stat, Prov>, где
+            S — множество зарегистрированных участников; Cap —
+            отображение участника в набор компетенций; IO — описание
+            входных и выходных типов; Pol — ограничения доступа и
+            использования; Stat — текущее состояние и доступность;
+            Prov — сведения о происхождении и актуальности метаданных.
+            В отличие от фиксированного справочника, реестр изменяется
+            во времени: каждая запись имеет временную характеристику
+            или номер версии, чтобы решение о назначении можно было
+            воспроизвести по состоянию реестра, действовавшему в
+            момент планирования. Поддерживает операции регистрации,
+            публикации компетенции, временного исключения и замены
+            участника. По своей роли соответствует службе каталогов
+            (Directory Facilitator) агентных платформ.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_competency_registry => nrel_satisfies_requirement: requirement_Req_6;;
+
+// ---------------------------------------------------------------------
+// Запись реестра — по одной на каждого зарегистрированного участника.
+// Компоненты Cap и IO не дублируются на уровне записи: они уже
+// достижимы транзитивно через участника (nrel_has_capability_profile →
+// concept_capability_profile → nrel_input_signature/output_signature).
+// Запись реестра добавляет именно то, чего нет в самом профиле
+// возможностей: политику доступа (Pol), текущий статус (Stat) и
+// происхождение/актуальность метаданных (Prov).
+// ---------------------------------------------------------------------
+
+concept_registry_entry
+<- sc_node_class;
+=> nrel_main_idtf:
+    [запись реестра компетенций] (* <- lang_ru;; *);
+    [registry entry] (* <- lang_en;; *);;
+
+definition -> definition_registry_entry: ...
+(*
+    -> rrel_key_sc_element: concept_registry_entry;;
+    => nrel_main_idtf: [Опр.(запись реестра компетенций)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Запись реестра — метаданные одного зарегистрированного
+            участника СИС: ссылка на участника, его текущий статус
+            доступности, применимая политика доступа и сведения о
+            происхождении и актуальности самой записи. Компетенции
+            (Cap) и типы входов/выходов (IO) не дублируются в записи,
+            а остаются достижимыми через профиль возможностей
+            участника.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_registry_entry => nrel_satisfies_requirement: requirement_Req_5;;
+
+// ---------------------------------------------------------------------
+// Статус записи реестра (Stat).
+// ---------------------------------------------------------------------
+
+concept_registry_entry_status
+<- sc_node_class;
+=> nrel_main_idtf:
+    [статус записи реестра] (* <- lang_ru;; *);
+    [registry entry status] (* <- lang_en;; *);;
+
+concept_registry_entry_status <= nrel_subdividing: ...
+(*
+    -> concept_registry_status_active;
+       concept_registry_status_suspended;
+       concept_registry_status_excluded;;
+*);;
+
+concept_registry_status_active
+<- sc_node_class;
+=> nrel_main_idtf: [статус: активна] (* <- lang_ru;; *);;
+concept_registry_status_suspended
+<- sc_node_class;
+=> nrel_main_idtf: [статус: временно приостановлена] (* <- lang_ru;; *);;
+concept_registry_status_excluded
+<- sc_node_class;
+=> nrel_main_idtf: [статус: исключена] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Отношения реестра.
+// ---------------------------------------------------------------------
+
+nrel_registry_entry
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [содержит_запись*] (* <- lang_ru;; *);
+    [has_registry_entry*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_competency_registry;
+=> nrel_second_domain: concept_registry_entry;;
+
+nrel_entry_participant
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [запись_относится_к_участнику*] (* <- lang_ru;; *);
+    [entry_for_participant*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_registry_entry;
+=> nrel_second_domain: concept_intelligent_system;;
+
+nrel_entry_status
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [запись_имеет_статус*] (* <- lang_ru;; *);
+    [entry_has_status*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_registry_entry;
+=> nrel_second_domain: concept_registry_entry_status;;
+
+nrel_entry_policy
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [запись_имеет_политику_доступа*] (* <- lang_ru;; *);
+    [entry_has_policy*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_registry_entry;
+=> nrel_second_domain: concept_access_control_policy;;
+
+nrel_entry_provenance
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [запись_имеет_происхождение*] (* <- lang_ru;; *);
+    [entry_has_provenance*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_registry_entry;
+=> nrel_second_domain: concept_provenance_record;;
+
+nrel_entry_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [версия_записи*] (* <- lang_ru;; *);
+    [entry_version*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_registry_entry;;
+
+// ---------------------------------------------------------------------
+// Ограничение: допустимо назначение подзадачи только участнику
+// с активной записью в реестре (согласуется с формальным условием
+// registered(s) из ограничения F_ont, раздел sec:ontology).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_registry_required_for_assignment: ...
+(*
+    -> rrel_key_sc_element: concept_registry_entry;;
+    => nrel_main_idtf:
+        [Утв.(регистрация — необходимое условие назначения)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Отношение nrel_assigned_to(σ, s) допустимо только для
+            участника s, имеющего запись concept_registry_entry со
+            статусом concept_registry_status_active. Приостановка или
+            исключение записи прекращает новые назначения, но не
+            удаляет сведения, необходимые для аудита уже выполненных
+            действий (записи concept_provenance_record сохраняются).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

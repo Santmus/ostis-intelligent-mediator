@@ -1,0 +1,91 @@
+// =====================================================================
+// rules/rules_integration.scs
+// Множество F_rule (часть π_intg) — правила интеграции результатов
+// и разрешения конфликтов. Операционализируются sc-агентами
+// agent_result_integrator и agent_conflict_detector.
+// =====================================================================
+
+section_rules_integration
+=> nrel_main_idtf:
+    [Подраздел. Правила интеграции и разрешения конфликтов (π_intg)]
+    (* <- lang_ru;; *);
+    [Subsection. Integration and Conflict Resolution Rules (π_intg)]
+    (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_detect_conflict: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обнаружение конфликта частичных результатов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [conflict(res_i, res_j) ← inconsistent(res_i, res_j)
+            ∨ incompatible_context(res_i, res_j)
+            ∨ violated_constraint(res_i, res_j).
+            При выполнении условия создаётся экземпляр
+            concept_result_conflict и связь conflicts_with(res_i, res_j).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_aggregate_results: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(агрегирование частичных результатов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для множества частичных результатов одной подзадачи (либо
+            одной декомпозиции запроса) выбрать стратегию агрегации
+            S ∈ concept_decision_aggregation_strategy с учётом
+            trust(s, τ, h) и контекста C; применить S и создать
+            concept_integrated_result(ir), integrated_in(r_i, ir).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_resolve_by_argumentation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(разрешение конфликта аргументацией)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_result_conflict(c) ∧
+                concept_strategy_argumentation_based(S),
+            Then: построить аргументационный каркас <Args, Attacks>,
+                  выбрать grounded extension и зафиксировать
+                  resolves_conflict(ir, c).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_resolve_by_trust_weighted: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(разрешение конфликта по доверию)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_result_conflict(c) ∧
+                concept_strategy_trust_weighted(S),
+            Then: для каждого r_i вычислить вес w_i = trust(s_i, τ, h);
+                  выбрать r* = arg max_i w_i и зафиксировать
+                  resolves_conflict(ir, c) c обоснованием.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_validate_integration: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация интегрированного результата)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Перед фиксацией интегрированного результата ir убедиться,
+            что: (a) ∃e. explained_by(ir, e); (b) ¬∃c. conflicts_with(ir, c).
+            Иначе вернуть управление rule_resolve_by_*.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

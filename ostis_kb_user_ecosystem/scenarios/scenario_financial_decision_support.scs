@@ -1,0 +1,183 @@
+// =====================================================================
+// scenarios/scenario_financial_decision_support.scs
+// Сценарий: финансовая система поддержки принятия решений (DSS).
+// Объединяет оценку риска, регуляторный комплайнс и рекомендацию.
+// =====================================================================
+
+section_scenario_financial_decision_support
+=> nrel_main_idtf:
+    [Сценарий. Финансовая система поддержки принятия решений]
+    (* <- lang_ru;; *);
+    [Scenario. Financial Decision Support System] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: request_loan_decision;
+<- rrel_key_sc_element: collective_loan_decision;
+<- rrel_key_sc_element: ecosystem_financial_dss;;
+
+ecosystem_financial_dss <- concept_intelligent_ecosystem;;
+ecosystem_financial_dss => nrel_main_idtf:
+    [Интеллектуальная экосистема банковской DSS]
+    (* <- lang_ru;; *);;
+
+user_credit_analyst <- concept_domain_expert;;
+user_credit_analyst => nrel_main_idtf:
+    [Кредитный аналитик] (* <- lang_ru;; *);;
+
+request_loan_decision <- concept_user_request;;
+request_loan_decision <- concept_request_decision_support;;
+request_loan_decision => nrel_main_idtf:
+    [Запрос: одобрение/отклонение заявки на корпоративный кредит
+     ООО «Альфа» (8 млн ₽, 36 мес)] (* <- lang_ru;; *);;
+user_credit_analyst => nrel_formulates: request_loan_decision;;
+
+goal_credit_decision <- concept_goal;;
+goal_credit_decision <- concept_goal_decisional;;
+goal_credit_decision => nrel_main_idtf:
+    [Цель: принять обоснованное и комплаентное решение по заявке]
+    (* <- lang_ru;; *);;
+request_loan_decision => nrel_has_goal: goal_credit_decision;;
+
+// Контекст с акцентом на регуляторный и доменный.
+interaction_context_loan <- concept_interaction_context;;
+interaction_context_loan => nrel_main_idtf:
+    [Контекст: заявка #2026-04-117, отрасль ритейл, новые требования
+     ЦБ от 2026-Q1 по корпоративным кредитам]
+    (* <- lang_ru;; *);;
+
+domain_corporate_lending <- concept_domain_context;;
+domain_corporate_lending => nrel_main_idtf:
+    [Предметная область: корпоративное кредитование]
+    (* <- lang_ru;; *);;
+history_alpha_company <- concept_history_context;;
+history_alpha_company => nrel_main_idtf:
+    [История: 3 предыдущих кредита у клиента (все погашены),
+     стабильная динамика выручки 24 мес] (* <- lang_ru;; *);;
+system_state_dss <- concept_system_context;;
+system_state_dss => nrel_main_idtf:
+    [Состояние DSS: доступны 5 моделей оценки + регуляторный модуль]
+    (* <- lang_ru;; *);;
+situation_analyst <- concept_user_situation_context;;
+situation_analyst => nrel_main_idtf:
+    [Ситуация: рабочее место аналитика, RU, требуется аудит-лог]
+    (* <- lang_ru;; *);;
+
+interaction_context_loan -> rrel_goal_context: goal_credit_decision;;
+interaction_context_loan -> rrel_history_context: history_alpha_company;;
+interaction_context_loan -> rrel_system_context: system_state_dss;;
+interaction_context_loan -> rrel_domain_context: domain_corporate_lending;;
+interaction_context_loan -> rrel_user_situation_context: situation_analyst;;
+request_loan_decision => nrel_has_context: interaction_context_loan;;
+
+// Декомпозиция.
+subtask_risk_score <- concept_subtask;;
+subtask_risk_score <- concept_task_type_estimation;;
+subtask_risk_score => nrel_main_idtf:
+    [Подзадача: расчёт скоринга кредитного риска] (* <- lang_ru;; *);;
+
+subtask_fraud_check <- concept_subtask;;
+subtask_fraud_check <- concept_task_type_classification;;
+subtask_fraud_check => nrel_main_idtf:
+    [Подзадача: проверка на признаки мошенничества] (* <- lang_ru;; *);;
+
+subtask_regulatory_compliance <- concept_subtask;;
+subtask_regulatory_compliance <- concept_task_type_diagnosis;;
+subtask_regulatory_compliance => nrel_main_idtf:
+    [Подзадача: проверка регуляторного комплайнса]
+    (* <- lang_ru;; *);;
+
+subtask_final_recommendation <- concept_subtask;;
+subtask_final_recommendation <- concept_task_type_recommendation;;
+subtask_final_recommendation => nrel_main_idtf:
+    [Подзадача: финальная рекомендация (одобрить/отклонить
+     /условно) с указанием уровня доверия]
+    (* <- lang_ru;; *);;
+subtask_final_recommendation => nrel_subtask_depends_on: subtask_risk_score;;
+subtask_final_recommendation => nrel_subtask_depends_on: subtask_fraud_check;;
+subtask_final_recommendation => nrel_subtask_depends_on: subtask_regulatory_compliance;;
+
+request_loan_decision => nrel_decomposed_into: subtask_risk_score;;
+request_loan_decision => nrel_decomposed_into: subtask_fraud_check;;
+request_loan_decision => nrel_decomposed_into: subtask_regulatory_compliance;;
+request_loan_decision => nrel_decomposed_into: subtask_final_recommendation;;
+
+// Сообщество ИС.
+community_financial <- concept_community_of_intelligent_systems;;
+community_financial <- concept_centralized_community;;
+community_financial => nrel_main_idtf:
+    [Сообщество: финансовая DSS] (* <- lang_ru;; *);;
+community_financial => nrel_serves_request: request_loan_decision;;
+ecosystem_financial_dss => nrel_hosts_community: community_financial;;
+
+system_risk_scorer <- concept_subsymbolic_intelligent_system;;
+system_risk_scorer => nrel_main_idtf:
+    [ИС скоринга риска (gradient boosting)]
+    (* <- lang_ru;; *);;
+system_fraud_detector <- concept_hybrid_intelligent_system;;
+system_fraud_detector => nrel_main_idtf:
+    [ИС детектирования мошенничества (graph + ML)] (* <- lang_ru;; *);;
+system_regulatory_checker <- concept_symbolic_intelligent_system;;
+system_regulatory_checker => nrel_main_idtf:
+    [ИС регуляторного комплайнса (онтология ЦБ)]
+    (* <- lang_ru;; *);;
+system_recommendation_aggregator <- concept_orchestrator_intelligent_system;;
+system_recommendation_aggregator => nrel_main_idtf:
+    [ИС агрегации с учётом доверия]
+    (* <- lang_ru;; *);;
+
+community_financial => nrel_includes: system_risk_scorer;;
+community_financial => nrel_includes: system_fraud_detector;;
+community_financial => nrel_includes: system_regulatory_checker;;
+community_financial => nrel_includes: system_recommendation_aggregator;;
+
+subtask_risk_score => nrel_assigned_to: system_risk_scorer;;
+subtask_fraud_check => nrel_assigned_to: system_fraud_detector;;
+subtask_regulatory_compliance => nrel_assigned_to: system_regulatory_checker;;
+subtask_final_recommendation => nrel_assigned_to: system_recommendation_aggregator;;
+
+// Результаты.
+result_risk_score <- concept_partial_result;;
+result_risk_score => nrel_main_idtf:
+    [Скоринг: PD = 2.4% на 12 мес, LGD = 38%]
+    (* <- lang_ru;; *);;
+system_risk_scorer => nrel_produces: result_risk_score;;
+
+result_fraud_status <- concept_partial_result;;
+result_fraud_status => nrel_main_idtf:
+    [Мошенничество: не обнаружено (score 0.04)] (* <- lang_ru;; *);;
+system_fraud_detector => nrel_produces: result_fraud_status;;
+
+result_compliance_status <- concept_partial_result;;
+result_compliance_status => nrel_main_idtf:
+    [Комплайнс: соответствует требованиям ЦБ 2026-Q1
+     при условии повышенного обеспечения (≥ 110% от суммы кредита)]
+    (* <- lang_ru;; *);;
+system_regulatory_checker => nrel_produces: result_compliance_status;;
+
+// Коллективное решение со взвешенной агрегацией.
+collective_loan_decision <- concept_collective_decision;;
+collective_loan_decision => nrel_main_idtf:
+    [Решение: УСЛОВНО ОДОБРИТЬ — при предоставлении залога
+     ≥ 110% и страховании потребительских залогов] (* <- lang_ru;; *);;
+
+resolution_loan
+<- concept_strategy_trust_weighted;
+-> rrel_decision_proposal: collective_loan_decision;
+-> rrel_decision_argument: result_risk_score;
+-> rrel_decision_argument: result_compliance_status;
+-> rrel_decision_weight: [0.88];
+-> rrel_context: interaction_context_loan;;
+collective_loan_decision => nrel_aggregated_by: resolution_loan;;
+
+result_risk_score        => nrel_integrated_in: collective_loan_decision;;
+result_fraud_status      => nrel_integrated_in: collective_loan_decision;;
+result_compliance_status => nrel_integrated_in: collective_loan_decision;;
+
+explanation_loan <- concept_explanation_global;;
+explanation_loan <- concept_explanation_argumentation_based;;
+explanation_loan => nrel_main_idtf:
+    [Объяснение: низкий PD, отсутствие мошенничества и соответствие
+     ЦБ при доп. обеспечении → условно одобрить.
+     Аудит-лог: provenance-цепочка всех использованных данных.]
+    (* <- lang_ru;; *);;
+collective_loan_decision => nrel_supported_by_explanation: explanation_loan;;
+collective_loan_decision => nrel_delivered_to: user_credit_analyst;;

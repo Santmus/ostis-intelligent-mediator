@@ -1,0 +1,132 @@
+// =====================================================================
+// axioms/axioms_constraints.scs
+// Множество F_constr — интегральные ограничения целостности модели.
+// Формализуются в форме first-order constraints; проверяются sc-агентом
+// agent_integrity_checker. Соотносятся с подходом SHACL [28].
+// =====================================================================
+
+section_axioms_constraints
+=> nrel_main_idtf:
+    [Подраздел. Ограничения целостности F_constr] (* <- lang_ru;; *);
+    [Subsection. Integrity Constraints F_constr] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Класс ограничения.
+// ---------------------------------------------------------------------
+
+concept_sc_constraint
+<- sc_node_class;
+=> nrel_main_idtf:
+    [sc-ограничение (first-order constraint)] (* <- lang_ru;; *);
+    [sc-constraint] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Ограничения формул (4)-(7) из финальной спецификации.
+// ---------------------------------------------------------------------
+
+constraint -> constraint_request_authorship: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 4): авторство и цель запроса] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀q ∈ Request. ∃! u ∈ User. formulates(u, q)
+            ∧ ∃g ∈ Goal. has_goal(q, g).
+            Каждому запросу сопоставлен ровно один автор-пользователь
+            и хотя бы одна цель. Нарушение → agent_integrity_checker
+            создаёт экземпляр concept_integrity_violation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_decomposition_acyclic: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 5): ацикличность декомпозиции] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [acyclic(depends_on) ∧
+            ∀st ∈ Subtask. executable(st) ∨ decomposable(st).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_result_provenance: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 6): провенанс результата обработки] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀r ∈ ProcessingResult. ∃is, ctx, p.
+            produces(is, r) ∧ generated_in_context(r, ctx)
+            ∧ has_provenance(r, p).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_integrated_result: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 7): согласованность интегрированного результата]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀ir ∈ IntegratedResult. (∃e. explained_by(ir, e))
+            ∧ ¬∃c. conflicts_with(ir, c).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_assignment_admissibility: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 12): допустимость назначения подзадачи]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀σ ∈ Subtask, s ∈ IntelligentSystem.
+            assign(σ, s) → match(σ, s) ≥ θ ∧ valid(C, L_s).
+            Назначение допустимо только при достаточном значении
+            функции применимости и при выполнении ресурсных
+            ограничений системы s в контексте C.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_coalition_coverage: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(формула 13): покрытие декомпозиции коалицией]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀σ ∈ T(q). ∃s ∈ S. χ(σ) = s ∧ assign(σ, s) ∧ consistent(C, χ).
+            Функция назначения χ должна покрывать всю декомпозицию
+            запроса и удовлетворять условию согласованности с
+            контекстом.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_user_consent_required: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(обязательность пользовательского согласия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀u ∈ User, q ∈ Request. formulates(u, q)
+            → ∃c ∈ UserConsentRecord. valid(c)
+            ∧ consent_covers(c, q).
+            Любой обрабатываемый запрос пользователя должен
+            покрываться действующей записью согласия.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

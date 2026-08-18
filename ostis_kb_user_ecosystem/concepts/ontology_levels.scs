@@ -1,0 +1,150 @@
+// =====================================================================
+// concepts/ontology_levels.scs
+// Подраздел: уровни онтологий модели — предметный, задачный, агентный,
+// контекстный, метауровень. Согласовано со структурой онтологий IMS.ostis
+// при проектировании интеллектуальных систем семейства OSTIS [1; 2; 20].
+// =====================================================================
+
+section_concept_ontology_levels
+=> nrel_main_idtf:
+    [Подраздел. Уровни онтологий модели взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Ontology Levels of the Interaction Model] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_ontology_level;
+<- rrel_key_sc_element: concept_tbox_level;
+<- rrel_key_sc_element: concept_abox_level;;
+
+// ---------------------------------------------------------------------
+// Корневой класс уровня онтологии.
+// ---------------------------------------------------------------------
+
+concept_ontology_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [уровень онтологии] (* <- lang_ru;; *);
+    [ontology level] (* <- lang_en;; *);;
+
+concept_ontology_level <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение уровней онтологий модели] (* <- lang_ru;; *);;
+    -> concept_meta_level;
+       concept_foundational_level;
+       concept_domain_level;
+       concept_task_level;
+       concept_agent_level;
+       concept_context_level;
+       concept_application_level;;
+*);;
+
+concept_meta_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [мета-уровень онтологий] (* <- lang_ru;; *);;
+concept_foundational_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [foundational-уровень] (* <- lang_ru;; *);;
+concept_domain_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [предметный уровень онтологий] (* <- lang_ru;; *);;
+concept_task_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [задачный уровень онтологий] (* <- lang_ru;; *);;
+concept_agent_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агентный уровень онтологий] (* <- lang_ru;; *);;
+concept_context_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекстный уровень онтологий] (* <- lang_ru;; *);;
+concept_application_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [прикладной уровень онтологий] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TBox / ABox.
+// ---------------------------------------------------------------------
+
+concept_tbox_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [структурный уровень модели (TBox)] (* <- lang_ru;; *);
+    [TBox level] (* <- lang_en;; *);;
+
+definition -> definition_tbox: ...
+(*
+    -> rrel_key_sc_element: concept_tbox_level;;
+    => nrel_main_idtf: [Опр.(TBox-уровень модели)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Структурный уровень модели (TBox) формируется множествами
+            E, R и A: задаются классы сущностей, иерархии включения,
+            семантические отношения и атрибуты. На уровне SC-кода
+            каждый элемент TBox представляется как именованный sc-узел
+            или sc-конструкция.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_abox_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [экземплярный уровень модели (ABox)] (* <- lang_ru;; *);
+    [ABox level] (* <- lang_en;; *);;
+
+definition -> definition_abox: ...
+(*
+    -> rrel_key_sc_element: concept_abox_level;;
+    => nrel_main_idtf: [Опр.(ABox-уровень модели)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Экземплярный уровень модели (ABox) образован конкретными
+            экземплярами классов (пользователи, запросы, подзадачи,
+            результаты и связи между ними). ABox-фрагменты создаются
+            и модифицируются sc-агентами в ходе обработки
+            пользовательского запроса.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Эволюция онтологии.
+// ---------------------------------------------------------------------
+
+concept_ontology_evolution
+<- sc_node_class;
+=> nrel_main_idtf: [эволюция онтологии] (* <- lang_ru;; *);;
+
+concept_ontology_evolution <= nrel_subdividing: ...
+(*
+    -> concept_tbox_evolution;
+       concept_abox_evolution;;
+*);;
+
+concept_tbox_evolution
+<- sc_node_class;
+=> nrel_main_idtf:
+    [эволюция TBox (онтологический словарь)] (* <- lang_ru;; *);;
+
+concept_abox_evolution
+<- sc_node_class;
+=> nrel_main_idtf:
+    [эволюция ABox (содержимое)] (* <- lang_ru;; *);;
+
+definition -> definition_evolution: ...
+(*
+    -> rrel_key_sc_element: concept_ontology_evolution;;
+    => nrel_main_idtf: [Опр.(эволюция модели)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Эволюция TBox реализуется через механизмы версионирования и
+            онтологического выравнивания между поколениями метасистемы;
+            эволюция ABox обеспечивается провенансной фиксацией всех
+            актов взаимодействия и инкрементальным обновлением оценок
+            доверия. Принцип эволюции согласуется с FAIR-принципами
+            (Interoperability, Reusability).] (* <- lang_ru;; *);;
+    *);;
+*);;

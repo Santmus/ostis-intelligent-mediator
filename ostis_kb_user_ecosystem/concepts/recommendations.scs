@@ -1,0 +1,139 @@
+// =====================================================================
+// concepts/recommendations.scs
+// Подраздел: рекомендации, формируемые сообществом интеллектуальных
+// систем. Согласовано с моделями ontology-based recommendation
+// и адаптивных интерфейсов [4; 26].
+// =====================================================================
+
+section_concept_recommendations
+=> nrel_main_idtf:
+    [Подраздел. Рекомендации и формирование альтернатив]
+    (* <- lang_ru;; *);
+    [Subsection. Recommendations and Alternative Generation]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_recommendation;
+<- rrel_key_sc_element: concept_ranked_alternative;
+<- rrel_key_sc_element: concept_relevance_score;
+<- rrel_key_sc_element: concept_recommendation_strategy;;
+
+// ---------------------------------------------------------------------
+// Класс рекомендации.
+// ---------------------------------------------------------------------
+
+concept_recommendation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [рекомендация] (* <- lang_ru;; *);
+    [recommendation] (* <- lang_en;; *);;
+concept_recommendation <= nrel_inclusion: concept_processing_result;;
+
+definition -> definition_recommendation: ...
+(*
+    -> rrel_key_sc_element: concept_recommendation;;
+    => nrel_main_idtf: [Опр.(рекомендация)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Рекомендация — структурированный результат обработки запроса,
+            предлагающий пользователю одну или несколько ранжированных
+            альтернатив решения с указанием оценки доверия, объяснения
+            и обоснования релевантности. Формируется сервисом
+            concept_recommendation_service либо специализированной ИС.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_recommendation <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение рекомендаций по характеру выдачи] (* <- lang_ru;; *);;
+    -> concept_recommendation_single;
+       concept_recommendation_ranked_list;
+       concept_recommendation_pareto_set;
+       concept_recommendation_explanatory_only;
+       concept_recommendation_counterfactual;;
+*);;
+
+concept_recommendation_single
+<- sc_node_class;
+=> nrel_main_idtf: [одиночная рекомендация] (* <- lang_ru;; *);;
+concept_recommendation_ranked_list
+<- sc_node_class;
+=> nrel_main_idtf: [ранжированный список рекомендаций] (* <- lang_ru;; *);;
+concept_recommendation_pareto_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество Парето-оптимальных альтернатив] (* <- lang_ru;; *);;
+concept_recommendation_explanatory_only
+<- sc_node_class;
+=> nrel_main_idtf:
+    [рекомендация, ограниченная объяснением] (* <- lang_ru;; *);;
+concept_recommendation_counterfactual
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контрфактическая рекомендация] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Ранжированная альтернатива и оценка релевантности.
+// ---------------------------------------------------------------------
+
+concept_ranked_alternative
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ранжированная альтернатива решения] (* <- lang_ru;; *);
+    [ranked alternative] (* <- lang_en;; *);;
+
+concept_relevance_score
+<- sc_node_class;
+=> nrel_main_idtf:
+    [оценка релевантности альтернативы] (* <- lang_ru;; *);
+    [relevance score] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Стратегия формирования рекомендаций.
+// ---------------------------------------------------------------------
+
+concept_recommendation_strategy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия формирования рекомендаций] (* <- lang_ru;; *);
+    [recommendation strategy] (* <- lang_en;; *);;
+
+concept_recommendation_strategy <= nrel_subdividing: ...
+(*
+    -> concept_strategy_content_based;
+       concept_strategy_collaborative_filtering;
+       concept_strategy_knowledge_based;
+       concept_strategy_hybrid_recommendation;
+       concept_strategy_ontology_aware;
+       concept_strategy_trust_aware_recommendation;
+       concept_strategy_context_aware_recommendation;;
+*);;
+
+concept_strategy_content_based
+<- sc_node_class;
+=> nrel_main_idtf: [content-based] (* <- lang_ru;; *);;
+concept_strategy_collaborative_filtering
+<- sc_node_class;
+=> nrel_main_idtf:
+    [коллаборативная фильтрация] (* <- lang_ru;; *);;
+concept_strategy_knowledge_based
+<- sc_node_class;
+=> nrel_main_idtf:
+    [knowledge-based рекомендация] (* <- lang_ru;; *);;
+concept_strategy_hybrid_recommendation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [гибридная стратегия рекомендации] (* <- lang_ru;; *);;
+concept_strategy_ontology_aware
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтологически-осведомлённая стратегия] (* <- lang_ru;; *);;
+concept_strategy_trust_aware_recommendation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия с учётом доверия] (* <- lang_ru;; *);;
+concept_strategy_context_aware_recommendation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекстно-осведомлённая стратегия] (* <- lang_ru;; *);;

@@ -1,0 +1,231 @@
+// =====================================================================
+// concepts/adaptive_interface.scs
+// Подраздел: адаптивные пользовательские интерфейсы и средства
+// снижения когнитивной нагрузки. Согласовано с моделями адаптивной
+// гипермедиа [26] и работой [4].
+// =====================================================================
+
+section_concept_adaptive_interface
+=> nrel_main_idtf:
+    [Подраздел. Адаптивные пользовательские интерфейсы] (* <- lang_ru;; *);
+    [Subsection. Adaptive User Interfaces] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_adaptive_interface;
+<- rrel_key_sc_element: concept_interface_modality;
+<- rrel_key_sc_element: concept_adaptation_strategy;
+<- rrel_key_sc_element: concept_presentation_template;
+<- rrel_key_sc_element: concept_context_aware_processing;
+<- rrel_key_sc_element: concept_adaptive_interaction;
+<- rrel_key_sc_element: concept_personalized_processing;;
+
+// ---------------------------------------------------------------------
+// Корневой класс адаптивного интерфейса.
+// ---------------------------------------------------------------------
+
+concept_adaptive_interface
+<- sc_node_class;
+=> nrel_main_idtf:
+    [адаптивный пользовательский интерфейс] (* <- lang_ru;; *);
+    [adaptive user interface] (* <- lang_en;; *);;
+
+definition -> definition_adaptive_interface: ...
+(*
+    -> rrel_key_sc_element: concept_adaptive_interface;;
+    => nrel_main_idtf:
+        [Опр.(адаптивный пользовательский интерфейс)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Адаптивный пользовательский интерфейс — компонент
+            экосистемы, динамически подстраивающий способ
+            представления интегрированного результата под модель
+            пользователя (предпочтения, компетенции, когнитивную
+            нагрузку) и ситуационный подконтекст C_u. Снижает
+            информационную перегрузку пользователя при сохранении
+            трассируемости и доступности объяснений.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Модальности интерфейса.
+// ---------------------------------------------------------------------
+
+concept_interface_modality
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модальность взаимодействия с пользователем] (* <- lang_ru;; *);
+    [interface modality] (* <- lang_en;; *);;
+
+concept_interface_modality <= nrel_subdividing: ...
+(*
+    -> concept_modality_text;
+       concept_modality_voice;
+       concept_modality_visual;
+       concept_modality_haptic;
+       concept_modality_gesture;
+       concept_modality_mixed;;
+*);;
+
+concept_modality_text <- sc_node_class;
+=> nrel_main_idtf: [текстовая модальность] (* <- lang_ru;; *);;
+concept_modality_voice <- sc_node_class;
+=> nrel_main_idtf: [голосовая модальность] (* <- lang_ru;; *);;
+concept_modality_visual <- sc_node_class;
+=> nrel_main_idtf: [визуальная модальность] (* <- lang_ru;; *);;
+concept_modality_haptic <- sc_node_class;
+=> nrel_main_idtf: [тактильная модальность] (* <- lang_ru;; *);;
+concept_modality_gesture <- sc_node_class;
+=> nrel_main_idtf: [жестовая модальность] (* <- lang_ru;; *);;
+concept_modality_mixed <- sc_node_class;
+=> nrel_main_idtf: [смешанная модальность] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Стратегии адаптации.
+// ---------------------------------------------------------------------
+
+concept_adaptation_strategy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия адаптации интерфейса] (* <- lang_ru;; *);
+    [adaptation strategy] (* <- lang_en;; *);;
+
+concept_adaptation_strategy <= nrel_subdividing: ...
+(*
+    -> concept_strategy_progressive_disclosure;
+       concept_strategy_summarization;
+       concept_strategy_visualization;
+       concept_strategy_simplification;
+       concept_strategy_alternative_modality;
+       concept_strategy_context_aware_layout;;
+*);;
+
+concept_strategy_progressive_disclosure <- sc_node_class;
+=> nrel_main_idtf: [прогрессивное раскрытие] (* <- lang_ru;; *);;
+concept_strategy_summarization <- sc_node_class;
+=> nrel_main_idtf: [суммаризация] (* <- lang_ru;; *);;
+concept_strategy_visualization <- sc_node_class;
+=> nrel_main_idtf: [визуализация графа результата] (* <- lang_ru;; *);;
+concept_strategy_simplification <- sc_node_class;
+=> nrel_main_idtf: [упрощение терминологии] (* <- lang_ru;; *);;
+concept_strategy_alternative_modality <- sc_node_class;
+=> nrel_main_idtf: [переключение модальности] (* <- lang_ru;; *);;
+concept_strategy_context_aware_layout <- sc_node_class;
+=> nrel_main_idtf:
+    [контекстно-зависимая компоновка] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Шаблон представления интегрированного результата.
+// ---------------------------------------------------------------------
+
+concept_presentation_template
+<- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон представления результата] (* <- lang_ru;; *);
+    [presentation template] (* <- lang_en;; *);;
+
+concept_presentation_template <= nrel_subdividing: ...
+(*
+    -> concept_template_executive_summary;
+     concept_template_detailed_report;
+     concept_template_visualization_dashboard;
+     concept_template_chatbot_reply;
+     concept_template_decision_card;;
+*);;
+
+concept_template_executive_summary <- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон: executive summary] (* <- lang_ru;; *);;
+concept_template_detailed_report <- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон: детальный отчёт] (* <- lang_ru;; *);;
+concept_template_visualization_dashboard <- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон: визуализационная панель] (* <- lang_ru;; *);;
+concept_template_chatbot_reply <- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон: ответ чат-бота] (* <- lang_ru;; *);;
+concept_template_decision_card <- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон: карточка решения] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Поддерживаемые парадигмы обработки (nrel_supports целевого
+// подконтекста rrel_goal_context, см. role_relations.scs) — сквозные
+// качественные характеристики посредничества, реализуемые совместно
+// адаптивным интерфейсом, контекстной совместимостью и моделью
+// пользователя.
+// ---------------------------------------------------------------------
+
+concept_context_aware_processing
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекстно-зависимая обработка] (* <- lang_ru;; *);
+    [context-aware processing] (* <- lang_en;; *);;
+
+concept_adaptive_interaction
+<- sc_node_class;
+=> nrel_main_idtf:
+    [адаптивное взаимодействие] (* <- lang_ru;; *);
+    [adaptive interaction] (* <- lang_en;; *);;
+
+concept_personalized_processing
+<- sc_node_class;
+=> nrel_main_idtf:
+    [персонализированная обработка] (* <- lang_ru;; *);
+    [personalized processing] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Отношения адаптивного интерфейса.
+// ---------------------------------------------------------------------
+
+nrel_adapted_for_user
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [адаптирован_для_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_adaptive_interface;
+=> nrel_second_domain: concept_user_model;;
+
+nrel_applies_strategy
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [применяет_стратегию_адаптации*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_adaptive_interface;
+=> nrel_second_domain: concept_adaptation_strategy;;
+
+nrel_uses_modality
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [использует_модальность*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_adaptive_interface;
+=> nrel_second_domain: concept_interface_modality;;
+
+nrel_uses_template
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [использует_шаблон_представления*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_adaptive_interface;
+=> nrel_second_domain: concept_presentation_template;;
+
+// ---------------------------------------------------------------------
+// Ограничение: интерфейс учитывает когнитивную нагрузку.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_adaptive_cognitive_load: ...
+(*
+    -> rrel_key_sc_element: concept_adaptive_interface;;
+    => nrel_main_idtf:
+        [Утв.(адаптация под когнитивную нагрузку)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Если оценка когнитивной нагрузки пользователя выходит
+            за порог θ_cog, адаптивный интерфейс обязан применить
+            стратегию concept_strategy_progressive_disclosure или
+            concept_strategy_summarization вместо
+            concept_template_detailed_report.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

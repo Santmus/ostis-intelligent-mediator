@@ -1,0 +1,124 @@
+// =====================================================================
+// tests/tests_capability_match.scs
+// Тесты функции семантической применимости match(σ, s) и формирования
+// коалиции на конкретных профилях возможностей.
+// =====================================================================
+
+section_tests_capability_match
+=> nrel_main_idtf:
+    [Подраздел. Тесты функции match(σ, s) и формирования коалиции]
+    (* <- lang_ru;; *);
+    [Subsection. Capability Match Function Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_capability_match;;
+
+concept_test_capability_match
+<- sc_node_class;
+=> nrel_main_idtf:
+    [тест функции применимости match(σ, s)] (* <- lang_ru;; *);;
+concept_test_capability_match <= nrel_strict_inclusion: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// TM1: Расчёт match для тройки <subtask_energy_estimation, energy_model>.
+// Веса: w_T=0.30, w_I=0.10, w_O=0.10, w_C=0.20, w_Q=0.15, w_R=0.15.
+// ---------------------------------------------------------------------
+
+test_match_energy_estimation <- concept_test_capability_match;;
+test_match_energy_estimation => nrel_main_idtf:
+    [TM1. match(subtask_energy_estimation, intelligent_system_energy_model)
+     при весах w = (0.30, 0.10, 0.10, 0.20, 0.15, 0.15)]
+    (* <- lang_ru;; *);;
+test_match_energy_estimation => nrel_test_calculation:
+    [sim_T = 1.00 (task_type_estimation ∈ T_s);
+     sim_I = 0.95 (route_set ↔ route_set);
+     sim_O = 0.95 (energy_vector ↔ energy_vector);
+     ctx_compat = 0.90;
+     qos_score = 0.87;
+     trust = 0.91;
+     match = 0.30·1.00 + 0.10·0.95 + 0.10·0.95 + 0.20·0.90
+           + 0.15·0.87 + 0.15·0.91 = 0.92]
+    (* <- lang_ru;; *);;
+test_match_energy_estimation => nrel_expected_answer: answer_tm1;;
+
+answer_tm1 <- concept_expected_answer;;
+answer_tm1 => nrel_main_idtf:
+    [match ≈ 0.92 ≥ θ=0.6 → assign(σ, s) допустимо.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TM2: Сравнение трёх кандидатов на подзадачу subtask_ranking.
+// ---------------------------------------------------------------------
+
+test_match_ranking_alternatives <- concept_test_capability_match;;
+test_match_ranking_alternatives => nrel_main_idtf:
+    [TM2. Сравнение трёх ИС-кандидатов на subtask_ranking]
+    (* <- lang_ru;; *);;
+test_match_ranking_alternatives => nrel_test_calculation:
+    [match(σ_ranking, ranker_v1) = 0.84;
+     match(σ_ranking, ranker_alt) = 0.79;
+     match(σ_ranking, hybrid_ranker) = 0.72.
+     arg max = ranker_v1.]
+    (* <- lang_ru;; *);;
+test_match_ranking_alternatives => nrel_expected_answer:
+    answer_tm2;;
+
+answer_tm2 <- concept_expected_answer;;
+answer_tm2 => nrel_main_idtf:
+    [χ(σ_ranking) = intelligent_system_ranker (v1) как argmax по match.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TM3: Тест после отказа ranker_v1 — переназначение на ranker_alt.
+// ---------------------------------------------------------------------
+
+test_match_after_failure <- concept_test_capability_match;;
+test_match_after_failure => nrel_main_idtf:
+    [TM3. После failure_event_001 (отказ ranker_v1) и понижения
+     trust до 0.58 — match(σ_ranking, ranker_v1) пересчитывается
+     с обновлённым t_rel: 0.84 → 0.69; ranker_alt становится лучшим
+     по match.] (* <- lang_ru;; *);;
+test_match_after_failure => nrel_expected_answer: answer_tm3;;
+
+answer_tm3 <- concept_expected_answer;;
+answer_tm3 => nrel_main_idtf:
+    [χ_new(σ_ranking) = intelligent_system_ranker_alt;
+     запускается rule_on_system_failure и
+     rule_coalition_optimization.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TM4: Проверка задачи (13) — покрытие декомпозиции.
+// ---------------------------------------------------------------------
+
+test_coverage_optimization <- concept_test_capability_match;;
+test_coverage_optimization => nrel_main_idtf:
+    [TM4. Решение оптимизационной задачи (13) для T(request_001):
+     найти χ* такое, что
+     max Σ match(σ, χ(σ))
+     s.t. coverage ∧ consistent.]
+    (* <- lang_ru;; *);;
+test_coverage_optimization => nrel_test_calculation:
+    [Σ match = match(σ_route, ostis_route_planner) +
+              match(σ_energy, energy_model) +
+              match(σ_ranking, ranker_v1)
+            = 0.95 + 0.92 + 0.84 = 2.71;
+     coverage: каждая σ_i имеет назначение;
+     consistent: ctx_compat ≥ 0.85 для всех s ∈ χ.]
+    (* <- lang_ru;; *);;
+test_coverage_optimization => nrel_expected_answer: answer_tm4;;
+
+answer_tm4 <- concept_expected_answer;;
+answer_tm4 => nrel_main_idtf:
+    [χ* = {(σ_route → route_planner),
+           (σ_energy → energy_model),
+           (σ_ranking → ranker_v1)};
+     Σ match* = 2.71; задача (13) разрешима.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Служебное отношение для записи вычислений.
+// ---------------------------------------------------------------------
+
+nrel_test_calculation
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [вычисление_теста*] (* <- lang_ru;; *);
+<- binary_relation;;

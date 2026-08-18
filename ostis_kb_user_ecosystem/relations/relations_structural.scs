@@ -1,0 +1,222 @@
+// =====================================================================
+// relations/relations_structural.scs
+// Подмножество R_str — структурные и таксономические отношения.
+// Включает таксономические (subdivision, inclusion, instance), а также
+// композиционные (contains, part_of) и метаонтологические (defined_in,
+// belongs_to_section) связи.
+// =====================================================================
+
+section_relations_structural
+=> nrel_main_idtf:
+    [Подраздел. Структурные отношения R_str] (* <- lang_ru;; *);
+    [Subsection. Structural Relations R_str] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Таксономические отношения.
+// ---------------------------------------------------------------------
+
+nrel_inclusion
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [включение*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [inclusion*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- transitive_relation;;
+
+nrel_strict_inclusion
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [строгое_включение*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [strict_inclusion*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- transitive_relation;;
+
+nrel_subdividing
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [разбиение*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [subdividing*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_equivalence
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [эквивалентность*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [equivalence*] (* <- lang_en;; *);
+<- binary_relation;
+<- symmetric_relation;
+<- reflexive_relation;
+<- transitive_relation;;
+
+nrel_disjoint_with
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [дизъюнктно_с*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [disjoint_with*] (* <- lang_en;; *);
+<- binary_relation;
+<- symmetric_relation;
+<- antireflexive_relation;;
+
+// ---------------------------------------------------------------------
+// Композиционные отношения.
+// ---------------------------------------------------------------------
+
+nrel_contains
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [содержит*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [contains*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_part_of
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [часть_от*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [part_of*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- transitive_relation;;
+
+nrel_composed_of
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [составлено_из*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [composed_of*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+// ---------------------------------------------------------------------
+// Структурные отношения ecosystem-level.
+// ---------------------------------------------------------------------
+
+nrel_member_of
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [является_членом*] (* <- lang_ru;; *);
+    [member_of*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_community_of_intelligent_systems;;
+
+nrel_hosts_community
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [содержит_сообщество*] (* <- lang_ru;; *);
+    [hosts_community*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_ecosystem;
+=> nrel_second_domain: concept_community_of_intelligent_systems;;
+
+nrel_owns_semantic_memory
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [владеет_семантической_памятью*] (* <- lang_ru;; *);
+    [owns_semantic_memory*] (* <- lang_en;; *);
+<- binary_relation;
+<- functional_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_ecosystem;
+=> nrel_second_domain: concept_shared_semantic_memory;;
+
+nrel_owns_registry
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [владеет_реестром_компетенций*] (* <- lang_ru;; *);
+    [owns_registry*] (* <- lang_en;; *);
+<- binary_relation;
+<- functional_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_ecosystem;
+=> nrel_second_domain: concept_competency_registry;;
+
+nrel_publishes_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [публикует_в*] (* <- lang_ru;; *);
+    [publishes_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_ecosystem_component;
+=> nrel_second_domain: concept_shared_semantic_memory;;
+
+// ---------------------------------------------------------------------
+// Метаонтологические отношения.
+// ---------------------------------------------------------------------
+
+nrel_belongs_to_section
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [принадлежит_подразделу*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_defined_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [определено_в*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_main_idtf
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [основной_идентификатор*] (* <- lang_ru;; *);
+    [main_identifier*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_idtf
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [идентификатор*] (* <- lang_ru;; *);
+    [identifier*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_first_domain
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [первый_домен*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_second_domain
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [второй_домен*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_using_constants
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [определение_использует_константы*] (* <- lang_ru;; *);
+<- binary_relation;;
+
+nrel_sc_text_translation
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [перевод_в_естественный_язык*] (* <- lang_ru;; *);
+<- binary_relation;;
+
+nrel_description
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [описание*] (* <- lang_ru;; *);
+    [description*] (* <- lang_en;; *);
+<- binary_relation;;
+
+nrel_used_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [используется_в*] (* <- lang_ru;; *);
+    [used_in*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_supports
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [поддерживает*] (* <- lang_ru;; *);
+    [supports*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;

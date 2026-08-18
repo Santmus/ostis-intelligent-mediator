@@ -1,0 +1,71 @@
+// =====================================================================
+// rules/rules_coalition_reconfiguration.scs
+// Множество F_rule (часть π_rec) — компенсационные правила
+// реконфигурации коалиции. Операционализируются sc-агентом
+// agent_coalition_reconfigurator.
+// =====================================================================
+
+section_rules_coalition_reconfiguration
+=> nrel_main_idtf:
+    [Подраздел. Правила реконфигурации коалиции (π_rec)] (* <- lang_ru;; *);
+    [Subsection. Coalition Reconfiguration Rules (π_rec)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_on_system_failure: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(реконфигурация при отказе системы)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: subtask_status(σ, failed) ∧ assigned_to(σ, s)
+                ∧ member_of(s, K),
+            Then: исключить s из коалиции K; запустить
+                  rule_coalition_optimization для подзадач,
+                  ранее назначенных s, с обновлённым S.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_on_resource_exhaustion: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(реконфигурация при истечении ресурсов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [При обнаружении нарушения L_s системы s (resource_exhausted)
+            установить subtask_status(σ, reassigned) для всех
+            подзадач, назначенных s; инициировать
+            rule_coalition_optimization.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_on_constraint_violation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(реконфигурация при нарушении F_constr)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [При появлении concept_integrity_violation, источником
+            которого является s, понизить trust(s, τ, h)
+            и инициировать пересчёт коалиции.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_on_context_drift: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(реконфигурация при дрейфе контекста)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: nrel_context_updated_by_event(C', e) ∧
+                contradicts_context(C', C) ∧ serves_request(K, q) ∧
+                has_context(q, C),
+            Then: пересчитать ctx_compat для всех s ∈ K;
+                  при ctx_compat(C', s) < θ_ctx исключить s
+                  и переформировать коалицию.] (* <- lang_ru;; *);;
+    *);;
+*);;

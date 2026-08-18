@@ -1,0 +1,82 @@
+// =====================================================================
+// examples/example_instances.scs
+// Сводные ABox-экземпляры: экосистема, сообщества, ИС, сервисы.
+// Используется как справочный пример для разработчиков базы знаний.
+// =====================================================================
+
+section_example_instances
+=> nrel_main_idtf:
+    [Подраздел. Примеры экземпляров классов] (* <- lang_ru;; *);
+    [Subsection. Example Instances] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: ecosystem_smart_mobility;
+<- rrel_key_sc_element: shared_memory_smart_mobility;
+<- rrel_key_sc_element: community_route_planning;;
+
+// ---------------------------------------------------------------------
+// Пример экосистемы.
+// ---------------------------------------------------------------------
+
+// (Основные экземпляры объявлены в scenario_smart_mobility.scs.
+// Здесь — дополняющие экземпляры классов, не вошедшие в сценарии.)
+
+federated_kb_mobility <- concept_federated_knowledge_base;;
+federated_kb_mobility => nrel_main_idtf:
+    [Федеративная база знаний Smart Mobility] (* <- lang_ru;; *);;
+
+domain_kb_mobility <- concept_domain_kb;;
+domain_kb_mobility => nrel_main_idtf:
+    [Предметная база знаний по логистике маршрутов] (* <- lang_ru;; *);;
+
+task_kb_mobility <- concept_task_kb;;
+task_kb_mobility => nrel_main_idtf:
+    [Задачная база знаний (шаблоны декомпозиции)] (* <- lang_ru;; *);;
+
+federated_kb_mobility <= nrel_section_decomposition:
+{
+    domain_kb_mobility;
+    task_kb_mobility
+};;
+
+// ---------------------------------------------------------------------
+// Сервисный пример.
+// ---------------------------------------------------------------------
+
+service_orchestrator_001 <- concept_orchestration_service;;
+service_orchestrator_001 => nrel_main_idtf:
+    [Сервис оркестрации сообщества Smart Mobility] (* <- lang_ru;; *);;
+
+service_orchestrator_001 => nrel_describes: mediator_smart_mobility;;
+
+endpoint_orchestrator_001 <- concept_endpoint_sc_pattern;;
+endpoint_orchestrator_001 => nrel_main_idtf:
+    [SC-pattern endpoint оркестратора] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Дополнительный пример — образовательная экосистема.
+// ---------------------------------------------------------------------
+
+ecosystem_intelligent_tutoring <- concept_intelligent_ecosystem;;
+ecosystem_intelligent_tutoring => nrel_main_idtf:
+    [Интеллектуальная образовательная экосистема] (* <- lang_ru;; *);;
+
+shared_memory_tutoring <- concept_shared_semantic_memory;;
+ecosystem_intelligent_tutoring => nrel_owns_semantic_memory:
+    shared_memory_tutoring;;
+
+community_tutoring <- concept_community_of_intelligent_systems;;
+community_tutoring <- concept_hybrid_mode_community;;
+community_tutoring => nrel_main_idtf:
+    [Сообщество тьюторинга] (* <- lang_ru;; *);;
+ecosystem_intelligent_tutoring => nrel_hosts_community: community_tutoring;;
+
+system_knowledge_diagnostic <- concept_symbolic_intelligent_system;;
+system_knowledge_diagnostic => nrel_main_idtf:
+    [ИС диагностики знаний обучающегося] (* <- lang_ru;; *);;
+
+system_learning_path_generator <- concept_hybrid_intelligent_system;;
+system_learning_path_generator => nrel_main_idtf:
+    [ИС генерации учебных траекторий] (* <- lang_ru;; *);;
+
+community_tutoring => nrel_includes: system_knowledge_diagnostic;;
+community_tutoring => nrel_includes: system_learning_path_generator;;

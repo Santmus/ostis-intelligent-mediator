@@ -1,0 +1,361 @@
+// =====================================================================
+// concepts/tasks.scs
+// Подраздел: задачи и подзадачи как элементарные единицы декомпозиции
+// пользовательского запроса. Согласовано с моделью task ontology [12; 32].
+// =====================================================================
+
+section_concept_tasks
+=> nrel_main_idtf:
+    [Подраздел. Задачи и подзадачи декомпозиции запроса] (* <- lang_ru;; *);
+    [Subsection. Tasks and Subtasks of Request Decomposition] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_task;
+<- rrel_key_sc_element: concept_subtask;
+<- rrel_key_sc_element: concept_task_decomposition_pattern;
+<- rrel_key_sc_element: concept_subtask_dependency_graph;
+<- rrel_key_sc_element: concept_subtask_status;
+<- rrel_key_sc_element: concept_priority_level;
+<- rrel_key_sc_element: concept_processing_route;;
+
+// ---------------------------------------------------------------------
+// Корневой класс задачи.
+// ---------------------------------------------------------------------
+
+concept_task
+<- sc_node_class;
+=> nrel_main_idtf: [задача] (* <- lang_ru;; *);
+=> nrel_main_idtf: [task] (* <- lang_en;; *);;
+
+concept_task <= nrel_inclusion: concept_request_class_group;;
+
+// ---------------------------------------------------------------------
+// Подзадача.
+// ---------------------------------------------------------------------
+
+concept_subtask
+<- sc_node_class;
+=> nrel_main_idtf: [подзадача] (* <- lang_ru;; *);
+=> nrel_main_idtf: [subtask] (* <- lang_en;; *);;
+concept_subtask <= nrel_inclusion: concept_task;;
+concept_subtask <= nrel_inclusion: concept_interaction_entity;;
+
+definition -> definition_subtask: ...
+(*
+    -> rrel_key_sc_element: concept_subtask;;
+    => nrel_main_idtf: [Опр.(подзадача)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Подзадача — элементарная или составная единица декомпозиции
+            пользовательского запроса, допускающая независимое решение
+            отдельной интеллектуальной системой и характеризуемая
+            типом τ_σ, требуемыми входными данными, ожидаемыми выходными
+            данными, статусом, приоритетом и контекстом исполнения.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение подзадач по характеру декомпозиции.
+// ---------------------------------------------------------------------
+
+concept_subtask <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение подзадач по характеру]
+       (* <- lang_ru;; *);;
+    -> concept_subtask_atomic;
+       concept_subtask_composite;
+       concept_subtask_optional;
+       concept_subtask_mandatory;
+       concept_subtask_parallel;
+       concept_subtask_sequential;;
+*);;
+
+concept_subtask_atomic
+<- sc_node_class;
+=> nrel_main_idtf: [атомарная подзадача] (* <- lang_ru;; *);;
+concept_subtask_composite
+<- sc_node_class;
+=> nrel_main_idtf: [составная подзадача] (* <- lang_ru;; *);;
+concept_subtask_optional
+<- sc_node_class;
+=> nrel_main_idtf: [необязательная подзадача] (* <- lang_ru;; *);;
+concept_subtask_mandatory
+<- sc_node_class;
+=> nrel_main_idtf: [обязательная подзадача] (* <- lang_ru;; *);;
+concept_subtask_parallel
+<- sc_node_class;
+=> nrel_main_idtf:
+    [параллельно исполняемая подзадача] (* <- lang_ru;; *);;
+concept_subtask_sequential
+<- sc_node_class;
+=> nrel_main_idtf:
+    [последовательно исполняемая подзадача] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Статусы подзадачи.
+// ---------------------------------------------------------------------
+
+concept_subtask_status
+<- sc_node_class;
+=> nrel_main_idtf: [статус подзадачи] (* <- lang_ru;; *);;
+
+concept_subtask_status <= nrel_subdividing: ...
+(*
+    -> concept_subtask_status_proposed;
+       concept_subtask_status_assigned;
+       concept_subtask_status_in_progress;
+       concept_subtask_status_completed;
+       concept_subtask_status_failed;
+       concept_subtask_status_cancelled;
+       concept_subtask_status_reassigned;;
+*);;
+
+concept_subtask_status_proposed
+<- sc_node_class;
+=> nrel_main_idtf: [статус: предложена] (* <- lang_ru;; *);;
+concept_subtask_status_assigned
+<- sc_node_class;
+=> nrel_main_idtf: [статус: назначена] (* <- lang_ru;; *);;
+concept_subtask_status_in_progress
+<- sc_node_class;
+=> nrel_main_idtf: [статус: в обработке] (* <- lang_ru;; *);;
+concept_subtask_status_completed
+<- sc_node_class;
+=> nrel_main_idtf: [статус: завершена] (* <- lang_ru;; *);;
+concept_subtask_status_failed
+<- sc_node_class;
+=> nrel_main_idtf: [статус: отказ] (* <- lang_ru;; *);;
+concept_subtask_status_cancelled
+<- sc_node_class;
+=> nrel_main_idtf: [статус: отменена] (* <- lang_ru;; *);;
+concept_subtask_status_reassigned
+<- sc_node_class;
+=> nrel_main_idtf: [статус: переназначена] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Уровень приоритета — переиспользуется и подзадачей (rrel_priority,
+// nrel_subtask_priority), и намерением (компонента π), и актами
+// назначения (rrel_priority в role_relations.scs).
+// ---------------------------------------------------------------------
+
+concept_priority_level
+<- sc_node_class;
+=> nrel_main_idtf:
+    [уровень приоритета] (* <- lang_ru;; *);
+    [priority level] (* <- lang_en;; *);;
+
+concept_priority_level <= nrel_subdividing: ...
+(*
+    -> concept_priority_low;
+       concept_priority_medium;
+       concept_priority_high;
+       concept_priority_critical;;
+*);;
+
+concept_priority_low
+<- sc_node_class;
+=> nrel_main_idtf: [низкий приоритет] (* <- lang_ru;; *);;
+concept_priority_medium
+<- sc_node_class;
+=> nrel_main_idtf: [средний приоритет] (* <- lang_ru;; *);;
+concept_priority_high
+<- sc_node_class;
+=> nrel_main_idtf: [высокий приоритет] (* <- lang_ru;; *);;
+concept_priority_critical
+<- sc_node_class;
+=> nrel_main_idtf: [критический приоритет] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Шаблон декомпозиции запроса.
+// ---------------------------------------------------------------------
+
+concept_task_decomposition_pattern
+<- sc_node_class;
+=> nrel_main_idtf:
+    [шаблон декомпозиции запроса] (* <- lang_ru;; *);
+    [task decomposition pattern] (* <- lang_en;; *);;
+
+definition -> definition_decomposition_pattern: ...
+(*
+    -> rrel_key_sc_element: concept_task_decomposition_pattern;;
+    => nrel_main_idtf:
+        [Опр.(шаблон декомпозиции запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Шаблон декомпозиции запроса — переиспользуемая sc-структура,
+            определяющая правило формирования множества подзадач T(q)
+            для конкретного семантического типа запроса. Применяется
+            агентом agent_task_decomposer; шаблоны накапливаются
+            в базе знаний посредника и эволюционируют по результатам
+            пользовательской обратной связи.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Граф зависимостей подзадач.
+// ---------------------------------------------------------------------
+
+concept_subtask_dependency_graph
+<- sc_node_class;
+=> nrel_main_idtf:
+    [граф зависимостей подзадач] (* <- lang_ru;; *);
+    [subtask dependency graph] (* <- lang_en;; *);;
+
+definition -> definition_dependency_graph: ...
+(*
+    -> rrel_key_sc_element: concept_subtask_dependency_graph;;
+    => nrel_main_idtf:
+        [Опр.(граф зависимостей подзадач)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Ориентированный ацикличный граф над множеством подзадач T(q),
+            рёбра которого фиксируются отношением nrel_subtask_depends_on.
+            Согласно ограничению acyclic(depends_on), цикл в графе
+            запрещён, что обеспечивает корректность планирования
+            кооперативной обработки.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ограничение: каждая подзадача либо исполнима, либо декомпозируема.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_subtask_executability: ...
+(*
+    -> rrel_key_sc_element: concept_subtask;;
+    => nrel_main_idtf:
+        [Утв.(подзадача исполнима либо декомпозируема)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀st ∈ Subtask. executable(st) ∨ decomposable(st),
+            где executable(st) — существует ИС s с допустимым assign(st, s);
+            decomposable(st) — существует шаблон, дополнительно
+            раскладывающий st на более мелкие подзадачи.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Тип маршрута обработки запроса — выбор посредника после
+// формирования множества кандидатов S_q. Определяется структурой
+// намерения, числом требуемых компетенций, степенью неопределённости
+// запроса и контекстными ограничениями.
+// ---------------------------------------------------------------------
+
+concept_processing_route
+<- sc_node_class;
+=> nrel_main_idtf:
+    [маршрут обработки запроса] (* <- lang_ru;; *);
+    [processing route] (* <- lang_en;; *);;
+
+definition -> definition_processing_route: ...
+(*
+    -> rrel_key_sc_element: concept_processing_route;;
+    => nrel_main_idtf: [Опр.(маршрут обработки запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Маршрут обработки запроса — выбор состава участников СИС и
+            порядка, способа и условий их взаимодействия при обработке
+            запроса q. Посредник выбирает один из пяти базовых
+            вариантов маршрутизации после формирования множества
+            кандидатов S_q = {S_k ∈ S | ρ(q, P_k) ≥ θ ∧ allow(q, P_k) = 1}.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_processing_route <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение по типу маршрута] (* <- lang_ru;; *);;
+    -> concept_route_single;
+       concept_route_parallel;
+       concept_route_sequential;
+       concept_route_compositional;
+       concept_route_escalation;;
+*);;
+
+concept_route_single
+<- sc_node_class;
+=> nrel_main_idtf: [одиночный маршрут] (* <- lang_ru;; *);
+=> nrel_main_idtf: [single route] (* <- lang_en;; *);;
+
+definition -> definition_route_single: ...
+(*
+    -> rrel_key_sc_element: concept_route_single;;
+    => nrel_main_idtf: [Опр.(одиночный маршрут)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Запрос передаётся одной интеллектуальной системе,
+            обладающей достаточной компетенцией для формирования
+            полного результата.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_route_parallel
+<- sc_node_class;
+=> nrel_main_idtf: [параллельный маршрут] (* <- lang_ru;; *);
+=> nrel_main_idtf: [parallel route] (* <- lang_en;; *);;
+
+definition -> definition_route_parallel: ...
+(*
+    -> rrel_key_sc_element: concept_route_parallel;;
+    => nrel_main_idtf: [Опр.(параллельный маршрут)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Эквивалентные запросы направляются нескольким системам
+            для получения альтернативных решений, повышения надёжности
+            либо взаимной верификации результатов.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_route_sequential
+<- sc_node_class;
+=> nrel_main_idtf: [последовательный маршрут] (* <- lang_ru;; *);
+=> nrel_main_idtf: [sequential route] (* <- lang_en;; *);;
+
+definition -> definition_route_sequential: ...
+(*
+    -> rrel_key_sc_element: concept_route_sequential;;
+    => nrel_main_idtf: [Опр.(последовательный маршрут)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Результат, сформированный одной интеллектуальной системой,
+            используется как входные данные другой системы.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_route_compositional
+<- sc_node_class;
+=> nrel_main_idtf: [композиционный маршрут] (* <- lang_ru;; *);
+=> nrel_main_idtf: [compositional route] (* <- lang_en;; *);;
+
+definition -> definition_route_compositional: ...
+(*
+    -> rrel_key_sc_element: concept_route_compositional;;
+    => nrel_main_idtf: [Опр.(композиционный маршрут)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Исходный запрос декомпозируется на взаимосвязанные
+            подзадачи T(q) = {σ_1, ..., σ_m}, распределяемые между
+            несколькими интеллектуальными системами по графу
+            зависимостей G_q = <T(q), E_q>.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_route_escalation
+<- sc_node_class;
+=> nrel_main_idtf: [эскалационный маршрут] (* <- lang_ru;; *);
+=> nrel_main_idtf: [escalation route] (* <- lang_en;; *);;
+
+definition -> definition_route_escalation: ...
+(*
+    -> rrel_key_sc_element: concept_route_escalation;;
+    => nrel_main_idtf: [Опр.(эскалационный маршрут)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Запрос передаётся пользователю, эксперту или
+            интеллектуальной системе с более высоким уровнем
+            компетентности вследствие недостаточности автоматического
+            решения.] (* <- lang_ru;; *);;
+    *);;
+*);;

@@ -1,0 +1,69 @@
+// =====================================================================
+// rules/rules_explanation.scs
+// Множество F_rule (часть π_exp) — правила построения объяснения.
+// Операционализируются sc-агентом agent_explanation_builder.
+// =====================================================================
+
+section_rules_explanation
+=> nrel_main_idtf:
+    [Подраздел. Правила построения объяснения (π_exp)] (* <- lang_ru;; *);
+    [Subsection. Explanation Construction Rules (π_exp)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_build_local_explanation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(построение локального объяснения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_processing_result(r) ∧ ¬supported_by_explanation(r, _),
+            Then: создать concept_explanation_local(e),
+                  supported_by_explanation(r, e); зафиксировать
+                  использованные правила, источники знаний, входные
+                  данные через шаблон prov_template_explanation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_build_global_explanation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(построение глобального объяснения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для интегрированного результата ir построить
+            concept_explanation_global(e_g), агрегирующее локальные
+            объяснения частичных результатов; explained_by(ir, e_g).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_build_contrastive_explanation: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(построение контрастивного объяснения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Если пользователь запрашивает объяснение типа «почему X
+            а не Y», построить concept_explanation_contrastive(e_c),
+            фиксирующее различия в провенансных цепочках X и Y
+            и решающие факторы.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_build_counterfactual: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(построение контрфактического объяснения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Сформировать минимальное изменение входных данных или
+            контекста, при котором результат был бы иным; представить
+            это изменение как concept_explanation_counterfactual.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

@@ -1,0 +1,89 @@
+// =====================================================================
+// examples/example_user_models.scs
+// Примеры моделей пользователей с целями, предпочтениями, историей
+// и обратной связью.
+// =====================================================================
+
+section_example_user_models
+=> nrel_main_idtf:
+    [Подраздел. Примеры моделей пользователей] (* <- lang_ru;; *);
+    [Subsection. Example User Models] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: user_model_alice;
+<- rrel_key_sc_element: user_model_doctor_smith;;
+
+// ---------------------------------------------------------------------
+// Развёрнутый профиль user_model_alice.
+// ---------------------------------------------------------------------
+
+profile_alice <- concept_user_profile;;
+profile_alice => nrel_main_idtf:
+    [Профиль: владелец электромобиля, 32 года, RU, водительский стаж 8 лет]
+    (* <- lang_ru;; *);;
+
+competence_alice_ev <- concept_user_competence;;
+competence_alice_ev => nrel_main_idtf:
+    [Компетенция: продвинутый пользователь электромобиля] (* <- lang_ru;; *);;
+
+competence_alice_routing <- concept_user_competence;;
+competence_alice_routing => nrel_main_idtf:
+    [Компетенция: средний уровень планирования маршрутов] (* <- lang_ru;; *);;
+
+preference_alice_safety <- concept_user_preference;;
+preference_alice_safety => nrel_main_idtf:
+    [Предпочтение: высокая безопасность > низкая энергия] (* <- lang_ru;; *);;
+
+cognitive_load_alice <- concept_cognitive_load_estimate;;
+cognitive_load_alice => nrel_main_idtf:
+    [Когнитивная нагрузка: умеренная (мобильный сценарий)]
+    (* <- lang_ru;; *);;
+
+consent_alice_001 <- concept_user_consent_record;;
+consent_alice_001 => nrel_main_idtf:
+    [Согласие на обработку маршрутных и геолокационных данных
+     действительно до 2026-12-31] (* <- lang_ru;; *);;
+
+user_model_alice <= nrel_section_decomposition:
+{
+    profile_alice;
+    competence_alice_ev;
+    competence_alice_routing;
+    preference_alice_safety;
+    preference_low_energy;
+    cognitive_load_alice;
+    consent_alice_001;
+    history_alice_001
+};;
+
+user_model_alice => nrel_has_preference: preference_alice_safety;;
+user_model_alice => nrel_has_competence: competence_alice_ev;;
+user_model_alice => nrel_has_competence: competence_alice_routing;;
+user_model_alice => nrel_has_history: history_alice_001;;
+
+// ---------------------------------------------------------------------
+// Профиль для пользователя-врача.
+// ---------------------------------------------------------------------
+
+profile_doctor_smith <- concept_user_profile;;
+profile_doctor_smith => nrel_main_idtf:
+    [Профиль: эндокринолог, 12 лет практики, специализация на CAH]
+    (* <- lang_ru;; *);;
+
+competence_doctor_smith <- concept_user_competence;;
+competence_doctor_smith => nrel_main_idtf:
+    [Компетенция: эксперт по дифференциальной диагностике CAH]
+    (* <- lang_ru;; *);;
+
+preference_doctor_smith <- concept_user_preference;;
+preference_doctor_smith => nrel_main_idtf:
+    [Предпочтение: подробные контрастивные объяснения с указанием
+     лабораторных и визуальных признаков] (* <- lang_ru;; *);;
+
+user_model_doctor_smith <= nrel_section_decomposition:
+{
+    profile_doctor_smith;
+    competence_doctor_smith;
+    preference_doctor_smith
+};;
+user_model_doctor_smith => nrel_has_preference: preference_doctor_smith;;
+user_model_doctor_smith => nrel_has_competence: competence_doctor_smith;;

@@ -1,0 +1,102 @@
+// =====================================================================
+// tests/tests_context_evolution.scs
+// Тесты эволюции контекста: наследование, обновление по событиям,
+// доминирование, разрешение противоречий.
+// =====================================================================
+
+section_tests_context_evolution
+=> nrel_main_idtf:
+    [Подраздел. Тесты эволюции контекста] (* <- lang_ru;; *);
+    [Subsection. Context Evolution Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_context_evolution;;
+
+concept_test_context_evolution <- sc_node_class;
+=> nrel_main_idtf:
+    [тест эволюции контекста] (* <- lang_ru;; *);;
+concept_test_context_evolution <= nrel_strict_inclusion: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// TC1: Полнота контекста по rrel_*.
+// ---------------------------------------------------------------------
+
+test_context_completeness_001 <- concept_test_context_evolution;;
+test_context_completeness_001 => nrel_main_idtf:
+    [TC1. interaction_context_001 содержит все 5 подконтекстов?]
+    (* <- lang_ru;; *);;
+test_context_completeness_001 => nrel_test_against_constraint:
+    affirmation_context_completeness;;
+test_context_completeness_001 => nrel_question_subject: interaction_context_001;;
+test_context_completeness_001 => nrel_test_outcome: concept_test_outcome_pass;;
+test_context_completeness_001 => nrel_expected_answer: answer_tc1;;
+
+answer_tc1 <- concept_expected_answer;;
+answer_tc1 => nrel_main_idtf:
+    [Выполнено: rrel_goal_context, rrel_history_context,
+     rrel_system_context, rrel_domain_context,
+     rrel_user_situation_context — все 5 заданы.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TC2: Эволюция контекста по событию.
+// ---------------------------------------------------------------------
+
+test_context_event_propagation <- concept_test_context_evolution;;
+test_context_event_propagation => nrel_main_idtf:
+    [TC2. event_battery_low → interaction_context_002:
+     обновлён ли rrel_system_context? применено ли
+     nrel_context_dominates_over?] (* <- lang_ru;; *);;
+test_context_event_propagation => nrel_test_outcome: concept_test_outcome_pass;;
+test_context_event_propagation => nrel_expected_answer: answer_tc2;;
+
+answer_tc2 <- concept_expected_answer;;
+answer_tc2 => nrel_main_idtf:
+    [Выполнено:
+     interaction_context_002 → nrel_context_updated_by_event →
+     event_battery_low;
+     interaction_context_002 → rrel_system_context →
+     ecosystem_state_002 (обновлённое состояние);
+     interaction_context_002 → nrel_context_dominates_over →
+     interaction_context_001.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TC3: Наследование контекста по nrel_context_inherits_from.
+// ---------------------------------------------------------------------
+
+test_context_inheritance <- concept_test_context_evolution;;
+test_context_inheritance => nrel_main_idtf:
+    [TC3. Цепочка наследования контекстов:
+     context_003 inherits_from context_002 inherits_from context_001
+     — антирефлексивна, ацикличность сохранена?] (* <- lang_ru;; *);;
+test_context_inheritance => nrel_test_outcome: concept_test_outcome_pass;;
+test_context_inheritance => nrel_expected_answer: answer_tc3;;
+
+answer_tc3 <- concept_expected_answer;;
+answer_tc3 => nrel_main_idtf:
+    [Выполнено: nrel_context_inherits_from — антирефлексивно,
+     ориентированно; цикл не образуется.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TC4: ctx_compat при дрейфе контекста — триггер реконфигурации.
+// ---------------------------------------------------------------------
+
+test_context_drift_triggers_reconf <- concept_test_context_evolution;;
+test_context_drift_triggers_reconf => nrel_main_idtf:
+    [TC4. При снижении ctx_compat(C_002, intelligent_system_ranker)
+     ниже θ_ctx=0.85 — должен запуститься rule_on_context_drift]
+    (* <- lang_ru;; *);;
+test_context_drift_triggers_reconf => nrel_test_calculation:
+    [ctx_compat(C_001, ranker) = 0.88 ≥ θ_ctx → ok;
+     ctx_compat(C_002, ranker) = 0.79 < θ_ctx → trigger
+     rule_on_context_drift → agent_coalition_reconfigurator
+     создаёт community_route_planning_v2]
+    (* <- lang_ru;; *);;
+test_context_drift_triggers_reconf => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_context_drift_triggers_reconf => nrel_expected_answer: answer_tc4;;
+
+answer_tc4 <- concept_expected_answer;;
+answer_tc4 => nrel_main_idtf:
+    [Реконфигурация выполнена: ranker_v1 заменён на ranker_alt
+     с ctx_compat(C_002, ranker_alt) = 0.91 ≥ θ_ctx.]
+    (* <- lang_ru;; *);;

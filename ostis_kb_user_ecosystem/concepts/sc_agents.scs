@@ -1,0 +1,265 @@
+// =====================================================================
+// concepts/sc_agents.scs
+// Подраздел: sc-агенты интеллектуального посредника. Реализуют
+// процессы жизненного цикла π как программные компоненты, исполняемые
+// над содержимым общей семантической памяти. Согласовано с табл. 3
+// финальной онтологической модели.
+// =====================================================================
+
+section_concept_sc_agents
+=> nrel_main_idtf:
+    [Подраздел. sc-агенты интеллектуального посредника] (* <- lang_ru;; *);
+    [Subsection. sc-agents of the Intelligent Mediator] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_sc_agent;
+<- rrel_key_sc_element: agent_request_interpreter;
+<- rrel_key_sc_element: agent_task_decomposer;
+<- rrel_key_sc_element: agent_task_allocator;
+<- rrel_key_sc_element: agent_cooperative_executor;
+<- rrel_key_sc_element: agent_result_integrator;
+<- rrel_key_sc_element: agent_explanation_builder;
+<- rrel_key_sc_element: agent_trust_evaluator;
+<- rrel_key_sc_element: agent_coalition_reconfigurator;
+<- rrel_key_sc_element: agent_integrity_checker;
+<- rrel_key_sc_element: agent_provenance_registrar;;
+
+// ---------------------------------------------------------------------
+// Класс sc-агента.
+// ---------------------------------------------------------------------
+
+concept_sc_agent
+<- sc_node_class;
+=> nrel_main_idtf:
+    [sc-агент] (* <- lang_ru;; *);
+    [sc-agent] (* <- lang_en;; *);;
+
+concept_sc_agent <= nrel_strict_inclusion: concept_intelligent_agent;;
+
+definition -> definition_sc_agent: ...
+(*
+    -> rrel_key_sc_element: concept_sc_agent;;
+    => nrel_main_idtf: [Опр.(sc-агент)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [sc-агент — программный компонент ostis-системы-посредника,
+            выполняющий специализированную операцию жизненного цикла
+            взаимодействия путём чтения и записи sc-конструкций в общей
+            семантической памяти. Активация sc-агента инициируется
+            появлением в sc-памяти соответствующего шаблона условий
+            (так называемого primary condition).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_sc_agent <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение sc-агентов посредника]
+       (* <- lang_ru;; *);;
+    -> agent_request_interpreter;
+       agent_task_decomposer;
+       agent_task_allocator;
+       agent_cooperative_executor;
+       agent_result_integrator;
+       agent_explanation_builder;
+       agent_trust_evaluator;
+       agent_coalition_reconfigurator;
+       agent_integrity_checker;
+       agent_provenance_registrar;
+       agent_context_updater;
+       agent_conflict_detector;;
+*);;
+
+// ---------------------------------------------------------------------
+// Описание sc-агентов. Каждый sc-агент связан с процессом π через
+// отношение nrel_implements_process и характеризуется отображением,
+// входами и выходами.
+// ---------------------------------------------------------------------
+
+agent_request_interpreter
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент интерпретации запроса] (* <- lang_ru;; *);
+    [agent_request_interpreter] (* <- lang_en;; *);
+=> nrel_implements_process: concept_process_interpretation;
+=> nrel_realizes_mapping:
+    [ι : Q_ext × C → Q_form];
+=> nrel_primary_condition:
+    [появление неинтерпретированного экземпляра concept_user_request];
+=> nrel_agent_input:
+    [сырой пользовательский запрос, текущий контекст];
+=> nrel_agent_output:
+    [sc-граф запроса с явной целью, контекстом и типом результата];;
+
+agent_task_decomposer
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент декомпозиции запроса] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_decomposition;
+=> nrel_realizes_mapping: [δ : Q_form → 2^T];
+=> nrel_primary_condition:
+    [появление concept_user_request с интерпретацией, но без
+     отношения nrel_decomposed_into];
+=> nrel_agent_input: [sc-граф запроса];
+=> nrel_agent_output: [ориентированный ацикличный граф подзадач];;
+
+agent_task_allocator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент распределения подзадач] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_allocation;
+=> nrel_realizes_mapping:
+    [α : T × S → 0;1 на основе match(σ, s)];
+=> nrel_primary_condition:
+    [появление concept_subtask без отношения nrel_assigned_to];
+=> nrel_agent_input:
+    [подзадачи, профили возможностей Cap(s), доверие trust(s,τ,h)];
+=> nrel_agent_output: [распределение χ : T(q) → S, удовлетворяющее (12), (13)];;
+
+agent_cooperative_executor
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент кооперативного исполнения] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_cooperative_processing;
+=> nrel_realizes_mapping: [протокол кооперации FIPA-ACL];
+=> nrel_primary_condition:
+    [появление распределённой подзадачи (nrel_assigned_to)];
+=> nrel_agent_input:
+    [назначения, контекст, граф зависимостей depends_on];
+=> nrel_agent_output: [частичные результаты concept_processing_result];;
+
+agent_result_integrator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент интеграции результатов] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_integration;
+=> nrel_realizes_mapping: [ρ : 2^Y × C → Y_int];
+=> nrel_primary_condition:
+    [появление набора частичных результатов одной подзадачи];
+=> nrel_agent_input: [частичные результаты];
+=> nrel_agent_output: [интегрированный результат];;
+
+agent_explanation_builder
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент формирования объяснения] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_explanation;
+=> nrel_realizes_mapping:
+    [построение трассируемой цепочки выводов и провенансных связей];
+=> nrel_primary_condition:
+    [появление concept_integrated_result без объяснения];
+=> nrel_agent_input: [граф провенанса];
+=> nrel_agent_output: [sc-структура concept_explanation];;
+
+agent_trust_evaluator
+<- sc_node_class;
+=> nrel_main_idtf: [агент оценки доверия] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_trust_assessment;
+=> nrel_realizes_mapping: [обновление вектора T(s, τ)];
+=> nrel_primary_condition:
+    [появление обратной связи пользователя или нового интегрированного результата];
+=> nrel_agent_input: [история, обратная связь];
+=> nrel_agent_output: [обновлённый вектор доверия];;
+
+agent_coalition_reconfigurator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент реконфигурации коалиции] (* <- lang_ru;; *);
+=> nrel_implements_process: concept_process_coalition_reconfiguration;
+=> nrel_realizes_mapping:
+    [компенсационный пересчёт (13) при модифицированном множестве S];
+=> nrel_primary_condition:
+    [сигнал отказа ИС, истечение ресурса, нарушение F_constr];
+=> nrel_agent_input: [текущая коалиция, сигнал реконфигурации];
+=> nrel_agent_output: [пересмотренная коалиция];;
+
+agent_integrity_checker
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент проверки целостности] (* <- lang_ru;; *);
+=> nrel_primary_condition:
+    [периодический триггер либо изменение sc-памяти, затрагивающее
+     ограничения F_constr];
+=> nrel_agent_input: [фрагменты sc-памяти];
+=> nrel_agent_output:
+    [экземпляры concept_integrity_violation];;
+
+agent_provenance_registrar
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент регистрации провенанса] (* <- lang_ru;; *);
+=> nrel_primary_condition:
+    [любой акт записи в sc-память от другого sc-агента];
+=> nrel_agent_input: [триггерное событие изменения sc-памяти];
+=> nrel_agent_output:
+    [provenance-связи generated_in_context, caused_by, derived_from];;
+
+agent_context_updater
+<- sc_node_class;
+=> nrel_main_idtf: [агент обновления контекста] (* <- lang_ru;; *);
+=> nrel_primary_condition:
+    [появление concept_interaction_event];
+=> nrel_agent_input:
+    [текущий контекст, событие];
+=> nrel_agent_output: [новый экземпляр concept_interaction_context];;
+
+agent_conflict_detector
+<- sc_node_class;
+=> nrel_main_idtf: [агент обнаружения конфликтов] (* <- lang_ru;; *);
+=> nrel_primary_condition:
+    [появление нескольких concept_processing_result для одной подзадачи];
+=> nrel_agent_input: [множество частичных результатов];
+=> nrel_agent_output: [экземпляры concept_result_conflict];;
+
+// ---------------------------------------------------------------------
+// Служебные отношения класса sc-агент.
+// ---------------------------------------------------------------------
+
+nrel_implements_process
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [реализует_процесс*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_sc_agent;
+=> nrel_second_domain: concept_lifecycle_process;;
+
+nrel_realizes_mapping
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [реализует_отображение*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_primary_condition
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [первичное_условие_активации*] (* <- lang_ru;; *);
+<- binary_relation;;
+
+nrel_agent_input
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [вход_агента*] (* <- lang_ru;; *);;
+
+nrel_agent_output
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [выход_агента*] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Принцип слабой связности (loose coupling).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_sc_agent_loose_coupling: ...
+(*
+    -> rrel_key_sc_element: concept_sc_agent;;
+    => nrel_main_idtf:
+        [Утв.(слабая связность sc-агентов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Взаимодействие sc-агентов между собой и с интеллектуальными
+            системами сообщества осуществляется опосредованно — через
+            изменение состояния общей семантической памяти. Прямой
+            коммуникационный протокол между sc-агентами не используется,
+            что обеспечивает свойство слабой связности и позволяет
+            добавлять новые sc-агенты без модификации существующих.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

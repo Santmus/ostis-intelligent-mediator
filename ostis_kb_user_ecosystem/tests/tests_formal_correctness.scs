@@ -1,0 +1,149 @@
+// =====================================================================
+// tests/tests_formal_correctness.scs
+// Тесты формальной корректности: проверка ограничений целостности
+// F_constr на конкретных ABox-фрагментах сценариев.
+// =====================================================================
+
+section_tests_formal_correctness
+=> nrel_main_idtf:
+    [Подраздел. Тесты формальной корректности (F_constr)]
+    (* <- lang_ru;; *);
+    [Subsection. Formal Correctness Tests (F_constr)]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_constraint_check;;
+
+concept_test_constraint_check
+<- sc_node_class;
+=> nrel_main_idtf:
+    [тест проверки ограничения целостности] (* <- lang_ru;; *);;
+concept_test_constraint_check <= nrel_strict_inclusion:
+    concept_test_question;;
+
+nrel_test_against_constraint
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [тест_по_ограничению*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+nrel_test_outcome
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [ожидаемый_исход_теста*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+concept_test_outcome_pass
+<- sc_node_class;
+=> nrel_main_idtf: [исход: ограничение выполнено] (* <- lang_ru;; *);;
+concept_test_outcome_fail
+<- sc_node_class;
+=> nrel_main_idtf: [исход: ограничение нарушено] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T1: Проверка формулы (4) на сценарии request_processing.
+// ---------------------------------------------------------------------
+
+test_formula_4_on_request_001 <- concept_test_constraint_check;;
+test_formula_4_on_request_001 => nrel_main_idtf:
+    [T1. Формула (4) на request_001: ∃! u. formulates(u, request_001)
+     ∧ ∃g. has_goal(request_001, g)] (* <- lang_ru;; *);;
+test_formula_4_on_request_001 => nrel_test_against_constraint:
+    constraint_request_authorship;;
+test_formula_4_on_request_001 => nrel_question_subject: request_001;;
+test_formula_4_on_request_001 => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_formula_4_on_request_001 => nrel_expected_answer:
+    answer_t1;;
+
+answer_t1 <- concept_expected_answer;;
+answer_t1 => nrel_main_idtf:
+    [Выполнено: formulates(user_alice, request_001)
+     и has_goal(request_001, goal_optimal_route).]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T2: Проверка формулы (5) — ацикличность графа подзадач.
+// ---------------------------------------------------------------------
+
+test_formula_5_acyclic_dependency <- concept_test_constraint_check;;
+test_formula_5_acyclic_dependency => nrel_main_idtf:
+    [T2. Формула (5) на графе подзадач request_001:
+     acyclic(depends_on)?] (* <- lang_ru;; *);;
+test_formula_5_acyclic_dependency => nrel_test_against_constraint:
+    constraint_decomposition_acyclic;;
+test_formula_5_acyclic_dependency => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_formula_5_acyclic_dependency => nrel_expected_answer: answer_t2;;
+
+answer_t2 <- concept_expected_answer;;
+answer_t2 => nrel_main_idtf:
+    [Выполнено: цепочка
+     subtask_route_candidates → subtask_energy_estimation
+     → subtask_ranking — ациклична.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T3: Проверка формулы (6) — провенанс результата.
+// ---------------------------------------------------------------------
+
+test_formula_6_result_provenance <- concept_test_constraint_check;;
+test_formula_6_result_provenance => nrel_main_idtf:
+    [T3. Формула (6) на result_energy: produces(?,result_energy)
+     ∧ generated_in_context(?,?) ∧ has_provenance(?,?)?]
+    (* <- lang_ru;; *);;
+test_formula_6_result_provenance => nrel_test_against_constraint:
+    constraint_result_provenance;;
+test_formula_6_result_provenance => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_formula_6_result_provenance => nrel_expected_answer: answer_t3;;
+
+answer_t3 <- concept_expected_answer;;
+answer_t3 => nrel_main_idtf:
+    [Выполнено: produces(intelligent_system_energy_model, result_energy)
+     ∧ generated_in_context(result_energy, interaction_context_001)
+     ∧ has_provenance(result_energy, prov_record_result_routes).]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T4: Проверка формулы (7) на интегрированном результате.
+// ---------------------------------------------------------------------
+
+test_formula_7_integrated_result <- concept_test_constraint_check;;
+test_formula_7_integrated_result => nrel_main_idtf:
+    [T4. Формула (7) на integrated_result_001: existence of
+     explanation ∧ absence of неразрешённых conflicts?]
+    (* <- lang_ru;; *);;
+test_formula_7_integrated_result => nrel_test_against_constraint:
+    constraint_integrated_result;;
+test_formula_7_integrated_result => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_formula_7_integrated_result => nrel_expected_answer: answer_t4;;
+
+answer_t4 <- concept_expected_answer;;
+answer_t4 => nrel_main_idtf:
+    [Выполнено: explained_by(integrated_result_001, explanation_001)
+     и отсутствуют conflicts_with для integrated_result_001
+     (после применения rule_resolve_by_argumentation в сценарии
+     collective_decision).] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T5: Отрицательный тест — нарушение F_constr.
+// ---------------------------------------------------------------------
+
+test_formula_5_negative_cycle <- concept_test_constraint_check;;
+test_formula_5_negative_cycle => nrel_main_idtf:
+    [T5. Отрицательный тест: если depends_on(σ_1, σ_2)
+     ∧ depends_on(σ_2, σ_1) — должна быть зафиксирована
+     concept_integrity_violation] (* <- lang_ru;; *);;
+test_formula_5_negative_cycle => nrel_test_against_constraint:
+    constraint_decomposition_acyclic;;
+test_formula_5_negative_cycle => nrel_test_outcome:
+    concept_test_outcome_fail;;
+test_formula_5_negative_cycle => nrel_expected_answer: answer_t5;;
+
+answer_t5 <- concept_expected_answer;;
+answer_t5 => nrel_main_idtf:
+    [Нарушено: agent_integrity_checker создаёт экземпляр
+     concept_acyclicity_constraint_violation; запускается
+     rule_check_acyclicity → пересмотр шаблона декомпозиции.]
+    (* <- lang_ru;; *);;

@@ -1,0 +1,108 @@
+// =====================================================================
+// axioms/axioms_provenance.scs
+// Множество F_prov — шаблоны фиксации провенанса. Концептуально
+// соответствуют W3C PROV-O. Каждая sc-операция, изменяющая семантически
+// значимое содержимое sc-памяти, должна порождать соответствующую
+// провенансную запись.
+// =====================================================================
+
+section_axioms_provenance
+=> nrel_main_idtf:
+    [Подраздел. Провенансные шаблоны F_prov] (* <- lang_ru;; *);
+    [Subsection. Provenance Templates F_prov] (* <- lang_en;; *);
+<- atomic_section;;
+
+concept_sc_provenance_template
+<- sc_node_class;
+=> nrel_main_idtf:
+    [sc-шаблон провенанса] (* <- lang_ru;; *);
+    [sc-provenance template] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Базовые шаблоны.
+// ---------------------------------------------------------------------
+
+prov_template -> prov_template_subtask_result: ...
+(*
+    <- concept_sc_provenance_template;;
+    => nrel_main_idtf:
+        [Шаблон провенанса: результат подзадачи] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждого экземпляра r ∈ ProcessingResult, порождённого
+            при исполнении подзадачи σ системой s в контексте C,
+            фиксируются:
+              produces(s, r),
+              caused_by_subtask(r, σ),
+              generated_in_context(r, C),
+              wasGeneratedBy(r, π_coop_act_i),
+              wasAttributedTo(r, s).
+            Шаблон автоматически инстанцируется sc-агентом
+            agent_provenance_registrar.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+prov_template -> prov_template_integration: ...
+(*
+    <- concept_sc_provenance_template;;
+    => nrel_main_idtf:
+        [Шаблон провенанса: интеграция результатов] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждого ir ∈ IntegratedResult фиксируются:
+              integrated_in(r_i, ir) для всех частичных r_i,
+              wasDerivedFrom(ir, r_i),
+              caused_by(ir, π_intg),
+              explained_by(ir, e),
+              wasAttributedTo(ir, agent_result_integrator).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+prov_template -> prov_template_explanation: ...
+(*
+    <- concept_sc_provenance_template;;
+    => nrel_main_idtf:
+        [Шаблон провенанса: построение объяснения] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждого e ∈ Explanation фиксируется акт построения
+            explanation_construction_act со связями rrel_explanandum,
+            rrel_uses_results, rrel_applies_rules, rrel_based_on,
+            rrel_construction_time. Используемые правила и источники
+            знаний добавляются в граф провенанса через nrel_prov_used.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+prov_template -> prov_template_assignment: ...
+(*
+    <- concept_sc_provenance_template;;
+    => nrel_main_idtf:
+        [Шаблон провенанса: акт назначения подзадачи] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Каждый акт назначения подзадачи рефицируется как
+            экземпляр concept_process_allocation с ролями
+            rrel_subtask, rrel_assignee, rrel_context,
+            rrel_assignment_time. Зависит от текущего профиля
+            возможностей assignee и текущего значения trust.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+prov_template -> prov_template_decision: ...
+(*
+    <- concept_sc_provenance_template;;
+    => nrel_main_idtf:
+        [Шаблон провенанса: коллективное решение] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для коллективного решения d ∈ CollectiveDecision
+            фиксируется применённая стратегия агрегации,
+            набор частичных предложений, аргументы за и против,
+            веса голосов, разрешённые конфликты, итоговое
+            объяснение.] (* <- lang_ru;; *);;
+    *);;
+*);;

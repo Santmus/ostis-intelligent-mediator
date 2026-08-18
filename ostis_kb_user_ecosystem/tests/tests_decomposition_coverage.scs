@@ -1,0 +1,102 @@
+// =====================================================================
+// tests/tests_decomposition_coverage.scs
+// Тесты покрытия декомпозиции запроса сообществом ИС и проверки
+// согласованности назначений (формула 13).
+// =====================================================================
+
+section_tests_decomposition_coverage
+=> nrel_main_idtf:
+    [Подраздел. Тесты покрытия декомпозиции] (* <- lang_ru;; *);
+    [Subsection. Decomposition Coverage Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_decomposition_coverage;;
+
+concept_test_decomposition_coverage <- sc_node_class;
+=> nrel_main_idtf:
+    [тест покрытия декомпозиции запроса] (* <- lang_ru;; *);;
+concept_test_decomposition_coverage <= nrel_strict_inclusion: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// TD1: T(request_001) полностью покрыта сообществом.
+// ---------------------------------------------------------------------
+
+test_t_q_covered <- concept_test_decomposition_coverage;;
+test_t_q_covered => nrel_main_idtf:
+    [TD1. T(request_001) = {σ_route, σ_energy, σ_ranking}
+     полностью покрыта community_route_planning?]
+    (* <- lang_ru;; *);;
+test_t_q_covered => nrel_question_subject: request_001;;
+test_t_q_covered => nrel_test_against_constraint:
+    affirmation_community_coverage;;
+test_t_q_covered => nrel_test_outcome: concept_test_outcome_pass;;
+test_t_q_covered => nrel_expected_answer: answer_td1;;
+
+answer_td1 <- concept_expected_answer;;
+answer_td1 => nrel_main_idtf:
+    [Выполнено: ∀σ ∈ T(request_001). ∃s ∈ community_route_planning.
+     nrel_assigned_to(σ, s). Сообщество содержит {route_planner,
+     energy_model, ranker}, что покрывает все 3 подзадачи.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TD2: Корректная топология depends_on.
+// ---------------------------------------------------------------------
+
+test_depends_on_topology <- concept_test_decomposition_coverage;;
+test_depends_on_topology => nrel_main_idtf:
+    [TD2. Топология depends_on для T(request_001) корректна?]
+    (* <- lang_ru;; *);;
+test_depends_on_topology => nrel_expected_answer: answer_td2;;
+
+answer_td2 <- concept_expected_answer;;
+answer_td2 => nrel_main_idtf:
+    [Топологический порядок:
+     σ_route (нет зависимостей)
+     → σ_energy (depends_on σ_route)
+     → σ_ranking (depends_on σ_energy).
+     Граф — DAG; ацикличность сохранена; готовность
+     σ_i определяется завершением всех её предшественников.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TD3: Декомпозиция медицинского сценария.
+// ---------------------------------------------------------------------
+
+test_medical_decomposition <- concept_test_decomposition_coverage;;
+test_medical_decomposition => nrel_main_idtf:
+    [TD3. T(request_medical_001) =
+     {σ_lab_analysis, σ_image_segmentation, σ_clinical_reasoning}
+     покрыта community_medical_diagnostic?]
+    (* <- lang_ru;; *);;
+test_medical_decomposition => nrel_test_outcome: concept_test_outcome_pass;;
+test_medical_decomposition => nrel_expected_answer: answer_td3;;
+
+answer_td3 <- concept_expected_answer;;
+answer_td3 => nrel_main_idtf:
+    [Выполнено:
+     σ_lab → system_lab_analyzer;
+     σ_image → system_image_classifier;
+     σ_reasoning → system_clinical_reasoner;
+     σ_reasoning зависит от σ_lab и σ_image — топология
+     «fan-in»; ИС-оркестратор координирует исполнение.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TD4: Эффект reconfiguration на полноту покрытия.
+// ---------------------------------------------------------------------
+
+test_coverage_after_reconfiguration <- concept_test_decomposition_coverage;;
+test_coverage_after_reconfiguration => nrel_main_idtf:
+    [TD4. После reconfiguration (community_route_planning_v2)
+     покрытие T(request_001) сохраняется?] (* <- lang_ru;; *);;
+test_coverage_after_reconfiguration => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_coverage_after_reconfiguration => nrel_expected_answer: answer_td4;;
+
+answer_td4 <- concept_expected_answer;;
+answer_td4 => nrel_main_idtf:
+    [После замены ranker_v1 → ranker_alt:
+     coverage(χ_new, T(request_001)) выполнено;
+     consistent(C_002, χ_new) выполнено (ctx_compat для всех s ≥ 0.85);
+     задача (13) разрешима с новым Σ match = 2.65.]
+    (* <- lang_ru;; *);;

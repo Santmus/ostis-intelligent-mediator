@@ -1,0 +1,30 @@
+// =====================================================================
+// definitions/definitions_systems.scs
+// Аккумулирующий подраздел определений интеллектуальных систем,
+// сервисов и агентов экосистемы.
+// =====================================================================
+
+section_definitions_systems
+=> nrel_main_idtf:
+    [Подраздел. Определения интеллектуальных систем, агентов и сервисов]
+    (* <- lang_ru;; *);
+    [Subsection. Definitions of IS, Agents and Services]
+    (* <- lang_en;; *);
+<- non_atomic_section;
+<- rrel_key_sc_element: definition_intelligent_system;
+<- rrel_key_sc_element: definition_ostis_system;
+<- rrel_key_sc_element: definition_intelligent_mediator;
+<- rrel_key_sc_element: definition_intelligent_agent;
+<- rrel_key_sc_element: definition_sc_agent;
+<- rrel_key_sc_element: definition_intelligent_service;
+<- rrel_key_sc_element: definition_service_publication;
+<- rrel_key_sc_element: definition_community_of_intelligent_systems;
+<- rrel_key_sc_element: definition_intelligent_ecosystem;
+<- rrel_key_sc_element: definition_semantic_space;
+<- rrel_key_sc_element: definition_shared_semantic_memory;
+<- rrel_key_sc_element: affirmation_is_has_capability;
+<- rrel_key_sc_element: affirmation_community_coverage;
+<- rrel_key_sc_element: affirmation_community_consistency;
+<- rrel_key_sc_element: affirmation_ecosystem_memory;
+<- rrel_key_sc_element: affirmation_ecosystem_dynamic_composition;
+<- rrel_key_sc_element: affirmation_sc_agent_loose_coupling;;

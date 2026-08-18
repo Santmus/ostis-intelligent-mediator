@@ -1,0 +1,177 @@
+// =====================================================================
+// concepts/knowledge_exchange.scs
+// Подраздел: акты обмена знаниями между интеллектуальными агентами в
+// общей семантической памяти. Согласовано с FIPA ACL [8] и шаблонами
+// PROV-O [24].
+// =====================================================================
+
+section_concept_knowledge_exchange
+=> nrel_main_idtf:
+    [Подраздел. Обмен знаниями между интеллектуальными агентами]
+    (* <- lang_ru;; *);
+    [Subsection. Knowledge Exchange Between Intelligent Agents]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_knowledge_exchange_act;
+<- rrel_key_sc_element: concept_communicative_act;
+<- rrel_key_sc_element: concept_knowledge_payload;
+<- rrel_key_sc_element: concept_message_content_language;;
+
+// ---------------------------------------------------------------------
+// Корневой класс акта обмена знаниями.
+// ---------------------------------------------------------------------
+
+concept_knowledge_exchange_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт обмена знаниями] (* <- lang_ru;; *);
+    [knowledge exchange act] (* <- lang_en;; *);;
+
+definition -> definition_knowledge_exchange_act: ...
+(*
+    -> rrel_key_sc_element: concept_knowledge_exchange_act;;
+    => nrel_main_idtf: [Опр.(акт обмена знаниями)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт обмена знаниями — элементарная онтологическая единица
+            передачи семантически согласованного фрагмента знаний между
+            компонентами интеллектуальной экосистемы, снабжённая
+            провенансной информацией о источнике, получателе, типе
+            коммуникативного акта, времени и контексте совершения.
+            Реализуется как n-арная sc-конструкция с ролевыми
+            параметрами rrel_sender, rrel_receiver, rrel_act_type,
+            rrel_payload, rrel_context, rrel_timestamp.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Коммуникативный акт по FIPA-ACL + расширения.
+// ---------------------------------------------------------------------
+
+concept_communicative_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [коммуникативный акт] (* <- lang_ru;; *);
+    [communicative act] (* <- lang_en;; *);;
+
+concept_communicative_act <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение коммуникативных актов (FIPA-ACL)]
+       (* <- lang_ru;; *);;
+    -> concept_act_inform;
+       concept_act_request;
+       concept_act_query;
+       concept_act_query_ref;
+       concept_act_query_if;
+       concept_act_propose;
+       concept_act_accept;
+       concept_act_reject;
+       concept_act_confirm;
+       concept_act_disconfirm;
+       concept_act_argue;
+       concept_act_subscribe;
+       concept_act_cancel;
+       concept_act_failure;
+       concept_act_not_understood;;
+*);;
+
+concept_act_inform
+<- sc_node_class;
+=> nrel_main_idtf: [информировать] (* <- lang_ru;; *);
+=> nrel_main_idtf: [inform] (* <- lang_en;; *);;
+concept_act_request
+<- sc_node_class;
+=> nrel_main_idtf: [запросить] (* <- lang_ru;; *);
+=> nrel_main_idtf: [request] (* <- lang_en;; *);;
+concept_act_query
+<- sc_node_class;
+=> nrel_main_idtf: [спросить] (* <- lang_ru;; *);
+=> nrel_main_idtf: [query] (* <- lang_en;; *);;
+concept_act_query_ref
+<- sc_node_class;
+=> nrel_main_idtf: [запросить значение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [query-ref] (* <- lang_en;; *);;
+concept_act_query_if
+<- sc_node_class;
+=> nrel_main_idtf: [запросить истинность] (* <- lang_ru;; *);
+=> nrel_main_idtf: [query-if] (* <- lang_en;; *);;
+concept_act_propose
+<- sc_node_class;
+=> nrel_main_idtf: [предложить] (* <- lang_ru;; *);
+=> nrel_main_idtf: [propose] (* <- lang_en;; *);;
+concept_act_accept
+<- sc_node_class;
+=> nrel_main_idtf: [принять предложение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [accept-proposal] (* <- lang_en;; *);;
+concept_act_reject
+<- sc_node_class;
+=> nrel_main_idtf: [отклонить предложение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [reject-proposal] (* <- lang_en;; *);;
+concept_act_confirm
+<- sc_node_class;
+=> nrel_main_idtf: [подтвердить] (* <- lang_ru;; *);;
+concept_act_disconfirm
+<- sc_node_class;
+=> nrel_main_idtf: [опровергнуть] (* <- lang_ru;; *);;
+concept_act_argue
+<- sc_node_class;
+=> nrel_main_idtf: [аргументировать] (* <- lang_ru;; *);
+=> nrel_main_idtf: [argue] (* <- lang_en;; *);;
+concept_act_subscribe
+<- sc_node_class;
+=> nrel_main_idtf: [подписаться] (* <- lang_ru;; *);;
+concept_act_cancel
+<- sc_node_class;
+=> nrel_main_idtf: [отменить] (* <- lang_ru;; *);;
+concept_act_failure
+<- sc_node_class;
+=> nrel_main_idtf: [сообщить об отказе] (* <- lang_ru;; *);;
+concept_act_not_understood
+<- sc_node_class;
+=> nrel_main_idtf: [не понято] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Содержание знания и язык содержимого.
+// ---------------------------------------------------------------------
+
+concept_knowledge_payload
+<- sc_node_class;
+=> nrel_main_idtf:
+    [содержание знания (payload)] (* <- lang_ru;; *);
+    [knowledge payload] (* <- lang_en;; *);;
+
+concept_message_content_language
+<- sc_node_class;
+=> nrel_main_idtf:
+    [язык представления содержимого сообщения] (* <- lang_ru;; *);
+    [message content language] (* <- lang_en;; *);;
+
+concept_message_content_language <= nrel_subdividing: ...
+(*
+    -> concept_language_sc_code;
+       concept_language_owl;
+       concept_language_rdf_turtle;
+       concept_language_sparql;
+       concept_language_fipa_sl;
+       concept_language_natural_language;;
+*);;
+
+concept_language_sc_code
+<- sc_node_class;
+=> nrel_main_idtf: [SC-код] (* <- lang_ru;; *);;
+concept_language_owl
+<- sc_node_class;
+=> nrel_main_idtf: [OWL] (* <- lang_ru;; *);;
+concept_language_rdf_turtle
+<- sc_node_class;
+=> nrel_main_idtf: [RDF/Turtle] (* <- lang_ru;; *);;
+concept_language_sparql
+<- sc_node_class;
+=> nrel_main_idtf: [SPARQL] (* <- lang_ru;; *);;
+concept_language_fipa_sl
+<- sc_node_class;
+=> nrel_main_idtf: [FIPA SL] (* <- lang_ru;; *);;
+concept_language_natural_language
+<- sc_node_class;
+=> nrel_main_idtf: [естественный язык] (* <- lang_ru;; *);;

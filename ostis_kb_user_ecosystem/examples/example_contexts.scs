@@ -1,0 +1,64 @@
+// =====================================================================
+// examples/example_contexts.scs
+// Эталонные композитные контексты и иллюстрация их эволюции.
+// =====================================================================
+
+section_example_contexts
+=> nrel_main_idtf:
+    [Подраздел. Примеры контекстов взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Example Interaction Contexts] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: interaction_context_reference;
+<- rrel_key_sc_element: interaction_context_structure;;
+
+// ---------------------------------------------------------------------
+// Эталонный композитный контекст.
+// ---------------------------------------------------------------------
+
+interaction_context_reference <- concept_interaction_context;;
+interaction_context_reference => nrel_main_idtf:
+    [Эталонный композитный контекст взаимодействия] (* <- lang_ru;; *);
+    [Reference composite interaction context] (* <- lang_en;; *);;
+
+interaction_context_structure <- sc_node_structure;;
+interaction_context_structure => nrel_main_idtf:
+    [Структура декомпозиции контекста взаимодействия] (* <- lang_ru;; *);;
+
+interaction_context_reference => nrel_contains:
+{
+    interaction_context_structure;
+    concept_goal_context;
+    concept_history_context;
+    concept_system_context;
+    concept_domain_context;
+    concept_user_situation_context
+};;
+
+// ---------------------------------------------------------------------
+// Пример совместимости контекста с системой.
+// ---------------------------------------------------------------------
+
+ctx_compat_example_001 <- concept_context_compatibility_function;;
+ctx_compat_example_001 => nrel_main_idtf:
+    [Пример вычисления: ctx_compat(C_001, energy_model) =
+     0.2·1.0 + 0.2·0.85 + 0.2·0.9 + 0.2·0.95 + 0.2·0.8 = 0.90]
+    (* <- lang_ru;; *);;
+
+interaction_context_001 => nrel_context_compatibility:
+    intelligent_system_energy_model;;
+
+// ---------------------------------------------------------------------
+// Пример эволюции: цепочка контекстов.
+// ---------------------------------------------------------------------
+
+interaction_context_003 <- concept_interaction_context;;
+interaction_context_003 => nrel_main_idtf:
+    [Контекст 003: после прибытия к промежуточной точке] (* <- lang_ru;; *);;
+interaction_context_003 => nrel_context_inherits_from: interaction_context_002;;
+
+event_intermediate_point <- concept_event_user_action;;
+event_intermediate_point => nrel_main_idtf:
+    [Событие: пользователь достиг промежуточной точки маршрута]
+    (* <- lang_ru;; *);;
+interaction_context_003 => nrel_context_updated_by_event:
+    event_intermediate_point;;

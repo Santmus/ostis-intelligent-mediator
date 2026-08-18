@@ -1,0 +1,334 @@
+// =====================================================================
+// concepts/capabilities.scs
+// Подраздел: онтология возможностей интеллектуальных систем и сервисов.
+// Профиль возможностей системы s задаётся кортежем
+// Cap(s) = <T_s, In_s, Out_s, Pre_s, Post_s, Q_s, K_s, L_s> (формула 10).
+// =====================================================================
+
+section_concept_capabilities
+=> nrel_main_idtf:
+    [Подраздел. Онтология возможностей интеллектуальных систем]
+    (* <- lang_ru;; *);
+    [Subsection. Capability Ontology of Intelligent Systems]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_capability_profile;
+<- rrel_key_sc_element: concept_task_type;
+<- rrel_key_sc_element: concept_input_signature;
+<- rrel_key_sc_element: concept_output_signature;
+<- rrel_key_sc_element: concept_precondition;
+<- rrel_key_sc_element: concept_postcondition;
+<- rrel_key_sc_element: concept_qos_descriptor;
+<- rrel_key_sc_element: concept_knowledge_dependency;
+<- rrel_key_sc_element: concept_resource_constraint;
+<- rrel_key_sc_element: concept_capability_match_function;;
+
+// ---------------------------------------------------------------------
+// Корневой класс профиля возможностей.
+// ---------------------------------------------------------------------
+
+concept_capability_profile
+<- sc_node_class;
+=> nrel_main_idtf:
+    [профиль возможностей интеллектуальной системы] (* <- lang_ru;; *);
+    [capability profile] (* <- lang_en;; *);
+=> nrel_idtf: [Cap(s)];;
+
+concept_capability_profile <= nrel_inclusion: concept_ontological_artifact;;
+
+definition -> definition_capability_profile: ...
+(*
+    -> rrel_key_sc_element: concept_capability_profile;;
+    => nrel_main_idtf: [Опр.(профиль возможностей)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Профиль возможностей Cap(s) = <T_s, In_s, Out_s, Pre_s, Post_s,
+            Q_s, K_s, L_s> — формализованное онтологическое описание
+            компетенций интеллектуальной системы s, где T_s — множество
+            классов задач; In_s, Out_s — типизованные сигнатуры входов
+            и выходов; Pre_s, Post_s — пред- и постусловия; Q_s — вектор
+            показателей качества; K_s — зависимости от источников знаний;
+            L_s — ресурсные, временные и контекстные ограничения.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Композиция профиля по 8 ролевым компонентам кортежа.
+// ---------------------------------------------------------------------
+
+concept_capability_profile <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Композиция Cap(s) = <T_s, In_s, Out_s, Pre_s, Post_s, Q_s, K_s, L_s>]
+       (* <- lang_ru;; *);;
+    -> concept_task_type;
+       concept_input_signature;
+       concept_output_signature;
+       concept_precondition;
+       concept_postcondition;
+       concept_qos_descriptor;
+       concept_knowledge_dependency;
+       concept_resource_constraint;;
+*);;
+
+// ---------------------------------------------------------------------
+// Класс задач T_s.
+// ---------------------------------------------------------------------
+
+concept_task_type
+<- sc_node_class;
+=> nrel_main_idtf:
+    [тип решаемой задачи] (* <- lang_ru;; *);
+    [task type T_s] (* <- lang_en;; *);
+=> nrel_idtf: [T_s];;
+
+concept_task_type <= nrel_subdividing: ...
+(*
+    -> concept_task_type_interpretation;
+       concept_task_type_search;
+       concept_task_type_classification;
+       concept_task_type_regression;
+       concept_task_type_segmentation;
+       concept_task_type_planning;
+       concept_task_type_optimization;
+       concept_task_type_recommendation;
+       concept_task_type_diagnosis;
+       concept_task_type_explanation;
+       concept_task_type_estimation;;
+*);;
+
+concept_task_type_interpretation
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: интерпретация] (* <- lang_ru;; *);;
+concept_task_type_search
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: семантический поиск] (* <- lang_ru;; *);;
+concept_task_type_classification
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: классификация] (* <- lang_ru;; *);;
+concept_task_type_regression
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: регрессия] (* <- lang_ru;; *);;
+concept_task_type_segmentation
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: сегментация] (* <- lang_ru;; *);;
+concept_task_type_planning
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: планирование] (* <- lang_ru;; *);;
+concept_task_type_optimization
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: оптимизация] (* <- lang_ru;; *);;
+concept_task_type_recommendation
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: рекомендация] (* <- lang_ru;; *);;
+concept_task_type_diagnosis
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: диагностика] (* <- lang_ru;; *);;
+concept_task_type_explanation
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: объяснение] (* <- lang_ru;; *);;
+concept_task_type_estimation
+<- sc_node_class;
+=> nrel_main_idtf: [тип задачи: оценка] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Сигнатуры входов и выходов In_s, Out_s.
+// ---------------------------------------------------------------------
+
+concept_input_signature
+<- sc_node_class;
+=> nrel_main_idtf: [сигнатура входных данных] (* <- lang_ru;; *);
+=> nrel_main_idtf: [input signature] (* <- lang_en;; *);
+=> nrel_idtf: [In_s];;
+
+concept_output_signature
+<- sc_node_class;
+=> nrel_main_idtf: [сигнатура выходных данных] (* <- lang_ru;; *);
+=> nrel_main_idtf: [output signature] (* <- lang_en;; *);
+=> nrel_idtf: [Out_s];;
+
+// ---------------------------------------------------------------------
+// Пред- и постусловия Pre_s, Post_s.
+// ---------------------------------------------------------------------
+
+concept_precondition
+<- sc_node_class;
+=> nrel_main_idtf: [предусловие] (* <- lang_ru;; *);
+=> nrel_main_idtf: [precondition] (* <- lang_en;; *);
+=> nrel_idtf: [Pre_s];;
+
+concept_postcondition
+<- sc_node_class;
+=> nrel_main_idtf: [постусловие] (* <- lang_ru;; *);
+=> nrel_main_idtf: [postcondition] (* <- lang_en;; *);
+=> nrel_idtf: [Post_s];;
+
+// ---------------------------------------------------------------------
+// Вектор показателей качества Q_s.
+// ---------------------------------------------------------------------
+
+concept_qos_descriptor
+<- sc_node_class;
+=> nrel_main_idtf:
+    [показатели качества обработки] (* <- lang_ru;; *);
+    [quality of service descriptor] (* <- lang_en;; *);
+=> nrel_idtf: [Q_s];;
+
+concept_qos_descriptor <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Размерности Q_s = (accuracy, latency, cost,
+                                            energy, explainability)]
+       (* <- lang_ru;; *);;
+    -> concept_qos_accuracy;
+       concept_qos_latency;
+       concept_qos_cost;
+       concept_qos_energy_consumption;
+       concept_qos_explainability;
+       concept_qos_robustness;
+       concept_qos_privacy;;
+*);;
+
+concept_qos_accuracy
+<- sc_node_class;
+=> nrel_main_idtf: [показатель точности] (* <- lang_ru;; *);;
+concept_qos_latency
+<- sc_node_class;
+=> nrel_main_idtf: [показатель латентности] (* <- lang_ru;; *);;
+concept_qos_cost
+<- sc_node_class;
+=> nrel_main_idtf: [показатель стоимости] (* <- lang_ru;; *);;
+concept_qos_energy_consumption
+<- sc_node_class;
+=> nrel_main_idtf: [показатель энергопотребления] (* <- lang_ru;; *);;
+concept_qos_explainability
+<- sc_node_class;
+=> nrel_main_idtf: [показатель объяснимости] (* <- lang_ru;; *);;
+concept_qos_robustness
+<- sc_node_class;
+=> nrel_main_idtf: [показатель робастности] (* <- lang_ru;; *);;
+concept_qos_privacy
+<- sc_node_class;
+=> nrel_main_idtf: [показатель приватности] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Зависимости от источников знаний K_s и ресурсные ограничения L_s.
+// ---------------------------------------------------------------------
+
+concept_knowledge_dependency
+<- sc_node_class;
+=> nrel_main_idtf:
+    [зависимость от источника знаний] (* <- lang_ru;; *);
+    [knowledge dependency] (* <- lang_en;; *);
+=> nrel_idtf: [K_s];;
+
+concept_resource_constraint
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ресурсное / временное / контекстное ограничение] (* <- lang_ru;; *);
+    [resource constraint] (* <- lang_en;; *);
+=> nrel_idtf: [L_s];;
+
+concept_resource_constraint <= nrel_subdividing: ...
+(*
+    -> concept_constraint_cpu;
+       concept_constraint_memory;
+       concept_constraint_gpu;
+       concept_constraint_network;
+       concept_constraint_time_window;
+       concept_constraint_context_scope;
+       concept_constraint_data_residency;;
+*);;
+
+concept_constraint_cpu
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение CPU] (* <- lang_ru;; *);;
+concept_constraint_memory
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение памяти] (* <- lang_ru;; *);;
+concept_constraint_gpu
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение GPU] (* <- lang_ru;; *);;
+concept_constraint_network
+<- sc_node_class;
+=> nrel_main_idtf: [ограничение сетевой полосы] (* <- lang_ru;; *);;
+concept_constraint_time_window
+<- sc_node_class;
+=> nrel_main_idtf: [временное окно доступности] (* <- lang_ru;; *);;
+concept_constraint_context_scope
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекстная область применимости] (* <- lang_ru;; *);;
+concept_constraint_data_residency
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ограничение по местоположению данных] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Функция семантической применимости match(σ, s) (формула 11).
+// ---------------------------------------------------------------------
+
+concept_capability_match_function
+<- sc_node_class;
+=> nrel_main_idtf:
+    [функция семантической применимости match(σ, s)] (* <- lang_ru;; *);
+    [capability match function] (* <- lang_en;; *);;
+
+definition -> definition_capability_match: ...
+(*
+    -> rrel_key_sc_element: concept_capability_match_function;;
+    => nrel_main_idtf:
+        [Опр.(функция семантической применимости)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [match(σ, s) = w_T·sim_T(τ_σ, T_s) + w_I·sim_I(In_σ, In_s)
+            + w_O·sim_O(Out_σ, Out_s) + w_C·ctx_compat(C, s)
+            + w_Q·qos_score(s, τ_σ) + w_R·trust(s, τ_σ, h),
+            Σ w_k = 1.
+            sim_T — мера принадлежности типа подзадачи классам T_s;
+            sim_I, sim_O — меры совместимости сигнатур;
+            ctx_compat — контекстная совместимость;
+            qos_score — нормализованная свёртка вектора Q_s;
+            trust(s, τ, h) — скалярная оценка доверия (см. 3.H).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Правило допустимости назначения (формула 12).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_assign_admissibility: ...
+(*
+    -> rrel_key_sc_element: concept_capability_match_function;;
+    => nrel_main_idtf:
+        [Утв.(допустимость назначения подзадачи)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [assign(σ, s) ← match(σ, s) ≥ θ ∧ valid(C, L_s).
+            Назначение подзадачи σ системе s допустимо тогда и только
+            тогда, когда значение функции применимости не ниже порога θ
+            и контекст C не нарушает ресурсных ограничений L_s.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Задача формирования коалиции (формула 13).
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_coalition_optimization: ...
+(*
+    -> rrel_key_sc_element: concept_capability_match_function;;
+    => nrel_main_idtf:
+        [Утв.(задача формирования коалиции)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Формирование коалиции есть решение оптимизационной задачи
+            max Σ_{σ ∈ T(q)} match(σ, χ(σ))
+            s.t. coverage(χ, T(q)) ∧ consistent(C, χ),
+            где χ : T(q) → S — функция назначения подзадач,
+            T(q) — декомпозиция запроса q. Решение находится агентом
+            agent_task_allocator.] (* <- lang_ru;; *);;
+    *);;
+*);;

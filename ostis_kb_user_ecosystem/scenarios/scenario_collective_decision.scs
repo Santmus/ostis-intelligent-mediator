@@ -1,0 +1,91 @@
+// =====================================================================
+// scenarios/scenario_collective_decision.scs
+// Сценарий: коллективное принятие решений с обнаружением конфликта
+// между критерием энергоэффективности и критерием безопасности
+// и его разрешением аргументационным методом.
+// =====================================================================
+
+section_scenario_collective_decision
+=> nrel_main_idtf:
+    [Сценарий. Коллективное принятие решений с разрешением конфликтов]
+    (* <- lang_ru;; *);
+    [Scenario. Collective Decision-Making With Conflict Resolution]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: conflict_001;
+<- rrel_key_sc_element: collective_decision_001;
+<- rrel_key_sc_element: collective_decision_resolution_001;
+<- rrel_key_sc_element: argumentation_framework_001;;
+
+// ИС-эксперт по безопасности маршрута.
+system_safety_assessor <- concept_symbolic_intelligent_system;;
+system_safety_assessor => nrel_main_idtf:
+    [Эксперт по безопасности маршрута] (* <- lang_ru;; *);;
+system_safety_assessor => nrel_member_of: community_route_planning;;
+
+result_safety_score <- concept_processing_result;;
+system_safety_assessor => nrel_produces: result_safety_score;;
+result_safety_score => nrel_main_idtf:
+    [Оценка безопасности: r_2 ниже допустимого порога] (* <- lang_ru;; *);;
+result_safety_score => nrel_generated_in_context: interaction_context_001;;
+
+// Конфликт между рекомендацией и оценкой безопасности.
+conflict_001 <- concept_logical_contradiction;;
+conflict_001 <- concept_result_conflict;;
+conflict_001 => nrel_main_idtf:
+    [Конфликт: r_2 оптимален по энергии, но небезопасен]
+    (* <- lang_ru;; *);;
+result_safety_score => nrel_conflicts_with: recommendation_001;;
+recommendation_001 => nrel_conflicts_with: result_safety_score;;
+
+// Аргументационный каркас.
+argumentation_framework_001 <- concept_argumentation_framework;;
+argumentation_framework_001 => nrel_main_idtf:
+    [Аргументационный каркас разрешения конфликта r_2 vs безопасность]
+    (* <- lang_ru;; *);;
+
+argument_pro_r2 <- concept_argument_supporting;;
+argument_pro_r2 => nrel_main_idtf:
+    [Аргумент за r_2: минимум энергопотребления (37 кВт·ч)] (* <- lang_ru;; *);;
+
+argument_against_r2 <- concept_argument_counter;;
+argument_against_r2 => nrel_main_idtf:
+    [Контраргумент против r_2: безопасность ниже порога] (* <- lang_ru;; *);;
+argument_against_r2 => nrel_attacks: argument_pro_r2;;
+
+argument_for_r1 <- concept_argument_supporting;;
+argument_for_r1 => nrel_main_idtf:
+    [Аргумент за r_1: безопасность OK, +8.5% энергии относительно r_2]
+    (* <- lang_ru;; *);;
+
+// Коллективное решение.
+collective_decision_001 <- concept_collective_decision;;
+collective_decision_001 => nrel_main_idtf:
+    [Коллективное решение: выбран маршрут r_1 как энергоэффективный
+     и удовлетворяющий ограничениям безопасности] (* <- lang_ru;; *);;
+collective_decision_001 => nrel_resolves_conflict: conflict_001;;
+argument_for_r1 => nrel_argues_for: collective_decision_001;;
+
+collective_decision_resolution_001
+<- concept_strategy_argumentation_based;
+-> rrel_decision_proposal: collective_decision_001;
+-> rrel_decision_argument: argument_for_r1;
+-> rrel_decision_counter_argument: argument_against_r2;
+-> rrel_decision_weight: [0.91];
+-> rrel_context: interaction_context_001;;
+collective_decision_001 => nrel_aggregated_by: collective_decision_resolution_001;;
+
+collective_decision_001 => nrel_delivered_to: user_alice;;
+collective_decision_001 => nrel_satisfies: goal_optimal_route;;
+
+// Объяснение коллективного решения.
+explanation_collective_001 <- concept_explanation_global;;
+explanation_collective_001 <- concept_explanation_argumentation_based;;
+explanation_collective_001 => nrel_main_idtf:
+    [Объяснение: маршрут r_2 был отклонён вследствие нарушения
+     ограничений безопасности; маршрут r_1 удовлетворяет всем
+     активным критериям при допустимом увеличении энергозатрат
+     на 8.5%.] (* <- lang_ru;; *);;
+collective_decision_001 => nrel_supported_by_explanation:
+    explanation_collective_001;;
+collective_decision_001 => nrel_explained_by: explanation_collective_001;;

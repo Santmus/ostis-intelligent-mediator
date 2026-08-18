@@ -1,0 +1,63 @@
+// =====================================================================
+// examples/example_trust.scs
+// Примеры экземпляров уровня доверия и их связей с интеллектуальными
+// системами сообщества.
+// =====================================================================
+
+section_example_trust
+=> nrel_main_idtf:
+    [Подраздел. Примеры уровней доверия] (* <- lang_ru;; *);
+    [Subsection. Example Trust Levels] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: trust_level_energy;
+<- rrel_key_sc_element: trust_level_route_planner;
+<- rrel_key_sc_element: trust_level_safety_assessor;;
+
+// ---------------------------------------------------------------------
+// Скалярные уровни доверия с обоснованием.
+// ---------------------------------------------------------------------
+
+trust_level_energy <- concept_trust_level;;
+trust_level_energy => nrel_main_idtf:
+    [Уровень доверия energy_model: 0.91 на основе истории 90 дней
+     (50 завершённых подзадач, 47 одобрены пользователями)] (* <- lang_ru;; *);;
+trust_level_energy <- concept_trust_for_task;;
+
+trust_level_route_planner <- concept_trust_level;;
+trust_level_route_planner => nrel_main_idtf:
+    [Уровень доверия route_planner: 0.95
+     (метрика основана на 312 подзадачах планирования)] (* <- lang_ru;; *);;
+
+trust_level_safety_assessor <- concept_trust_level;;
+trust_level_safety_assessor => nrel_main_idtf:
+    [Уровень доверия safety_assessor: 0.98
+     (специализированная экспертная система, сертифицирована)]
+    (* <- lang_ru;; *);;
+
+intelligent_system_energy_model => nrel_has_trust_level: trust_level_energy;;
+intelligent_system_route_planner => nrel_has_trust_level: trust_level_route_planner;;
+system_safety_assessor => nrel_has_trust_level: trust_level_safety_assessor;;
+
+// ---------------------------------------------------------------------
+// Векторное представление кортежа T(s, τ).
+// ---------------------------------------------------------------------
+
+trust_vector_route_planner <- concept_trust_vector;;
+trust_vector_route_planner => nrel_main_idtf:
+    [T(route_planner) = <t_rel=0.96, t_acc=0.93, t_sec=0.88, t_tr=1.0>]
+    (* <- lang_ru;; *);;
+
+trust_vector_safety_assessor <- concept_trust_vector;;
+trust_vector_safety_assessor => nrel_main_idtf:
+    [T(safety_assessor) = <t_rel=0.99, t_acc=0.97, t_sec=0.95, t_tr=1.0>]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Пример сравнения trust для распределения подзадачи.
+// ---------------------------------------------------------------------
+
+trust_comparison_001 <- concept_process_trust_assessment;;
+trust_comparison_001 => nrel_main_idtf:
+    [Сравнение trust(s, τ_estimation, h) при выборе исполнителя:
+     energy_model_v1 = 0.91, energy_model_v2 = 0.82, hybrid_es = 0.74;
+     выбран energy_model_v1] (* <- lang_ru;; *);;

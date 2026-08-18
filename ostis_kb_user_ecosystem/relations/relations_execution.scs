@@ -1,0 +1,280 @@
+// =====================================================================
+// relations/relations_execution.scs
+// Подмножество R_exec — отношения назначения, исполнения, порождения
+// и интеграции результатов; включает связи возможностей и сервисов.
+// =====================================================================
+
+section_relations_execution
+=> nrel_main_idtf:
+    [Подраздел. Исполнительные отношения R_exec] (* <- lang_ru;; *);
+    [Subsection. Execution Relations R_exec] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Назначение и исполнение подзадач.
+// ---------------------------------------------------------------------
+
+nrel_assigned_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [назначается*] (* <- lang_ru;; *);
+    [assigned_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_intelligent_system;;
+
+nrel_produces
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [производит*] (* <- lang_ru;; *);
+    [produces*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_processing_result;;
+
+nrel_produced_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [произведено*] (* <- lang_ru;; *);
+    [produced_by*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_intelligent_system;;
+
+nrel_caused_by_subtask
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [обусловлено_подзадачей*] (* <- lang_ru;; *);
+    [caused_by_subtask*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_subtask;;
+
+nrel_obtained_from
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [получено_от*] (* <- lang_ru;; *);
+    [obtained_from*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_intelligent_system;;
+
+nrel_integrated_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [интегрируется_в*] (* <- lang_ru;; *);
+    [integrated_in*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_integrated_result;;
+
+nrel_delivered_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [предоставляется*] (* <- lang_ru;; *);
+    [delivered_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_user;;
+
+// ---------------------------------------------------------------------
+// Возможности и сервисы.
+// ---------------------------------------------------------------------
+
+nrel_has_capability_profile
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [обладает_профилем_возможностей*] (* <- lang_ru;; *);
+    [has_capability_profile*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_capability_profile;;
+
+nrel_applies_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [применима_к*] (* <- lang_ru;; *);
+    [applies_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_task_type;;
+
+nrel_describes
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [описывает*] (* <- lang_ru;; *);
+    [describes*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_intelligent_service;;
+
+nrel_serves_request
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [обслуживает_запрос*] (* <- lang_ru;; *);
+    [serves_request*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_community_of_intelligent_systems;
+=> nrel_second_domain: concept_user_request;;
+
+nrel_includes
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [включает_систему*] (* <- lang_ru;; *);
+    [includes*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_community_of_intelligent_systems;
+=> nrel_second_domain: concept_intelligent_system;;
+
+// ---------------------------------------------------------------------
+// Структурные отношения профиля возможностей Cap(s).
+// ---------------------------------------------------------------------
+
+nrel_precondition
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_предусловие*] (* <- lang_ru;; *);
+    [has_precondition*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_precondition;;
+
+nrel_postcondition
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_постусловие*] (* <- lang_ru;; *);
+    [has_postcondition*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_postcondition;;
+
+nrel_input_signature
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_входную_сигнатуру*] (* <- lang_ru;; *);
+    [has_input_signature*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_input_signature;;
+
+nrel_output_signature
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_выходную_сигнатуру*] (* <- lang_ru;; *);
+    [has_output_signature*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_output_signature;;
+
+nrel_qos_descriptor
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_показатели_качества*] (* <- lang_ru;; *);
+    [has_qos_descriptor*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_qos_descriptor;;
+
+nrel_knowledge_dependency
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_зависимость_от_знаний*] (* <- lang_ru;; *);
+    [has_knowledge_dependency*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_knowledge_dependency;;
+
+nrel_resource_constraint
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_ресурсное_ограничение*] (* <- lang_ru;; *);
+    [has_resource_constraint*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_capability_profile;
+=> nrel_second_domain: concept_resource_constraint;;
+
+// ---------------------------------------------------------------------
+// Coalition / decision relations.
+// ---------------------------------------------------------------------
+
+nrel_proposes_decision
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [предлагает_решение*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_collective_decision;;
+
+nrel_aggregated_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [агрегировано_стратегией*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_collective_decision;
+=> nrel_second_domain: concept_decision_aggregation_strategy;;
+
+// ---------------------------------------------------------------------
+// Структурированный отказ ⊥ = <c, ρ, a>.
+// ---------------------------------------------------------------------
+
+nrel_resulted_in_failure
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [завершилось_отказом*] (* <- lang_ru;; *);
+    [resulted_in_failure*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_processing_failure;;
+
+nrel_failure_cause
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_код_причины*] (* <- lang_ru;; *);
+    [has_failure_cause*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_processing_failure;
+=> nrel_second_domain: concept_failure_cause;;
+
+nrel_recovery_recommendation
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_рекомендацию_по_восстановлению*] (* <- lang_ru;; *);
+    [has_recovery_recommendation*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_failure;
+=> nrel_second_domain: concept_recovery_action;;
+
+nrel_failure_audit_record
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_запись_аудита*] (* <- lang_ru;; *);
+    [has_audit_record*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_failure;
+=> nrel_second_domain: concept_provenance_record;;

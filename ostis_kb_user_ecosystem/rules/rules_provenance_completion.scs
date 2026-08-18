@@ -1,0 +1,111 @@
+// =====================================================================
+// rules/rules_provenance_completion.scs
+// Правила автоматического восполнения провенансной цепочки
+// и контроля метрик прозрачности π = <π_proc, π_dec, π_data>.
+// Активируются agent_provenance_registrar.
+// =====================================================================
+
+section_rules_provenance_completion
+=> nrel_main_idtf:
+    [Подраздел. Правила восполнения провенанса] (* <- lang_ru;; *);
+    [Subsection. Provenance Completion Rules] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_auto_record_prov_entity: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(автоматическая регистрация PROV Entity)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [When: new concept_processing_result(r) появляется в sc-памяти,
+            Then: создать concept_prov_entity(e_r);
+                  установить wasGeneratedBy(e_r, prov_activity_of_producer);
+                  wasAttributedTo(e_r, prov_agent_of_producer);
+                  has_provenance(r, record_r).] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_auto_record_prov_activity: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(автоматическая регистрация PROV Activity)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [When: sc-агент s_a выполняет процесс π_i на входе in_i,
+            Then: создать concept_prov_activity(a) с
+                  rrel_actor=s_a, rrel_input=in_i, rrel_timestamp=t;
+                  PROV:used(a, in_i); wasAssociatedWith(a, agent_of(s_a)).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_compute_pi_metrics: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(вычисление метрик π_proc, π_dec, π_data)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Периодически и по запросу:
+            π_proc = |{π ∈ Proc : ∃ provenance(π)}| / |Proc|;
+            π_dec  = |{d ∈ Dec  : ∃ provenance(d)}| / |Dec|;
+            π_data = |{d ∈ Data : ∃ provenance(d)}| / |Data|.
+            Если π_• < 1.0 — создать concept_integrity_violation
+            типа transparency_gap; запустить
+            rule_fill_missing_provenance.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_fill_missing_provenance: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(восполнение пропусков провенанса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: ∃ x ∈ {Proc, Dec, Data}. ¬ ∃ provenance(x),
+            Then: реконструировать provenance из:
+                  (1) журнала событий sc-машины;
+                  (2) истории изменения sc-памяти;
+                  (3) timestamp-ов смежных активностей.
+            Если реконструкция невозможна — пометить элемент
+            как unverifiable; снижение π_• фиксируется как
+            техническая характеристика модели в данном
+            временном срезе.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_link_explanation_to_provenance: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(связывание объяснения с провенансом)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждого explanation_construction_act создать
+            wasDerivedFrom(e, r_i) для всех use_results;
+            PROV:used(activity_of_e, rule_i) для всех applies_rules;
+            wasAttributedTo(e, agent_explanation_builder).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_verify_transitive_closure: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(проверка транзитивного замыкания derived_from)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для всякого integrated_result ir выполнить поиск
+            transitive_closure(derived_from, ir) до достижения
+            request. Если закрытие не достигает request — нарушение
+            свойства прозрачности; снижение π_data; запуск
+            rule_fill_missing_provenance.] (* <- lang_ru;; *);;
+    *);;
+*);;

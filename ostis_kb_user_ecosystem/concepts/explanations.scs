@@ -1,0 +1,152 @@
+// =====================================================================
+// concepts/explanations.scs
+// Подраздел: объяснения, формируемые сообществом интеллектуальных систем.
+// XAI-совместимая типология; согласовано с [15; 16; 34].
+// =====================================================================
+
+section_concept_explanations
+=> nrel_main_idtf:
+    [Подраздел. Объяснения результатов коллективной обработки]
+    (* <- lang_ru;; *);
+    [Subsection. Explanations of Collective Processing Results]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_explanation;
+<- rrel_key_sc_element: concept_explanation_local;
+<- rrel_key_sc_element: concept_explanation_global;
+<- rrel_key_sc_element: concept_explanation_contrastive;
+<- rrel_key_sc_element: concept_explanation_counterfactual;;
+
+// ---------------------------------------------------------------------
+// Класс объяснения.
+// ---------------------------------------------------------------------
+
+concept_explanation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [объяснение результата] (* <- lang_ru;; *);
+    [explanation] (* <- lang_en;; *);;
+concept_explanation <= nrel_inclusion: concept_meta_result_class_group;;
+
+definition -> definition_explanation: ...
+(*
+    -> rrel_key_sc_element: concept_explanation;;
+    => nrel_main_idtf: [Опр.(объяснение результата)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Объяснение — sc-структура, фиксирующая трассируемую цепочку
+            выводов и провенансных связей, использованных при построении
+            результата. Обеспечивает интерпретируемость коллективного
+            решения и удовлетворяет требованию подотчётности XAI.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_explanation <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение объяснений по типу]
+       (* <- lang_ru;; *);;
+    -> concept_explanation_local;
+       concept_explanation_global;
+       concept_explanation_contrastive;
+       concept_explanation_counterfactual;
+       concept_explanation_causal;
+       concept_explanation_example_based;
+       concept_explanation_argumentation_based;;
+*);;
+
+concept_explanation_local
+<- sc_node_class;
+=> nrel_main_idtf: [локальное объяснение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [local explanation] (* <- lang_en;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_global
+<- sc_node_class;
+=> nrel_main_idtf: [глобальное объяснение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [global explanation] (* <- lang_en;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_contrastive
+<- sc_node_class;
+=> nrel_main_idtf: [контрастивное объяснение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [contrastive explanation] (* <- lang_en;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_counterfactual
+<- sc_node_class;
+=> nrel_main_idtf: [контрфактическое объяснение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [counterfactual explanation] (* <- lang_en;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_causal
+<- sc_node_class;
+=> nrel_main_idtf: [причинное объяснение] (* <- lang_ru;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_example_based
+<- sc_node_class;
+=> nrel_main_idtf: [объяснение на примерах] (* <- lang_ru;; *);
+<= nrel_inclusion: concept_explanation;;
+
+concept_explanation_argumentation_based
+<- sc_node_class;
+=> nrel_main_idtf:
+    [аргументационное объяснение] (* <- lang_ru;; *);
+<= nrel_inclusion: concept_explanation;;
+
+// ---------------------------------------------------------------------
+// Акт построения объяснения как n-арная sc-конструкция.
+// ---------------------------------------------------------------------
+
+concept_explanation_construction_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт построения объяснения] (* <- lang_ru;; *);
+    [act_of_explanation_construction] (* <- lang_en;; *);;
+
+definition -> definition_explanation_construction_act: ...
+(*
+    -> rrel_key_sc_element: concept_explanation_construction_act;;
+    => nrel_main_idtf:
+        [Опр.(акт построения объяснения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт построения объяснения — рефицированный экземпляр,
+            фиксирующий: explanandum (объясняемый результат),
+            тип объяснения, использованные частичные результаты
+            (rrel_uses_results), применённые правила вывода
+            (rrel_applies_rules), источники знаний (rrel_based_on)
+            и время построения (rrel_construction_time). Совместим
+            с шаблонами PROV-O.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ролевые отношения для акта построения объяснения.
+// ---------------------------------------------------------------------
+
+rrel_explanandum
+<- sc_node_role_relation;
+=> nrel_main_idtf: [объясняемое'] (* <- lang_ru;; *);;
+
+rrel_explanation_type
+<- sc_node_role_relation;
+=> nrel_main_idtf: [тип_объяснения'] (* <- lang_ru;; *);;
+
+rrel_uses_results
+<- sc_node_role_relation;
+=> nrel_main_idtf: [использует_результаты'] (* <- lang_ru;; *);;
+
+rrel_applies_rules
+<- sc_node_role_relation;
+=> nrel_main_idtf: [применяет_правила'] (* <- lang_ru;; *);;
+
+rrel_based_on
+<- sc_node_role_relation;
+=> nrel_main_idtf: [основано_на'] (* <- lang_ru;; *);;
+
+rrel_construction_time
+<- sc_node_role_relation;
+=> nrel_main_idtf: [время_построения'] (* <- lang_ru;; *);;

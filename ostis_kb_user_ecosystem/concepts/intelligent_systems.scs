@@ -1,0 +1,227 @@
+// =====================================================================
+// concepts/intelligent_systems.scs
+// Подраздел: интеллектуальные системы как автономные компоненты
+// интеллектуальной экосистемы. Согласовано с терминологией OSTIS:
+// ostis-система — интеллектуальная система, обладающая внутренней
+// онтологией, доступной для интроспекции другими системами сообщества
+// [3; 5; 13; 29].
+// =====================================================================
+
+section_concept_intelligent_systems
+=> nrel_main_idtf:
+    [Подраздел. Интеллектуальные системы] (* <- lang_ru;; *);
+    [Subsection. Intelligent Systems] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_intelligent_system;
+<- rrel_key_sc_element: concept_ostis_system;
+<- rrel_key_sc_element: concept_symbolic_intelligent_system;
+<- rrel_key_sc_element: concept_subsymbolic_intelligent_system;
+<- rrel_key_sc_element: concept_hybrid_intelligent_system;
+<- rrel_key_sc_element: concept_llm_intelligent_system;
+<- rrel_key_sc_element: concept_intelligent_mediator;
+<- rrel_key_sc_element: concept_system_owner;
+<- rrel_key_sc_element: concept_system_version;;
+
+// ---------------------------------------------------------------------
+// concept_intelligent_system — верхнеуровневый класс E_intelligent_system.
+// ---------------------------------------------------------------------
+
+concept_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интеллектуальная система] (* <- lang_ru;; *);
+    [intelligent system] (* <- lang_en;; *);
+=> nrel_idtf: [E_IS];;
+
+concept_intelligent_system <= nrel_inclusion: concept_ecosystem_component;;
+concept_intelligent_system <= nrel_inclusion: concept_agent_class_group;;
+
+definition -> definition_intelligent_system: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_system;;
+    => nrel_main_idtf: [Опр.(интеллектуальная система)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Интеллектуальная система — автономный компонент интеллектуальной
+            экосистемы, обладающий собственной онтологической моделью знаний,
+            формальной спецификацией возможностей и поведением, доступным
+            для интроспекции другими компонентами сообщества посредством
+            публикации профиля в общей семантической памяти.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// concept_ostis_system — специализация под технологию OSTIS.
+// ---------------------------------------------------------------------
+
+concept_ostis_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ostis-система] (* <- lang_ru;; *);
+    [ostis-system] (* <- lang_en;; *);;
+
+concept_ostis_system <= nrel_strict_inclusion: concept_intelligent_system;;
+
+definition -> definition_ostis_system: ...
+(*
+    -> rrel_key_sc_element: concept_ostis_system;;
+    => nrel_main_idtf: [Опр.(ostis-система)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [ostis-система — интеллектуальная система, построенная средствами
+            технологии OSTIS, представляющая знания в SC-коде и обладающая
+            унифицированной семантической памятью, доступной для других
+            ostis-систем сообщества. Поддерживает прямое включение в общую
+            sc-память интеллектуальной экосистемы без межформатных
+            преобразований.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение по парадигме обработки знаний.
+// ---------------------------------------------------------------------
+
+concept_intelligent_system <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение по парадигме обработки знаний]
+       (* <- lang_ru;; *);;
+    -> concept_symbolic_intelligent_system;
+       concept_subsymbolic_intelligent_system;
+       concept_hybrid_intelligent_system;
+       concept_llm_intelligent_system;
+       concept_rule_based_intelligent_system;
+       concept_case_based_intelligent_system;
+       concept_neuro_symbolic_intelligent_system;;
+*);;
+
+concept_symbolic_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [символьная интеллектуальная система] (* <- lang_ru;; *);
+=> nrel_main_idtf: [symbolic intelligent system] (* <- lang_en;; *);;
+
+concept_subsymbolic_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [субсимвольная интеллектуальная система] (* <- lang_ru;; *);
+=> nrel_main_idtf: [subsymbolic intelligent system] (* <- lang_en;; *);;
+
+concept_hybrid_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [гибридная интеллектуальная система] (* <- lang_ru;; *);
+=> nrel_main_idtf: [hybrid intelligent system] (* <- lang_en;; *);;
+
+concept_llm_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [ИС на основе большой языковой модели] (* <- lang_ru;; *);
+=> nrel_main_idtf: [LLM-based intelligent system] (* <- lang_en;; *);;
+
+concept_rule_based_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [продукционная ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [rule-based intelligent system] (* <- lang_en;; *);;
+
+concept_case_based_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf: [прецедентная ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [case-based intelligent system] (* <- lang_en;; *);;
+
+concept_neuro_symbolic_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [нейросимвольная интеллектуальная система] (* <- lang_ru;; *);
+    [neuro-symbolic intelligent system] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Разбиение по функциональной роли в сообществе.
+// ---------------------------------------------------------------------
+
+concept_intelligent_system <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение по функциональной роли]
+       (* <- lang_ru;; *);;
+    -> concept_intelligent_mediator;
+       concept_specialized_intelligent_system;
+       concept_orchestrator_intelligent_system;
+       concept_evaluator_intelligent_system;
+       concept_repository_intelligent_system;;
+*);;
+
+concept_intelligent_mediator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интеллектуальный посредник] (* <- lang_ru;; *);
+    [intelligent mediator] (* <- lang_en;; *);;
+concept_intelligent_mediator <= nrel_strict_inclusion: concept_ostis_system;;
+
+definition -> definition_intelligent_mediator: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_mediator;;
+    => nrel_main_idtf: [Опр.(интеллектуальный посредник)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Интеллектуальный посредник — ostis-система, выполняющая
+            функции координатора взаимодействия между пользователем и
+            сообществом интеллектуальных систем. Базой знаний посредника
+            выступает онтологическая модель взаимодействия, а решателем
+            задач — совокупность sc-агентов, реализующих процессы
+            жизненного цикла π.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_specialized_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [специализированная интеллектуальная система] (* <- lang_ru;; *);
+    [specialized intelligent system] (* <- lang_en;; *);;
+
+concept_orchestrator_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ИС-оркестратор] (* <- lang_ru;; *);
+    [orchestrator intelligent system] (* <- lang_en;; *);;
+
+concept_evaluator_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ИС-оценщик] (* <- lang_ru;; *);
+    [evaluator intelligent system] (* <- lang_en;; *);;
+
+concept_repository_intelligent_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ИС-репозиторий знаний] (* <- lang_ru;; *);
+    [repository intelligent system] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Атрибутный уровень: идентификатор системы, версия, владелец.
+// ---------------------------------------------------------------------
+
+concept_system_owner
+<- sc_node_class;
+=> nrel_main_idtf: [владелец интеллектуальной системы] (* <- lang_ru;; *);
+=> nrel_main_idtf: [system owner] (* <- lang_en;; *);;
+
+concept_system_version
+<- sc_node_class;
+=> nrel_main_idtf: [версия интеллектуальной системы] (* <- lang_ru;; *);
+=> nrel_main_idtf: [system version] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Ограничение: каждая ИС обладает спецификацией возможностей.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_is_has_capability: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_system;;
+    => nrel_main_idtf: [Утв.(ИС, обязательный профиль возможностей)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Каждой интеллектуальной системе s сопоставлен хотя бы один
+            экземпляр класса concept_capability_profile посредством
+            отношения nrel_has_capability_profile; без публикации
+            профиля система не может быть включена в сообщество
+            и не учитывается агентом распределения подзадач.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

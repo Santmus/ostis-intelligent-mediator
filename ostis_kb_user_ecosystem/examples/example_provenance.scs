@@ -1,0 +1,70 @@
+// =====================================================================
+// examples/example_provenance.scs
+// Примеры провенансных записей и их связей в духе W3C PROV-O.
+// =====================================================================
+
+section_example_provenance
+=> nrel_main_idtf:
+    [Подраздел. Примеры провенансных записей] (* <- lang_ru;; *);
+    [Subsection. Example Provenance Records] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: prov_entity_result_energy;
+<- rrel_key_sc_element: prov_activity_energy_estimation;
+<- rrel_key_sc_element: prov_agent_energy_model;;
+
+// ---------------------------------------------------------------------
+// PROV-O триада для частичного результата result_energy.
+// ---------------------------------------------------------------------
+
+prov_entity_result_energy <- concept_prov_entity;;
+prov_entity_result_energy => nrel_main_idtf:
+    [PROV Entity: оценки энергопотребления] (* <- lang_ru;; *);;
+
+prov_activity_energy_estimation <- concept_prov_activity;;
+prov_activity_energy_estimation => nrel_main_idtf:
+    [PROV Activity: запуск оценки энергопотребления (2025-09-12T14:08:52Z)]
+    (* <- lang_ru;; *);;
+
+prov_agent_energy_model <- concept_prov_agent;;
+prov_agent_energy_model => nrel_main_idtf:
+    [PROV Agent: intelligent_system_energy_model] (* <- lang_ru;; *);;
+
+prov_entity_result_energy => nrel_prov_was_generated_by:
+    prov_activity_energy_estimation;;
+prov_entity_result_energy => nrel_prov_was_attributed_to:
+    prov_agent_energy_model;;
+prov_activity_energy_estimation => nrel_prov_was_associated_with:
+    prov_agent_energy_model;;
+prov_activity_energy_estimation => nrel_prov_used: payload_query_routes;;
+
+// ---------------------------------------------------------------------
+// Цепочка derived_from для трассировки рекомендации.
+// ---------------------------------------------------------------------
+
+recommendation_001 => nrel_derived_from: result_ranking;;
+result_ranking      => nrel_derived_from: result_energy;;
+result_energy       => nrel_derived_from: result_routes;;
+result_routes       => nrel_derived_from: request_001;;
+
+// Цепочка transitively замыкается:
+// recommendation_001 → result_ranking → result_energy → result_routes → request_001.
+
+// ---------------------------------------------------------------------
+// Применение шаблонов F_prov.
+// ---------------------------------------------------------------------
+
+prov_record_assignment_001 <- concept_provenance_record;;
+prov_record_assignment_001 <- concept_template_subtask_provenance;;
+prov_record_assignment_001 => nrel_main_idtf:
+    [Провенансная запись: назначение subtask_energy_estimation
+     системе energy_model в контексте 001 в 14:08:53]
+    (* <- lang_ru;; *);;
+assignment_act_001 => nrel_has_provenance: prov_record_assignment_001;;
+
+prov_record_integration_001 <- concept_provenance_record;;
+prov_record_integration_001 <- concept_template_integration_provenance;;
+prov_record_integration_001 => nrel_main_idtf:
+    [Провенансная запись: интеграция трёх частичных результатов
+     в integrated_result_001 sc-агентом agent_result_integrator
+     с применением rule_aggregate_results] (* <- lang_ru;; *);;
+integrated_result_001 => nrel_has_provenance: prov_record_integration_001;;

@@ -1,0 +1,56 @@
+// =====================================================================
+// scenarios/scenario_recommendation.scs
+// Сценарий: формирование персональной рекомендации пользователю
+// с применением trust-weighted стратегии агрегации.
+// =====================================================================
+
+section_scenario_recommendation
+=> nrel_main_idtf:
+    [Сценарий. Формирование персональной рекомендации]
+    (* <- lang_ru;; *);
+    [Scenario. Personalised Recommendation Generation]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: service_recommender_001;
+<- rrel_key_sc_element: recommendation_001;
+<- rrel_key_sc_element: aggregation_001;;
+
+service_recommender_001 <- concept_recommendation_service;;
+service_recommender_001 => nrel_main_idtf:
+    [Сервис рекомендаций по маршрутам] (* <- lang_ru;; *);;
+
+recommendation_001 <- concept_recommendation;;
+recommendation_001 <- concept_recommendation_ranked_list;;
+recommendation_001 => nrel_main_idtf:
+    [Рекомендация: ранжированный список маршрутов
+     (r_2 → r_1 → r_3) с обоснованием по совокупности критериев]
+    (* <- lang_ru;; *);;
+service_recommender_001 => nrel_produces: recommendation_001;;
+recommendation_001 => nrel_caused_by_subtask: subtask_ranking;;
+
+// Стратегия агрегации с учётом доверия.
+aggregation_001 <- concept_strategy_trust_weighted;;
+aggregation_001
+-> rrel_decision_proposal: recommendation_001;
+-> rrel_decision_weight: [0.78];
+-> rrel_decision_argument: argument_low_energy;
+-> rrel_context: interaction_context_001;;
+recommendation_001 => nrel_aggregated_by: aggregation_001;;
+
+argument_low_energy <- concept_explanation_local;;
+argument_low_energy <- concept_argument_supporting;;
+argument_low_energy => nrel_main_idtf:
+    [Аргумент: маршрут r_2 минимизирует энергопотребление при сохранении
+     заданных временных ограничений] (* <- lang_ru;; *);;
+argument_low_energy => nrel_argues_for: recommendation_001;;
+
+recommendation_001 => nrel_supported_by_explanation: argument_low_energy;;
+recommendation_001 => nrel_delivered_to: user_alice;;
+
+// Контрфактическое объяснение «почему не r_3».
+explanation_recommendation_counter <- concept_explanation_counterfactual;;
+explanation_recommendation_counter => nrel_main_idtf:
+    [Контрфактическое объяснение: при увеличении допуска времени
+     на 12% оптимальным стал бы маршрут r_3]
+    (* <- lang_ru;; *);;
+recommendation_001 => nrel_explained_by: explanation_recommendation_counter;;

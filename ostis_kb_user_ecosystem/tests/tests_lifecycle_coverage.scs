@@ -1,0 +1,134 @@
+// =====================================================================
+// tests/tests_lifecycle_coverage.scs
+// Тесты покрытия жизненного цикла: для каждого процесса π_i проверяется
+// наличие sc-агента, правила и связи с провенансом.
+// =====================================================================
+
+section_tests_lifecycle_coverage
+=> nrel_main_idtf:
+    [Подраздел. Тесты покрытия жизненного цикла Π]
+    (* <- lang_ru;; *);
+    [Subsection. Lifecycle Coverage Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_coverage;;
+
+concept_test_coverage
+<- sc_node_class;
+=> nrel_main_idtf:
+    [тест покрытия (агент-правило-процесс)] (* <- lang_ru;; *);;
+concept_test_coverage <= nrel_strict_inclusion: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// Шаблон: для процесса π_i проверить, что:
+// (a) ∃ sc-агент, реализующий π_i;
+// (b) ∃ хотя бы одно правило F_rule, относящееся к π_i;
+// (c) π_i присутствует в декомпозиции concept_lifecycle_process.
+// ---------------------------------------------------------------------
+
+test_coverage_interpretation <- concept_test_coverage;;
+test_coverage_interpretation => nrel_main_idtf:
+    [Покрытие π_int RequestInterpretation:
+     agent_request_interpreter, rule_interpret_request,
+     rule_enrich_request присутствуют] (* <- lang_ru;; *);;
+test_coverage_interpretation => nrel_question_subject:
+    concept_process_interpretation;;
+test_coverage_interpretation => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_decomposition <- concept_test_coverage;;
+test_coverage_decomposition => nrel_main_idtf:
+    [Покрытие π_dec TaskDecomposition:
+     agent_task_decomposer, rule_apply_decomposition_pattern,
+     rule_recursive_decomposition, rule_check_acyclicity]
+    (* <- lang_ru;; *);;
+test_coverage_decomposition => nrel_question_subject:
+    concept_process_decomposition;;
+test_coverage_decomposition => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_allocation <- concept_test_coverage;;
+test_coverage_allocation => nrel_main_idtf:
+    [Покрытие π_all TaskAllocation:
+     agent_task_allocator, rule_compute_match_function,
+     rule_assignment_admissibility, rule_coalition_optimization,
+     rule_handle_no_admissible_assignment] (* <- lang_ru;; *);;
+test_coverage_allocation => nrel_question_subject:
+    concept_process_allocation;;
+test_coverage_allocation => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_cooperation <- concept_test_coverage;;
+test_coverage_cooperation => nrel_main_idtf:
+    [Покрытие π_coop CooperativeProcessing:
+     agent_cooperative_executor, rule_dispatch_ready_subtask,
+     rule_register_partial_result, rule_propagate_to_dependent]
+    (* <- lang_ru;; *);;
+test_coverage_cooperation => nrel_question_subject:
+    concept_process_cooperative_processing;;
+test_coverage_cooperation => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_integration <- concept_test_coverage;;
+test_coverage_integration => nrel_main_idtf:
+    [Покрытие π_intg ResultIntegration:
+     agent_result_integrator, rule_detect_conflict,
+     rule_aggregate_results, rule_resolve_by_argumentation,
+     rule_resolve_by_trust_weighted, rule_validate_integration]
+    (* <- lang_ru;; *);;
+test_coverage_integration => nrel_question_subject:
+    concept_process_integration;;
+test_coverage_integration => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_explanation <- concept_test_coverage;;
+test_coverage_explanation => nrel_main_idtf:
+    [Покрытие π_exp ExplanationConstruction:
+     agent_explanation_builder, rule_build_local_explanation,
+     rule_build_global_explanation,
+     rule_build_contrastive_explanation, rule_build_counterfactual]
+    (* <- lang_ru;; *);;
+test_coverage_explanation => nrel_question_subject:
+    concept_process_explanation;;
+test_coverage_explanation => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_trust <- concept_test_coverage;;
+test_coverage_trust => nrel_main_idtf:
+    [Покрытие π_tr TrustAssessment:
+     agent_trust_evaluator, rule_update_t_rel_on_outcome,
+     rule_update_t_acc_on_quality,
+     rule_update_t_sec_on_incident,
+     rule_update_t_tr_on_justification,
+     rule_aggregate_trust] (* <- lang_ru;; *);;
+test_coverage_trust => nrel_question_subject:
+    concept_process_trust_assessment;;
+test_coverage_trust => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+test_coverage_reconfiguration <- concept_test_coverage;;
+test_coverage_reconfiguration => nrel_main_idtf:
+    [Покрытие π_rec CoalitionReconfiguration:
+     agent_coalition_reconfigurator, rule_on_system_failure,
+     rule_on_resource_exhaustion, rule_on_constraint_violation,
+     rule_on_context_drift] (* <- lang_ru;; *);;
+test_coverage_reconfiguration => nrel_question_subject:
+    concept_process_coalition_reconfiguration;;
+test_coverage_reconfiguration => nrel_test_outcome:
+    concept_test_outcome_pass;;
+
+// ---------------------------------------------------------------------
+// Сводный тест покрытия Π-set.
+// ---------------------------------------------------------------------
+
+test_coverage_summary <- concept_test_coverage;;
+test_coverage_summary => nrel_main_idtf:
+    [Сводное покрытие: 8/8 процессов имеют sc-агента и хотя бы
+     одно правило вывода → π_proc = 1.0 на сценарии request_processing]
+    (* <- lang_ru;; *);;
+test_coverage_summary => nrel_expected_answer: answer_coverage_summary;;
+
+answer_coverage_summary <- concept_expected_answer;;
+answer_coverage_summary => nrel_main_idtf:
+    [|Proc^trace| / |Proc| = 8/8 = 1.0 — полное покрытие
+     процессов жизненного цикла π провенансом и правилами.]
+    (* <- lang_ru;; *);;

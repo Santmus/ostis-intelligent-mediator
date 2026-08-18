@@ -1,0 +1,56 @@
+// =====================================================================
+// scenarios/scenario_context_processing.scs
+// Сценарий: инкрементальное обновление контекста взаимодействия
+// в ответ на события экосистемы и наследование от предыдущего
+// контекста.
+// =====================================================================
+
+section_scenario_context_processing
+=> nrel_main_idtf:
+    [Сценарий. Обработка и эволюция контекста взаимодействия]
+    (* <- lang_ru;; *);
+    [Scenario. Context Processing and Evolution] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: interaction_context_002;
+<- rrel_key_sc_element: event_battery_low;
+<- rrel_key_sc_element: assignment_act_002;;
+
+interaction_context_002 <- concept_interaction_context;;
+interaction_context_002 => nrel_main_idtf:
+    [Обновлённый контекст после события «низкий заряд батареи»]
+    (* <- lang_ru;; *);;
+interaction_context_002 => nrel_context_inherits_from:
+    interaction_context_001;;
+
+event_battery_low <- concept_event_resource_change;;
+event_battery_low => nrel_main_idtf:
+    [Событие: уровень заряда транспортного средства снизился ниже 25%]
+    (* <- lang_ru;; *);;
+
+interaction_context_002 => nrel_context_updated_by_event: event_battery_low;;
+
+// Доминирование над предыдущим контекстом.
+interaction_context_002 => nrel_context_dominates_over:
+    interaction_context_001;;
+
+// Адаптивное переназначение подзадач при новом контексте.
+assignment_act_002
+<- concept_process_allocation;
+-> rrel_subtask: subtask_route_candidates;
+-> rrel_assignee: intelligent_system_route_planner;
+-> rrel_context: interaction_context_002;
+-> rrel_assignment_time: [2025-09-12T14:14:21Z];
+-> rrel_required_confidence: [0.92];
+-> rrel_priority: [critical];;
+
+// Обновление подконтекстов.
+interaction_context_002 -> rrel_system_context: ecosystem_state_002;;
+ecosystem_state_002 <- concept_system_context;;
+ecosystem_state_002 => nrel_main_idtf:
+    [Системный контекст: 1 ИС временно недоступна, нагрузка 67%]
+    (* <- lang_ru;; *);;
+interaction_context_002 -> rrel_goal_context: goal_optimal_route;;
+interaction_context_002 -> rrel_history_context: history_alice_001;;
+interaction_context_002 -> rrel_domain_context: domain_logistics;;
+interaction_context_002 -> rrel_user_situation_context:
+    situation_alice_mobile_ru;;

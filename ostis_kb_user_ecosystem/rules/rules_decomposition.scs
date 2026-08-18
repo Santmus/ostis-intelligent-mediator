@@ -1,0 +1,56 @@
+// =====================================================================
+// rules/rules_decomposition.scs
+// Множество F_rule (часть π_dec) — правила декомпозиции запроса.
+// Операционализируются sc-агентом agent_task_decomposer.
+// =====================================================================
+
+section_rules_decomposition
+=> nrel_main_idtf:
+    [Подраздел. Правила декомпозиции запроса (π_dec)] (* <- lang_ru;; *);
+    [Subsection. Decomposition Rules (π_dec)] (* <- lang_en;; *);
+<- atomic_section;;
+
+rule -> rule_apply_decomposition_pattern: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(применение шаблона декомпозиции)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_user_request(q) ∧ has_goal(q, g) ∧ has_context(q, C)
+                ∧ ¬∃σ. decomposed_into(q, σ),
+            Then: выбрать шаблон p ∈ concept_task_decomposition_pattern,
+                  максимизирующий sim_T(τ_q, τ_p) при удовлетворении
+                  C; инстанцировать подзадачи σ_1, …, σ_n и связи
+                  decomposed_into(q, σ_i), depends_on(σ_i, σ_j)
+                  согласно шаблону.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_recursive_decomposition: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(рекурсивная декомпозиция составной подзадачи)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: concept_subtask_composite(σ) ∧ ¬executable(σ),
+            Then: применить rule_apply_decomposition_pattern к σ
+                  рекурсивно до достижения атомарных подзадач.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_check_acyclicity: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(проверка ацикличности графа зависимостей)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [После декомпозиции запустить проверку acyclic(depends_on);
+            при обнаружении цикла создать concept_integrity_violation
+            и инициировать пересмотр шаблона декомпозиции.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

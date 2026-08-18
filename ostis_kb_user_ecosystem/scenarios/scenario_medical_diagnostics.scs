@@ -1,0 +1,215 @@
+// =====================================================================
+// scenarios/scenario_medical_diagnostics.scs
+// Сценарий: дифференциальная диагностика в медицинской экосистеме —
+// иллюстрация распределённого решения задачи сообществом ИС с участием
+// врача-эксперта. Базируется на примере из раздела 3.E финальной модели.
+// =====================================================================
+
+section_scenario_medical_diagnostics
+=> nrel_main_idtf:
+    [Сценарий. Дифференциальная медицинская диагностика] (* <- lang_ru;; *);
+    [Scenario. Differential Medical Diagnostics] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: user_doctor_smith;
+<- rrel_key_sc_element: request_medical_001;
+<- rrel_key_sc_element: interaction_context_medical_diagnostics;
+<- rrel_key_sc_element: community_medical_diagnostic;
+<- rrel_key_sc_element: integrated_diagnosis_001;;
+
+// Пользователь-врач.
+user_doctor_smith <- concept_domain_expert;;
+user_doctor_smith => nrel_main_idtf:
+    [Доктор Смит (эндокринолог)] (* <- lang_ru;; *);;
+user_doctor_smith => nrel_has_user_model: user_model_doctor_smith;;
+user_model_doctor_smith <- concept_user_model;;
+
+// Запрос.
+request_medical_001 <- concept_user_request;;
+request_medical_001 <- concept_request_diagnostic;;
+request_medical_001 => nrel_main_idtf:
+    [Запрос: дифференциальная диагностика случая CAH
+     (врождённая гиперплазия коры надпочечников)] (* <- lang_ru;; *);;
+user_doctor_smith => nrel_formulates: request_medical_001;;
+
+// Цель.
+goal_differential_diagnosis <- concept_goal;;
+goal_differential_diagnosis <- concept_goal_diagnostic;;
+goal_differential_diagnosis => nrel_main_idtf:
+    [Цель: дифференциальная диагностика] (* <- lang_ru;; *);;
+request_medical_001 => nrel_has_goal: goal_differential_diagnosis;;
+
+// Контекст C_med = <C_g, C_h, C_s, C_d, C_u>.
+interaction_context_medical_diagnostics <- concept_interaction_context;;
+interaction_context_medical_diagnostics => nrel_main_idtf:
+    [Контекст: цель «дифференциальная диагностика»,
+     история «случай CAH», состояние «доступно 3 системы»,
+     предметная область «эндокринология»,
+     ситуация «врач, планшет, RU»] (* <- lang_ru;; *);;
+interaction_context_medical_diagnostics -> rrel_goal_context:
+    goal_differential_diagnosis;;
+interaction_context_medical_diagnostics -> rrel_history_context:
+    history_case_cah;;
+interaction_context_medical_diagnostics -> rrel_system_context:
+    medical_ecosystem_state;;
+interaction_context_medical_diagnostics -> rrel_domain_context:
+    domain_endocrinology;;
+interaction_context_medical_diagnostics -> rrel_user_situation_context:
+    situation_doctor_tablet_ru;;
+
+history_case_cah <- concept_history_context;;
+medical_ecosystem_state <- concept_system_context;;
+domain_endocrinology <- concept_domain_context;;
+situation_doctor_tablet_ru <- concept_user_situation_context;;
+
+request_medical_001 => nrel_has_context: interaction_context_medical_diagnostics;;
+
+// Сообщество медицинских ИС.
+community_medical_diagnostic <- concept_community_of_intelligent_systems;;
+community_medical_diagnostic <- concept_hierarchical_community;;
+community_medical_diagnostic => nrel_main_idtf:
+    [Сообщество: медицинская диагностика] (* <- lang_ru;; *);;
+community_medical_diagnostic => nrel_serves_request: request_medical_001;;
+
+system_lab_analyzer <- concept_subsymbolic_intelligent_system;;
+system_lab_analyzer => nrel_main_idtf:
+    [Анализатор лабораторных данных] (* <- lang_ru;; *);;
+
+system_image_classifier <- concept_subsymbolic_intelligent_system;;
+system_image_classifier => nrel_main_idtf:
+    [Классификатор медицинских изображений] (* <- lang_ru;; *);;
+
+system_clinical_reasoner <- concept_symbolic_intelligent_system;;
+system_clinical_reasoner => nrel_main_idtf:
+    [Клинический ризонер (онтология эндокринологии)] (* <- lang_ru;; *);;
+
+community_medical_diagnostic => nrel_includes: system_lab_analyzer;;
+community_medical_diagnostic => nrel_includes: system_image_classifier;;
+community_medical_diagnostic => nrel_includes: system_clinical_reasoner;;
+
+// Декомпозиция запроса.
+request_medical_001 => nrel_decomposed_into: subtask_lab_analysis;;
+request_medical_001 => nrel_decomposed_into: subtask_image_segmentation;;
+request_medical_001 => nrel_decomposed_into: subtask_clinical_reasoning;;
+
+subtask_lab_analysis <- concept_subtask;;
+subtask_lab_analysis <- concept_task_type_classification;;
+subtask_lab_analysis => nrel_main_idtf:
+    [Подзадача: анализ лабораторных тестов] (* <- lang_ru;; *);;
+subtask_lab_analysis => nrel_assigned_to: system_lab_analyzer;;
+
+subtask_image_segmentation <- concept_subtask;;
+subtask_image_segmentation <- concept_task_type_segmentation;;
+subtask_image_segmentation => nrel_main_idtf:
+    [Подзадача: сегментация надпочечников на КТ] (* <- lang_ru;; *);;
+subtask_image_segmentation => nrel_assigned_to: system_image_classifier;;
+
+subtask_clinical_reasoning <- concept_subtask;;
+subtask_clinical_reasoning <- concept_task_type_diagnosis;;
+subtask_clinical_reasoning => nrel_main_idtf:
+    [Подзадача: онтологический вывод дифференциального диагноза]
+    (* <- lang_ru;; *);;
+subtask_clinical_reasoning => nrel_assigned_to: system_clinical_reasoner;;
+subtask_clinical_reasoning => nrel_subtask_depends_on: subtask_lab_analysis;;
+subtask_clinical_reasoning => nrel_subtask_depends_on: subtask_image_segmentation;;
+
+// Рефицированный акт назначения с высоким требованием достоверности.
+assignment_act_medical
+<- concept_process_allocation;
+-> rrel_initiator: intelligent_system_orchestrator;
+-> rrel_subtask: subtask_image_segmentation;
+-> rrel_assignee: system_image_classifier;
+-> rrel_context: interaction_context_medical_diagnostics;
+-> rrel_required_confidence: [0.92];
+-> rrel_priority: [high];
+-> rrel_assignment_time: [2025-09-12T14:08:53Z];;
+
+intelligent_system_orchestrator <- concept_orchestrator_intelligent_system;;
+intelligent_system_orchestrator => nrel_main_idtf:
+    [Оркестратор сообщества медицинских ИС] (* <- lang_ru;; *);;
+
+// Частичные результаты.
+result_lab <- concept_partial_result;;
+result_image <- concept_partial_result;;
+result_diagnosis <- concept_partial_result;;
+
+system_lab_analyzer    => nrel_produces: result_lab;;
+system_image_classifier => nrel_produces: result_image;;
+system_clinical_reasoner => nrel_produces: result_diagnosis;;
+
+result_diagnosis => nrel_main_idtf:
+    [Частичный результат: предположительный диагноз — CAH типа 21-OH
+     дефицита (вероятность 0.87)] (* <- lang_ru;; *);;
+
+// Интегрированный диагноз.
+integrated_diagnosis_001 <- concept_integrated_result;;
+integrated_diagnosis_001 <- concept_collective_decision;;
+integrated_diagnosis_001 => nrel_main_idtf:
+    [Интегрированный диагноз: CAH (21-OH дефицит)
+     с указанием уровня доверия и обоснованием] (* <- lang_ru;; *);;
+result_lab       => nrel_integrated_in: integrated_diagnosis_001;;
+result_image     => nrel_integrated_in: integrated_diagnosis_001;;
+result_diagnosis => nrel_integrated_in: integrated_diagnosis_001;;
+
+// Контрастивное объяснение.
+explanation_medical_001 <- concept_explanation_contrastive;;
+explanation_medical_001 => nrel_main_idtf:
+    [Контрастивное объяснение: почему CAH 21-OH, а не 11β-OH —
+     лабораторный профиль 17-OHP > 10 нг/мл и нормальное АД
+     указывают на 21-OH] (* <- lang_ru;; *);;
+integrated_diagnosis_001 => nrel_supported_by_explanation:
+    explanation_medical_001;;
+integrated_diagnosis_001 => nrel_delivered_to: user_doctor_smith;;
+
+
+// =====================================================================
+// Фрагмент сценария: назначение подзадачи сегментации изображений
+// интеллектуальной системе в контексте медицинской диагностики.
+// Реифицированный акт назначения assignment_42 формализован как
+// n-арная sc-связь с ролевыми параметрами.
+// =====================================================================
+
+section_assignment_example
+=> nrel_main_idtf:
+    [Сценарий. Назначение подзадачи сегментации изображений] (* <- lang_ru;; *);
+    [Scenario. Image Segmentation Subtask Assignment] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: assignment_42;
+<- rrel_key_sc_element: subtask_image_segmentation;
+<- rrel_key_sc_element: interaction_context_med_diagnostics;;
+
+// Оркестратор сообщества (инициатор назначения).
+intelligent_system_orchestrator <- concept_orchestrator_intelligent_system;;
+intelligent_system_orchestrator => nrel_main_idtf:
+    [Оркестратор сообщества интеллектуальных систем] (* <- lang_ru;; *);;
+
+// Назначаемая интеллектуальная система (исполнитель).
+intelligent_system_image_analyzer <- concept_subsymbolic_intelligent_system;;
+intelligent_system_image_analyzer => nrel_main_idtf:
+    [Анализатор медицинских изображений] (* <- lang_ru;; *);;
+
+// Подзадача сегментации.
+subtask_image_segmentation <- concept_subtask;;
+subtask_image_segmentation <- concept_task_type_segmentation;;
+subtask_image_segmentation => nrel_main_idtf:
+    [Подзадача: сегментация надпочечников на КТ] (* <- lang_ru;; *);;
+subtask_image_segmentation => nrel_assigned_to: intelligent_system_image_analyzer;;
+
+// Контекст взаимодействия.
+interaction_context_med_diagnostics <- concept_interaction_context;;
+interaction_context_med_diagnostics => nrel_main_idtf:
+    [Контекст: медицинская диагностика] (* <- lang_ru;; *);;
+
+// Реифицированный акт назначения с высоким требованием достоверности.
+assignment_42
+<- concept_process_allocation;
+-> rrel_initiator: intelligent_system_orchestrator;
+-> rrel_subtask: subtask_image_segmentation;
+-> rrel_assignee: intelligent_system_image_analyzer;
+-> rrel_context: interaction_context_med_diagnostics;
+-> rrel_required_confidence: [0.92];
+-> rrel_assignment_time: [2025-09-12T14:08:53Z];
+-> rrel_priority: high_priority;;
+
+high_priority <- concept_priority_level;;
+high_priority => nrel_main_idtf:
+    [высокий приоритет] (* <- lang_ru;; *);;

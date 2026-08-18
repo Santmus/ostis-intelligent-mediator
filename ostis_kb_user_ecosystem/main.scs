@@ -1,0 +1,229 @@
+// =====================================================================
+// main.scs
+// Корневой раздел онтологической модели взаимодействия пользователя
+// с сообществами интеллектуальных систем в интеллектуальных
+// экосистемах. Декомпозирует базу знаний на смысловые подсистемы,
+// фиксирует ключевые sc-элементы и подключает все подразделы.
+// Совместимо с SC-machine и OSTIS Technology.
+// =====================================================================
+
+section_user_intelligent_ecosystem_interaction
+=> nrel_main_idtf:
+    [Раздел. Онтологическая модель взаимодействия пользователя
+     с сообществами интеллектуальных систем в интеллектуальных экосистемах]
+    (* <- lang_ru;; *);
+    [Section. Ontological Model of User Interaction with Communities
+     of Intelligent Systems in Intelligent Ecosystems]
+    (* <- lang_en;; *);
+<- non_atomic_section;
+<- not_enough_formed_structure;;
+
+// ---------------------------------------------------------------------
+// Декомпозиция на подразделы (sections). Каждый подраздел реализован
+// в отдельном .scs-файле и подключается через include/import-связи
+// sc-machine. Структура отражает декомпозицию модели M_int = <E,R,A,F>
+// на семь функциональных подмножеств отношений и шесть групп классов.
+// ---------------------------------------------------------------------
+
+section_user_intelligent_ecosystem_interaction
+<= nrel_section_decomposition:
+{
+    // Концептуальные подразделы (E — классы сущностей)
+    section_concept_meta_model;
+    section_concept_requirements;
+    section_concept_competency_registry;
+    section_concept_users;
+    section_concept_intelligent_systems;
+    section_concept_communities;
+    section_concept_ecosystems;
+    section_concept_agents;
+    section_concept_sc_agents;
+    section_concept_services;
+    section_concept_capabilities;
+    section_concept_contexts;
+    section_concept_tasks;
+    section_concept_interactions;
+    section_concept_knowledge_exchange;
+    section_concept_lifecycle_processes;
+    section_concept_recommendations;
+    section_concept_decisions;
+    section_concept_explanations;
+    section_concept_trust;
+    section_concept_provenance;
+    section_concept_quality;
+    section_concept_knowledge_sources;
+    section_concept_ontology_levels;
+    section_concept_roles;
+    section_concept_integrity;
+    section_concept_security_privacy;
+    section_concept_adaptive_interface;
+
+    // Реляционные подразделы (R — семь подмножеств отношений + ролевые)
+    section_relations_structural;
+    section_relations_intentional;
+    section_relations_context;
+    section_relations_task;
+    section_relations_execution;
+    section_relations_provenance;
+    section_relations_trust;
+    section_role_relations;
+
+    // Определения (F_ax / decl)
+    section_definitions_model;
+    section_definitions_users;
+    section_definitions_systems;
+    section_definitions_capabilities;
+    section_definitions_context;
+    section_definitions_processes;
+    section_definitions_trust;
+    section_definitions_security;
+
+    // Аксиоматический и доказательный слои
+    section_axioms_taxonomy;
+    section_axioms_constraints;
+    section_axioms_provenance;
+    section_axioms_logical_properties;
+    section_axioms_security;
+
+    // Правила вывода (F_rule) — операционализация процессов π
+    section_rules_interpretation;
+    section_rules_decomposition;
+    section_rules_allocation;
+    section_rules_cooperation;
+    section_rules_integration;
+    section_rules_explanation;
+    section_rules_trust_update;
+    section_rules_coalition_reconfiguration;
+    section_rules_security_privacy;
+    section_rules_integrity_validation;
+    section_rules_user_adaptation;
+    section_rules_provenance_completion;
+
+    // Сценарии (демонстрационные ABox-фрагменты)
+    section_scenario_request_processing;
+    section_scenario_knowledge_exchange;
+    section_scenario_recommendation;
+    section_scenario_collective_decision;
+    section_scenario_context_processing;
+    section_scenario_coalition_reconfiguration;
+    section_scenario_trust_assessment;
+    section_scenario_explanation_construction;
+    section_scenario_medical_diagnostics;
+    section_scenario_smart_mobility;
+    section_scenario_intelligent_tutoring;
+    section_scenario_smart_city_traffic;
+    section_scenario_financial_decision_support;
+    section_scenario_security_breach_response;
+    section_scenario_distributed_information_retrieval;
+
+    // Тесты и Q&A (валидация согласованности и навигации)
+    section_tests_navigation;
+    section_tests_formal_correctness;
+    section_tests_lifecycle_coverage;
+    section_tests_capability_match;
+    section_tests_trust_and_explanation;
+    section_tests_context_evolution;
+    section_tests_decomposition_coverage;
+
+    // Примеры экземпляров (ABox)
+    section_example_instances;
+    section_example_capabilities;
+    section_example_user_models;
+    section_example_contexts;
+    section_example_provenance;
+    section_example_trust
+};;
+
+// ---------------------------------------------------------------------
+// Ключевые sc-элементы раздела (rrel_key_sc_element). Перечисляют
+// центральные классы и отношения, по которым строится навигация
+// в IMS.ostis и формируется главное оглавление документа.
+// ---------------------------------------------------------------------
+
+section_user_intelligent_ecosystem_interaction
+<- rrel_key_sc_element: concept_ontological_interaction_model;
+<- rrel_key_sc_element: concept_requirement;
+<- rrel_key_sc_element: concept_intent;
+<- rrel_key_sc_element: concept_processing_failure;
+<- rrel_key_sc_element: concept_processing_route;
+<- rrel_key_sc_element: concept_competency_registry;
+<- rrel_key_sc_element: concept_user;
+<- rrel_key_sc_element: concept_user_model;
+<- rrel_key_sc_element: concept_intelligent_system;
+<- rrel_key_sc_element: concept_ostis_system;
+<- rrel_key_sc_element: concept_community_of_intelligent_systems;
+<- rrel_key_sc_element: concept_intelligent_ecosystem;
+<- rrel_key_sc_element: concept_shared_semantic_memory;
+<- rrel_key_sc_element: concept_intelligent_agent;
+<- rrel_key_sc_element: concept_sc_agent;
+<- rrel_key_sc_element: concept_intelligent_service;
+<- rrel_key_sc_element: concept_capability_profile;
+<- rrel_key_sc_element: concept_interaction_context;
+<- rrel_key_sc_element: concept_user_request;
+<- rrel_key_sc_element: concept_subtask;
+<- rrel_key_sc_element: concept_processing_result;
+<- rrel_key_sc_element: concept_integrated_result;
+<- rrel_key_sc_element: concept_lifecycle_process;
+<- rrel_key_sc_element: concept_knowledge_exchange_act;
+<- rrel_key_sc_element: concept_provenance_record;
+<- rrel_key_sc_element: concept_explanation;
+<- rrel_key_sc_element: concept_trust_level;
+<- rrel_key_sc_element: concept_result_conflict;
+<- rrel_key_sc_element: concept_recommendation;
+<- rrel_key_sc_element: concept_collective_decision;
+<- rrel_key_sc_element: concept_intelligent_mediator;
+<- rrel_key_sc_element: concept_coalition_formation_strategy;
+<- rrel_key_sc_element: concept_decision_aggregation_strategy;
+<- rrel_key_sc_element: concept_security_property;
+<- rrel_key_sc_element: concept_privacy_property;
+<- rrel_key_sc_element: concept_security_incident;
+<- rrel_key_sc_element: concept_access_control_policy;
+<- rrel_key_sc_element: concept_personal_data;
+<- rrel_key_sc_element: concept_adaptive_interface;
+<- rrel_key_sc_element: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// Метаинформация раздела.
+// ---------------------------------------------------------------------
+
+section_user_intelligent_ecosystem_interaction
+=> nrel_section_base_ontology: ontology_OSTIS_meta_system;
+=> nrel_section_compliance: [SC-machine 0.10.x, OSTIS Technology, OWL 2 SROIQ, PROV-O, SHACL, FIPA-ACL];
+=> nrel_section_version: [1.1.0-extended-security-tests];
+=> nrel_section_authors: [Радченко (на основе финальной онтологической модели);
+                          сообщество OSTIS-research; источники из библиографии];;
+
+// ---------------------------------------------------------------------
+// Внешние онтологии-предки, на которые опирается модель.
+// ---------------------------------------------------------------------
+
+ontology_OSTIS_meta_system
+<- sc_node_class;
+=> nrel_main_idtf:
+    [метаонтология OSTIS] (* <- lang_ru;; *);
+    [OSTIS meta-ontology] (* <- lang_en;; *);;
+
+nrel_section_decomposition
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [декомпозиция_раздела*] (* <- lang_ru;; *);;
+
+nrel_section_base_ontology
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [базовая_онтология_раздела*] (* <- lang_ru;; *);;
+
+nrel_section_compliance
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [совместимость_раздела*] (* <- lang_ru;; *);;
+
+nrel_section_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [версия_раздела*] (* <- lang_ru;; *);;
+
+nrel_section_authors
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [авторы_раздела*] (* <- lang_ru;; *);;

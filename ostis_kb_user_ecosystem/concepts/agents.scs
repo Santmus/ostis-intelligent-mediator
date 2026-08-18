@@ -1,0 +1,231 @@
+// =====================================================================
+// concepts/agents.scs
+// Подраздел: интеллектуальные агенты как автономные субъекты экосистемы.
+// Согласовано с архитектурой BDI [9], организационной моделью AGR [10],
+// FIPA ACL [8] и парадигмой LLM-Multi-Agent [39].
+// =====================================================================
+
+section_concept_agents
+=> nrel_main_idtf:
+    [Подраздел. Интеллектуальные агенты] (* <- lang_ru;; *);
+    [Subsection. Intelligent Agents] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_intelligent_agent;
+<- rrel_key_sc_element: concept_agent_role;
+<- rrel_key_sc_element: concept_agent_protocol;
+<- rrel_key_sc_element: concept_bdi_state;;
+
+// ---------------------------------------------------------------------
+// Корневой класс интеллектуального агента.
+// ---------------------------------------------------------------------
+
+concept_intelligent_agent
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интеллектуальный агент] (* <- lang_ru;; *);
+    [intelligent agent] (* <- lang_en;; *);;
+concept_intelligent_agent <= nrel_inclusion: concept_ecosystem_component;;
+concept_intelligent_agent <= nrel_inclusion: concept_agent_class_group;;
+
+definition -> definition_intelligent_agent: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_agent;;
+    => nrel_main_idtf: [Опр.(интеллектуальный агент)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Интеллектуальный агент — автономный компонент интеллектуальной
+            экосистемы, обладающий моделью убеждений-желаний-намерений (BDI),
+            способный воспринимать состояние семантической памяти, принимать
+            решения и взаимодействовать с другими агентами посредством
+            формальных коммуникативных актов FIPA-ACL.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение по поведенческой архитектуре.
+// ---------------------------------------------------------------------
+
+concept_intelligent_agent <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение агентов по поведенческой архитектуре]
+       (* <- lang_ru;; *);;
+    -> concept_reactive_agent;
+       concept_deliberative_agent;
+       concept_bdi_agent;
+       concept_learning_agent;
+       concept_llm_based_agent;
+       concept_hybrid_agent;
+       concept_utility_based_agent;
+       concept_goal_based_agent;;
+*);;
+
+concept_reactive_agent
+<- sc_node_class;
+=> nrel_main_idtf: [реактивный агент] (* <- lang_ru;; *);;
+concept_deliberative_agent
+<- sc_node_class;
+=> nrel_main_idtf: [делиберативный агент] (* <- lang_ru;; *);;
+concept_bdi_agent
+<- sc_node_class;
+=> nrel_main_idtf: [BDI-агент] (* <- lang_ru;; *);;
+concept_learning_agent
+<- sc_node_class;
+=> nrel_main_idtf: [обучающийся агент] (* <- lang_ru;; *);;
+concept_llm_based_agent
+<- sc_node_class;
+=> nrel_main_idtf: [агент на основе большой языковой модели] (* <- lang_ru;; *);
+=> nrel_main_idtf: [LLM-based agent] (* <- lang_en;; *);;
+concept_hybrid_agent
+<- sc_node_class;
+=> nrel_main_idtf: [гибридный агент] (* <- lang_ru;; *);;
+concept_utility_based_agent
+<- sc_node_class;
+=> nrel_main_idtf: [агент, основанный на полезности] (* <- lang_ru;; *);;
+concept_goal_based_agent
+<- sc_node_class;
+=> nrel_main_idtf: [целеориентированный агент] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// BDI-состояние как первоклассная сущность.
+// ---------------------------------------------------------------------
+
+concept_bdi_state
+<- sc_node_class;
+=> nrel_main_idtf: [BDI-состояние агента] (* <- lang_ru;; *);;
+
+concept_bdi_state <= nrel_subdividing: ...
+(*
+    -> concept_agent_belief;
+       concept_agent_desire;
+       concept_agent_intention;
+       concept_agent_plan;;
+*);;
+
+concept_agent_belief
+<- sc_node_class;
+=> nrel_main_idtf: [убеждение агента] (* <- lang_ru;; *);;
+concept_agent_desire
+<- sc_node_class;
+=> nrel_main_idtf: [желание агента] (* <- lang_ru;; *);;
+concept_agent_intention
+<- sc_node_class;
+=> nrel_main_idtf: [намерение агента] (* <- lang_ru;; *);;
+concept_agent_plan
+<- sc_node_class;
+=> nrel_main_idtf: [план агента] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли агента в сообществе (concept_agent_role).
+// Развёрнутая ролевая модель согласно процессам жизненного цикла π.
+// ---------------------------------------------------------------------
+
+concept_agent_role
+<- sc_node_class;
+=> nrel_main_idtf: [роль агента в сообществе] (* <- lang_ru;; *);;
+
+concept_agent_role <= nrel_subdividing: ...
+(*
+    -> concept_role_interpreter;
+       concept_role_decomposer;
+       concept_role_allocator;
+       concept_role_solver;
+       concept_role_integrator;
+       concept_role_mediator;
+       concept_role_explainer;
+       concept_role_evaluator;
+       concept_role_trust_evaluator;
+       concept_role_coalition_reconfigurator;
+       concept_role_provenance_registrar;
+       concept_role_conflict_resolver;
+       concept_role_context_manager;;
+*);;
+
+concept_role_interpreter
+<- sc_node_class;
+=> nrel_main_idtf: [роль интерпретатора запроса] (* <- lang_ru;; *);;
+concept_role_decomposer
+<- sc_node_class;
+=> nrel_main_idtf: [роль декомпозитора] (* <- lang_ru;; *);;
+concept_role_allocator
+<- sc_node_class;
+=> nrel_main_idtf: [роль распределителя подзадач] (* <- lang_ru;; *);;
+concept_role_solver
+<- sc_node_class;
+=> nrel_main_idtf: [роль решателя подзадачи] (* <- lang_ru;; *);;
+concept_role_integrator
+<- sc_node_class;
+=> nrel_main_idtf: [роль интегратора результатов] (* <- lang_ru;; *);;
+concept_role_mediator
+<- sc_node_class;
+=> nrel_main_idtf: [роль интеллектуального посредника] (* <- lang_ru;; *);;
+concept_role_explainer
+<- sc_node_class;
+=> nrel_main_idtf: [роль формирователя объяснения] (* <- lang_ru;; *);;
+concept_role_evaluator
+<- sc_node_class;
+=> nrel_main_idtf: [роль оценщика результата] (* <- lang_ru;; *);;
+concept_role_trust_evaluator
+<- sc_node_class;
+=> nrel_main_idtf: [роль оценщика доверия] (* <- lang_ru;; *);;
+concept_role_coalition_reconfigurator
+<- sc_node_class;
+=> nrel_main_idtf: [роль реконфигуратора коалиции] (* <- lang_ru;; *);;
+concept_role_provenance_registrar
+<- sc_node_class;
+=> nrel_main_idtf: [роль регистратора провенанса] (* <- lang_ru;; *);;
+concept_role_conflict_resolver
+<- sc_node_class;
+=> nrel_main_idtf: [роль разрешителя конфликтов] (* <- lang_ru;; *);;
+concept_role_context_manager
+<- sc_node_class;
+=> nrel_main_idtf: [роль управителя контекстом] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Протоколы коммуникации (FIPA-ACL flavoured + расширения).
+// ---------------------------------------------------------------------
+
+concept_agent_protocol
+<- sc_node_class;
+=> nrel_main_idtf:
+    [протокол взаимодействия агентов] (* <- lang_ru;; *);
+    [agent interaction protocol] (* <- lang_en;; *);;
+
+concept_agent_protocol <= nrel_subdividing: ...
+(*
+    -> concept_protocol_request_reply;
+       concept_protocol_contract_net;
+       concept_protocol_negotiation;
+       concept_protocol_argumentation;
+       concept_protocol_subscription;
+       concept_protocol_blackboard;
+       concept_protocol_publish_subscribe;
+       concept_protocol_auction;;
+*);;
+
+concept_protocol_request_reply
+<- sc_node_class;
+=> nrel_main_idtf: [протокол запрос-ответ] (* <- lang_ru;; *);;
+concept_protocol_contract_net
+<- sc_node_class;
+=> nrel_main_idtf: [протокол Contract-Net] (* <- lang_ru;; *);
+=> nrel_main_idtf: [Contract-Net protocol] (* <- lang_en;; *);;
+concept_protocol_negotiation
+<- sc_node_class;
+=> nrel_main_idtf: [протокол переговоров] (* <- lang_ru;; *);;
+concept_protocol_argumentation
+<- sc_node_class;
+=> nrel_main_idtf: [аргументационный протокол] (* <- lang_ru;; *);
+=> nrel_main_idtf: [argumentation protocol] (* <- lang_en;; *);;
+concept_protocol_subscription
+<- sc_node_class;
+=> nrel_main_idtf: [протокол подписки] (* <- lang_ru;; *);;
+concept_protocol_blackboard
+<- sc_node_class;
+=> nrel_main_idtf: [протокол «классной доски»] (* <- lang_ru;; *);
+=> nrel_main_idtf: [blackboard protocol] (* <- lang_en;; *);;
+concept_protocol_publish_subscribe
+<- sc_node_class;
+=> nrel_main_idtf: [протокол publish-subscribe] (* <- lang_ru;; *);;
+concept_protocol_auction
+<- sc_node_class;
+=> nrel_main_idtf: [аукционный протокол] (* <- lang_ru;; *);;

@@ -1,0 +1,139 @@
+// =====================================================================
+// tests/tests_trust_and_explanation.scs
+// Тесты доверия (T(s, τ)) и трассируемости объяснений.
+// =====================================================================
+
+section_tests_trust_and_explanation
+=> nrel_main_idtf:
+    [Подраздел. Тесты доверия и объяснений] (* <- lang_ru;; *);
+    [Subsection. Trust and Explanation Tests] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_test_trust;
+<- rrel_key_sc_element: concept_test_explanation_trace;;
+
+concept_test_trust <- sc_node_class;
+=> nrel_main_idtf: [тест модели доверия] (* <- lang_ru;; *);;
+concept_test_trust <= nrel_strict_inclusion: concept_test_question;;
+
+concept_test_explanation_trace <- sc_node_class;
+=> nrel_main_idtf:
+    [тест трассируемости объяснения] (* <- lang_ru;; *);;
+concept_test_explanation_trace <= nrel_strict_inclusion: concept_test_question;;
+
+// ---------------------------------------------------------------------
+// TR1: Скалярное доверие при λ = (0.4, 0.25, 0.15, 0.2).
+// ---------------------------------------------------------------------
+
+test_trust_scalar_initial <- concept_test_trust;;
+test_trust_scalar_initial => nrel_main_idtf:
+    [TR1. Вычисление trust(energy_model, τ_estimation, h)
+     при T = <0.82, 0.78, 0.95, 0.70> и λ = (0.4, 0.25, 0.15, 0.2)]
+    (* <- lang_ru;; *);;
+test_trust_scalar_initial => nrel_test_calculation:
+    [trust = 0.4·0.82 + 0.25·0.78 + 0.15·0.95 + 0.2·0.70 ≈ 0.806]
+    (* <- lang_ru;; *);;
+test_trust_scalar_initial => nrel_expected_answer: answer_tr1;;
+
+answer_tr1 <- concept_expected_answer;;
+answer_tr1 => nrel_main_idtf: [trust ≈ 0.806] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TR2: Эффект успешного взаимодействия на t_rel при α=0.10.
+// ---------------------------------------------------------------------
+
+test_trust_feedback_update <- concept_test_trust;;
+test_trust_feedback_update => nrel_main_idtf:
+    [TR2. Обновление t_rel по rule_update_t_rel_on_outcome:
+     t_rel_new = (1−α)·t_rel_old + α·ν_rel;
+     α=0.10, t_rel_old=0.82, ν_rel=1
+     → t_rel_new = 0.9·0.82 + 0.1·1 = 0.838]
+    (* <- lang_ru;; *);;
+test_trust_feedback_update => nrel_expected_answer: answer_tr2;;
+
+answer_tr2 <- concept_expected_answer;;
+answer_tr2 => nrel_main_idtf: [t_rel_new ≈ 0.838] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TR3: Самонастройка при инциденте безопасности.
+// ---------------------------------------------------------------------
+
+test_trust_self_calibration <- concept_test_trust;;
+test_trust_self_calibration => nrel_main_idtf:
+    [TR3. Инцидент безопасности (ν_sec=0, γ=0.10) снижает t_sec
+     с 0.955 до 0.9·0.955 ≈ 0.860, что приводит к уменьшению trust:
+     trust_new = 0.4·0.838 + 0.25·0.796 + 0.15·0.860 + 0.2·0.730 ≈ 0.809]
+    (* <- lang_ru;; *);;
+test_trust_self_calibration => nrel_expected_answer: answer_tr3;;
+
+answer_tr3 <- concept_expected_answer;;
+answer_tr3 => nrel_main_idtf:
+    [trust ≈ 0.809 (снижение относительно 0.823); модель
+     самонастраивается, уменьшая вероятность назначения через
+     match(σ, s).] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TE1: Трассируемость объяснения от integrated_result_001 до request_001.
+// ---------------------------------------------------------------------
+
+test_explanation_chain <- concept_test_explanation_trace;;
+test_explanation_chain => nrel_main_idtf:
+    [TE1. Восстановление цепочки derived_from от
+     integrated_result_001 до request_001 через
+     {result_ranking, result_energy, result_routes}]
+    (* <- lang_ru;; *);;
+test_explanation_chain => nrel_question_subject: integrated_result_001;;
+test_explanation_chain => nrel_test_outcome: concept_test_outcome_pass;;
+test_explanation_chain => nrel_expected_answer: answer_te1;;
+
+answer_te1 <- concept_expected_answer;;
+answer_te1 => nrel_main_idtf:
+    [integrated_result_001 → result_ranking → result_energy
+     → result_routes → request_001 — цепочка длины 4 восстановлена;
+     транзитивное замыкание nrel_derived_from обеспечивает
+     полную трассировку.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TE2: Метрики прозрачности на сценарии request_processing.
+// ---------------------------------------------------------------------
+
+test_transparency_metrics <- concept_test_explanation_trace;;
+test_transparency_metrics => nrel_main_idtf:
+    [TE2. Метрики прозрачности π = <π_proc, π_dec, π_data>
+     на сценарии request_processing] (* <- lang_ru;; *);;
+test_transparency_metrics => nrel_test_calculation:
+    [Proc = {π_int, π_dec, π_all, π_coop, π_intg, π_exp, π_tr, π_rec};
+     Proc^trace = {π_int, π_dec, π_all, π_coop, π_intg, π_exp, π_tr};
+     π_proc = 7/8 = 0.875 (нет вызова π_rec в основном сценарии);
+     Dec = {assignment_act_001, aggregation_001,
+            collective_decision_resolution_001};
+     Dec^trace = Dec → π_dec = 1.0;
+     Data^trace ⊇ Data → π_data = 1.0]
+    (* <- lang_ru;; *);;
+test_transparency_metrics => nrel_expected_answer: answer_te2;;
+
+answer_te2 <- concept_expected_answer;;
+answer_te2 => nrel_main_idtf:
+    [π = <0.875, 1.0, 1.0>. Целевое значение π_proc = 1.0
+     достигается при включении сценария reconfiguration.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TE3: Совместимость со стандартом PROV-O.
+// ---------------------------------------------------------------------
+
+test_prov_o_compliance <- concept_test_explanation_trace;;
+test_prov_o_compliance => nrel_main_idtf:
+    [TE3. Проверка наличия PROV-O триады для result_energy]
+    (* <- lang_ru;; *);;
+test_prov_o_compliance => nrel_expected_answer: answer_te3;;
+
+answer_te3 <- concept_expected_answer;;
+answer_te3 => nrel_main_idtf:
+    [prov_entity_result_energy → wasGeneratedBy →
+     prov_activity_energy_estimation;
+     prov_activity_energy_estimation → wasAssociatedWith →
+     prov_agent_energy_model;
+     prov_entity_result_energy → wasAttributedTo →
+     prov_agent_energy_model.
+     Триада <Entity, Activity, Agent> полностью присутствует.]
+    (* <- lang_ru;; *);;

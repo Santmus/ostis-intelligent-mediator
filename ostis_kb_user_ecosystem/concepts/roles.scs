@@ -1,0 +1,159 @@
+// =====================================================================
+// concepts/roles.scs
+// Подраздел: ролевые классы участников взаимодействия (ParticipantRole).
+// Подкласс мета-результирующей и ролевой групп классов E.
+// =====================================================================
+
+section_concept_roles
+=> nrel_main_idtf:
+    [Подраздел. Роли участников взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Participant Roles in Interaction] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_participant_role;
+<- rrel_key_sc_element: concept_user_role;
+<- rrel_key_sc_element: concept_system_role;;
+
+// ---------------------------------------------------------------------
+// Корневой класс роли участника.
+// ---------------------------------------------------------------------
+
+concept_participant_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль участника взаимодействия] (* <- lang_ru;; *);
+    [participant role] (* <- lang_en;; *);;
+concept_participant_role <= nrel_inclusion: concept_role_class_group;;
+
+concept_participant_role <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение ролей по типу субъекта]
+       (* <- lang_ru;; *);;
+    -> concept_user_role;
+       concept_system_role;
+       concept_agent_role;
+       concept_service_role;
+       concept_community_role;
+       concept_mediator_role;;
+*);;
+
+// ---------------------------------------------------------------------
+// Роли пользователя в сценарии взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_user_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль пользователя в сценарии] (* <- lang_ru;; *);;
+
+concept_user_role <= nrel_subdividing: ...
+(*
+    -> concept_role_user_initiator;
+       concept_role_user_evaluator;
+       concept_role_user_observer;
+       concept_role_user_corrector;;
+*);;
+
+concept_role_user_initiator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль инициатора запроса] (* <- lang_ru;; *);;
+concept_role_user_evaluator
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль оценщика результата (пользователь)] (* <- lang_ru;; *);;
+concept_role_user_observer
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль наблюдателя обработки] (* <- lang_ru;; *);;
+concept_role_user_corrector
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль корректора результата] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли системы в сценарии.
+// ---------------------------------------------------------------------
+
+concept_system_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль интеллектуальной системы в сценарии] (* <- lang_ru;; *);;
+
+concept_system_role <= nrel_subdividing: ...
+(*
+    -> concept_role_system_solver;
+       concept_role_system_validator;
+       concept_role_system_aggregator;
+       concept_role_system_explainer;;
+*);;
+
+concept_role_system_solver
+<- sc_node_class;
+=> nrel_main_idtf: [роль решателя (система)] (* <- lang_ru;; *);;
+concept_role_system_validator
+<- sc_node_class;
+=> nrel_main_idtf: [роль валидатора (система)] (* <- lang_ru;; *);;
+concept_role_system_aggregator
+<- sc_node_class;
+=> nrel_main_idtf: [роль агрегатора (система)] (* <- lang_ru;; *);;
+concept_role_system_explainer
+<- sc_node_class;
+=> nrel_main_idtf: [роль формирователя объяснений (система)] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Роли сервиса, сообщества и посредника.
+// ---------------------------------------------------------------------
+
+concept_service_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль интеллектуального сервиса] (* <- lang_ru;; *);;
+
+concept_community_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль сообщества ИС в сценарии] (* <- lang_ru;; *);;
+
+concept_mediator_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [роль посредника в сценарии] (* <- lang_ru;; *);;
+
+concept_mediator_role <= nrel_subdividing: ...
+(*
+    -> concept_role_mediator_orchestrator;
+       concept_role_mediator_observer;
+       concept_role_mediator_arbiter;;
+*);;
+
+concept_role_mediator_orchestrator
+<- sc_node_class;
+=> nrel_main_idtf: [роль оркестратора (посредник)] (* <- lang_ru;; *);;
+concept_role_mediator_observer
+<- sc_node_class;
+=> nrel_main_idtf: [роль наблюдателя (посредник)] (* <- lang_ru;; *);;
+concept_role_mediator_arbiter
+<- sc_node_class;
+=> nrel_main_idtf: [роль арбитра конфликтов (посредник)] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Реляционная связь «играет роль».
+// ---------------------------------------------------------------------
+
+nrel_plays_role
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [играет_роль*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [plays_role*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_interaction_participant;
+=> nrel_second_domain: concept_participant_role;;
+
+nrel_role_assumed_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [роль_принята_в*] (* <- lang_ru;; *);
+=> nrel_main_idtf: [assumed_in*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_participant_role;
+=> nrel_second_domain: concept_lifecycle_process;;

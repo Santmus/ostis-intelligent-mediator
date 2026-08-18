@@ -1,0 +1,68 @@
+// =====================================================================
+// scenarios/scenario_trust_assessment.scs
+// Сценарий: обновление вектора доверия T(s, τ) = <t_rel, t_acc, t_sec,
+// t_tr> по результатам обработки запроса. Демонстрирует процесс π_tr.
+// Числовые значения воспроизводят иллюстративный расчёт диссертации
+// (part2.tex, уравнения eq:trust_rel-eq:trust_q).
+// =====================================================================
+
+section_scenario_trust_assessment
+=> nrel_main_idtf:
+    [Сценарий. Оценка и обновление доверия]
+    (* <- lang_ru;; *);
+    [Scenario. Trust Assessment and Update] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: trust_vector_energy_model_initial;
+<- rrel_key_sc_element: trust_vector_energy_model_after;
+<- rrel_key_sc_element: trust_assessment_act_001;;
+
+// Начальный вектор доверия.
+trust_vector_energy_model_initial <- concept_trust_vector;;
+trust_vector_energy_model_initial => nrel_main_idtf:
+    [T_initial(energy_model) = <t_rel=0.82, t_acc=0.78, t_sec=0.95, t_tr=0.70>]
+    (* <- lang_ru;; *);;
+
+// Скалярная агрегация trust = Σ λ_k t_k при λ = (0.4, 0.25, 0.15, 0.2).
+trust_scalar_initial <- concept_trust_level;;
+trust_scalar_initial => nrel_main_idtf:
+    [trust_initial = 0.4·0.82 + 0.25·0.78 + 0.15·0.95 + 0.2·0.70 ≈ 0.806]
+    (* <- lang_ru;; *);;
+
+intelligent_system_energy_model => nrel_has_trust_level: trust_scalar_initial;;
+
+// После успешного взаимодействия: ν_rel=1, q_res=0.94, ν_sec=1, ν_tr=1
+// при коэффициентах сглаживания α=β=γ=δ=0.10.
+trust_vector_energy_model_after <- concept_trust_vector;;
+trust_vector_energy_model_after => nrel_main_idtf:
+    [T_after(energy_model) = <t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730>;
+     t_rel = 0.9·0.82+0.1·1 = 0.838; t_acc = 0.9·0.78+0.1·0.94 = 0.796;
+     t_sec = 0.9·0.95+0.1·1 = 0.955; t_tr = 0.9·0.70+0.1·1 = 0.730]
+    (* <- lang_ru;; *);;
+
+trust_scalar_after <- concept_trust_level;;
+trust_scalar_after => nrel_main_idtf:
+    [trust_after = 0.4·0.838 + 0.25·0.796 + 0.15·0.955 + 0.2·0.730 ≈ 0.823]
+    (* <- lang_ru;; *);;
+
+// Акт обновления доверия.
+trust_assessment_act_001
+<- concept_process_trust_assessment;
+-> rrel_actor: agent_trust_evaluator;
+-> rrel_input: trust_vector_energy_model_initial;
+-> rrel_input: feedback_alice_001;
+-> rrel_output: trust_vector_energy_model_after;
+-> rrel_timestamp: [2025-09-12T14:11:05Z];;
+
+intelligent_system_energy_model => nrel_has_trust_level: trust_scalar_after;;
+trust_scalar_after => nrel_trust_updated_by_feedback: feedback_alice_001;;
+
+// Иллюстрация эффекта самонастройки: инцидент безопасности
+// (ν_sec=0) на следующем шаге снижает t_sec и, как следствие, trust.
+trust_vector_energy_model_drift <- concept_trust_vector;;
+trust_vector_energy_model_drift => nrel_main_idtf:
+    [Прогноз при инциденте безопасности (ν_sec=0, γ=0.10):
+     t_sec снизится с 0.955 до 0.9·0.955 ≈ 0.860 →
+     trust ≈ 0.4·0.838+0.25·0.796+0.15·0.860+0.2·0.730 ≈ 0.809;
+     модель самонастраивается, уменьшая вероятность назначения
+     системе s через функцию match(σ, s)]
+    (* <- lang_ru;; *);;

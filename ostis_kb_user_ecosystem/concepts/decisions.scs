@@ -1,0 +1,158 @@
+// =====================================================================
+// concepts/decisions.scs
+// Подраздел: коллективные решения сообщества интеллектуальных систем и
+// стратегии их агрегации. Учитывает аргументационный подход [25],
+// модели Демпстера-Шейфера, ontology-based aggregation.
+// =====================================================================
+
+section_concept_decisions
+=> nrel_main_idtf:
+    [Подраздел. Коллективные решения и их агрегация] (* <- lang_ru;; *);
+    [Subsection. Collective Decisions and Aggregation] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_collective_decision;
+<- rrel_key_sc_element: concept_decision_aggregation_strategy;
+<- rrel_key_sc_element: concept_decision_argument;
+<- rrel_key_sc_element: concept_argumentation_framework;;
+
+// ---------------------------------------------------------------------
+// Коллективное решение.
+// ---------------------------------------------------------------------
+
+concept_collective_decision
+<- sc_node_class;
+=> nrel_main_idtf:
+    [коллективное решение] (* <- lang_ru;; *);
+    [collective decision] (* <- lang_en;; *);;
+concept_collective_decision <= nrel_inclusion: concept_integrated_result;;
+
+definition -> definition_collective_decision: ...
+(*
+    -> rrel_key_sc_element: concept_collective_decision;;
+    => nrel_main_idtf: [Опр.(коллективное решение)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Коллективное решение — семантически согласованный
+            интегрированный результат, полученный путём агрегирования
+            частичных результатов и разрешения обнаруженных конфликтов
+            в сообществе интеллектуальных систем. Удовлетворяет
+            ограничению (7): для всякого коллективного решения
+            существует объяснение и отсутствуют неразрешённые
+            конфликты.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Стратегии агрегации решений.
+// ---------------------------------------------------------------------
+
+concept_decision_aggregation_strategy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия агрегации решений] (* <- lang_ru;; *);
+    [decision aggregation strategy] (* <- lang_en;; *);;
+
+concept_decision_aggregation_strategy <= nrel_subdividing: ...
+(*
+    -> concept_strategy_majority_vote;
+       concept_strategy_weighted_voting;
+       concept_strategy_argumentation_based;
+       concept_strategy_dempster_shafer;
+       concept_strategy_trust_weighted;
+       concept_strategy_ontology_alignment_based;
+       concept_strategy_pareto_dominance;
+       concept_strategy_borda_count;
+       concept_strategy_consensus_seeking;
+       concept_strategy_negotiation_based;;
+*);;
+
+concept_strategy_majority_vote
+<- sc_node_class;
+=> nrel_main_idtf: [мажоритарное голосование] (* <- lang_ru;; *);;
+concept_strategy_weighted_voting
+<- sc_node_class;
+=> nrel_main_idtf: [взвешенное голосование] (* <- lang_ru;; *);;
+concept_strategy_argumentation_based
+<- sc_node_class;
+=> nrel_main_idtf: [аргументационная агрегация] (* <- lang_ru;; *);;
+concept_strategy_dempster_shafer
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агрегация по Демпстеру-Шейферу] (* <- lang_ru;; *);;
+concept_strategy_trust_weighted
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агрегация с учётом доверия] (* <- lang_ru;; *);;
+concept_strategy_ontology_alignment_based
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агрегация на основе онтологического выравнивания] (* <- lang_ru;; *);;
+concept_strategy_pareto_dominance
+<- sc_node_class;
+=> nrel_main_idtf: [агрегация по доминированию Парето] (* <- lang_ru;; *);;
+concept_strategy_borda_count
+<- sc_node_class;
+=> nrel_main_idtf: [Borda count] (* <- lang_ru;; *);;
+concept_strategy_consensus_seeking
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия поиска консенсуса] (* <- lang_ru;; *);;
+concept_strategy_negotiation_based
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агрегация на основе переговоров] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Аргумент и аргументационный каркас.
+// ---------------------------------------------------------------------
+
+concept_decision_argument
+<- sc_node_class;
+=> nrel_main_idtf:
+    [аргумент решения] (* <- lang_ru;; *);
+    [decision argument] (* <- lang_en;; *);;
+
+concept_decision_argument <= nrel_subdividing: ...
+(*
+    -> concept_argument_supporting;
+       concept_argument_counter;
+       concept_argument_rebuttal;
+       concept_argument_undercut;;
+*);;
+
+concept_argument_supporting
+<- sc_node_class;
+=> nrel_main_idtf: [поддерживающий аргумент] (* <- lang_ru;; *);;
+concept_argument_counter
+<- sc_node_class;
+=> nrel_main_idtf: [контраргумент] (* <- lang_ru;; *);;
+concept_argument_rebuttal
+<- sc_node_class;
+=> nrel_main_idtf: [опровергающий аргумент (rebuttal)] (* <- lang_ru;; *);;
+concept_argument_undercut
+<- sc_node_class;
+=> nrel_main_idtf:
+    [подрывающий аргумент (undercut)] (* <- lang_ru;; *);;
+
+concept_argumentation_framework
+<- sc_node_class;
+=> nrel_main_idtf:
+    [аргументационный каркас] (* <- lang_ru;; *);
+    [argumentation framework] (* <- lang_en;; *);;
+
+definition -> definition_argumentation_framework: ...
+(*
+    -> rrel_key_sc_element: concept_argumentation_framework;;
+    => nrel_main_idtf:
+        [Опр.(аргументационный каркас)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Аргументационный каркас — пара <Args, Attacks>, где Args —
+            множество аргументов в пользу или против альтернатив решения,
+            Attacks — отношение атаки между аргументами. Используется
+            стратегией concept_strategy_argumentation_based для
+            разрешения конфликтов; принимаемые аргументы образуют
+            preferred / grounded / stable extension в духе.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

@@ -1,0 +1,155 @@
+// =====================================================================
+// concepts/services.scs
+// Подраздел: интеллектуальные сервисы экосистемы. Дескрипторы
+// возможностей в стиле OWL-S [30] / WSMO, адаптированные под SC-код.
+// =====================================================================
+
+section_concept_services
+=> nrel_main_idtf:
+    [Подраздел. Интеллектуальные сервисы] (* <- lang_ru;; *);
+    [Subsection. Intelligent Services] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_intelligent_service;
+<- rrel_key_sc_element: concept_service_endpoint;
+<- rrel_key_sc_element: concept_service_descriptor;
+<- rrel_key_sc_element: concept_service_publication_act;;
+
+concept_intelligent_service
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интеллектуальный сервис] (* <- lang_ru;; *);
+    [intelligent service] (* <- lang_en;; *);;
+concept_intelligent_service <= nrel_inclusion: concept_ecosystem_component;;
+concept_intelligent_service <= nrel_inclusion: concept_agent_class_group;;
+
+definition -> definition_intelligent_service: ...
+(*
+    -> rrel_key_sc_element: concept_intelligent_service;;
+    => nrel_main_idtf: [Опр.(интеллектуальный сервис)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Интеллектуальный сервис — компонент экосистемы, предоставляющий
+            доступ к определённой возможности обработки знаний посредством
+            формально описанного интерфейса и онтологического дескриптора,
+            опубликованного в общей семантической памяти. Может
+            функционально замещать интеллектуальную систему при условии
+            семантической совместимости профилей возможностей.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение сервисов по функциональному типу.
+// ---------------------------------------------------------------------
+
+concept_intelligent_service <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение сервисов по функциональному типу]
+       (* <- lang_ru;; *);;
+    -> concept_interpretation_service;
+       concept_retrieval_service;
+       concept_reasoning_service;
+       concept_recommendation_service;
+       concept_explanation_service;
+       concept_orchestration_service;
+       concept_translation_service;
+       concept_validation_service;
+       concept_aggregation_service;
+       concept_trust_assessment_service;;
+*);;
+
+concept_interpretation_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис интерпретации запроса] (* <- lang_ru;; *);;
+concept_retrieval_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис семантического поиска] (* <- lang_ru;; *);;
+concept_reasoning_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис логического вывода] (* <- lang_ru;; *);;
+concept_recommendation_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис формирования рекомендаций] (* <- lang_ru;; *);;
+concept_explanation_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис формирования объяснений] (* <- lang_ru;; *);;
+concept_orchestration_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис оркестрации сообщества] (* <- lang_ru;; *);;
+concept_translation_service
+<- sc_node_class;
+=> nrel_main_idtf:
+    [сервис семантической трансляции (онтологическое выравнивание)] (* <- lang_ru;; *);;
+concept_validation_service
+<- sc_node_class;
+=> nrel_main_idtf:
+    [сервис валидации SHACL-шаблонов] (* <- lang_ru;; *);;
+concept_aggregation_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис агрегации результатов] (* <- lang_ru;; *);;
+concept_trust_assessment_service
+<- sc_node_class;
+=> nrel_main_idtf: [сервис оценки доверия] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Онтологический дескриптор сервиса и точка доступа.
+// ---------------------------------------------------------------------
+
+concept_service_descriptor
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтологический дескриптор сервиса] (* <- lang_ru;; *);
+    [service descriptor] (* <- lang_en;; *);;
+concept_service_descriptor <= nrel_inclusion: concept_capability_profile;;
+
+concept_service_endpoint
+<- sc_node_class;
+=> nrel_main_idtf:
+    [точка доступа сервиса] (* <- lang_ru;; *);
+    [service endpoint] (* <- lang_en;; *);;
+
+concept_service_endpoint <= nrel_subdividing: ...
+(*
+    -> concept_endpoint_sc_pattern;
+       concept_endpoint_rest_api;
+       concept_endpoint_grpc;
+       concept_endpoint_message_broker;;
+*);;
+
+concept_endpoint_sc_pattern
+<- sc_node_class;
+=> nrel_main_idtf: [endpoint sc-pattern] (* <- lang_ru;; *);;
+concept_endpoint_rest_api
+<- sc_node_class;
+=> nrel_main_idtf: [endpoint REST API] (* <- lang_ru;; *);;
+concept_endpoint_grpc
+<- sc_node_class;
+=> nrel_main_idtf: [endpoint gRPC] (* <- lang_ru;; *);;
+concept_endpoint_message_broker
+<- sc_node_class;
+=> nrel_main_idtf: [endpoint message broker] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Акт публикации сервиса в общей sc-памяти.
+// ---------------------------------------------------------------------
+
+concept_service_publication_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт публикации сервиса] (* <- lang_ru;; *);
+    [service publication act] (* <- lang_en;; *);;
+
+definition -> definition_service_publication: ...
+(*
+    -> rrel_key_sc_element: concept_service_publication_act;;
+    => nrel_main_idtf: [Опр.(акт публикации сервиса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт публикации сервиса — операция включения дескриптора
+            возможностей сервиса в общую семантическую память
+            экосистемы, в результате которой сервис становится
+            доступным для семантического поиска и распределения
+            подзадач агентом agent_task_allocator.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

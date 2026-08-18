@@ -1,0 +1,114 @@
+// =====================================================================
+// scenarios/scenario_knowledge_exchange.scs
+// Сценарий: два интеллектуальных агента обмениваются знаниями через
+// общую семантическую память, используя коммуникативные акты FIPA-ACL.
+// Дополняет сценарий обработки запроса.
+// =====================================================================
+
+section_scenario_knowledge_exchange
+=> nrel_main_idtf:
+    [Сценарий. Обмен знаниями между интеллектуальными агентами]
+    (* <- lang_ru;; *);
+    [Scenario. Knowledge Exchange Between Intelligent Agents]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: exchange_query_001;
+<- rrel_key_sc_element: exchange_inform_001;
+<- rrel_key_sc_element: exchange_propose_001;
+<- rrel_key_sc_element: exchange_accept_001;;
+
+// ---------------------------------------------------------------------
+// Агенты-участники.
+// ---------------------------------------------------------------------
+
+agent_route_planner <- concept_bdi_agent;;
+agent_route_planner => nrel_main_idtf:
+    [BDI-агент планировщика маршрутов] (* <- lang_ru;; *);;
+
+agent_energy_model <- concept_learning_agent;;
+agent_energy_model => nrel_main_idtf:
+    [Обучающийся агент оценки энергозатрат] (* <- lang_ru;; *);;
+
+agent_safety_assessor <- concept_deliberative_agent;;
+agent_safety_assessor => nrel_main_idtf:
+    [Делиберативный агент оценки безопасности] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Акт 1: query-ref от planner к energy_model.
+// ---------------------------------------------------------------------
+
+exchange_query_001 <- concept_knowledge_exchange_act;;
+exchange_query_001
+-> rrel_sender: agent_route_planner;
+-> rrel_receiver: agent_energy_model;
+-> rrel_act_type: concept_act_query_ref;
+-> rrel_payload: payload_query_routes;
+-> rrel_context: interaction_context_001;
+-> rrel_timestamp: [2025-09-12T14:08:50Z];
+-> rrel_message_id: [msg_001];
+-> rrel_content_language: concept_language_sc_code;;
+
+payload_query_routes <- concept_subtask;;
+payload_query_routes => nrel_main_idtf:
+    [Запрос на оценку энергопотребления для маршрутов r_1, r_2, r_3]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Акт 2: inform от energy_model к planner с оценками.
+// ---------------------------------------------------------------------
+
+exchange_inform_001 <- concept_knowledge_exchange_act;;
+exchange_inform_001
+-> rrel_sender: agent_energy_model;
+-> rrel_receiver: agent_route_planner;
+-> rrel_act_type: concept_act_inform;
+-> rrel_payload: payload_inform_energy;
+-> rrel_context: interaction_context_001;
+-> rrel_timestamp: [2025-09-12T14:08:52Z];
+-> rrel_message_id: [msg_002];
+-> rrel_in_reply_to: [msg_001];
+-> rrel_content_language: concept_language_sc_code;;
+
+payload_inform_energy <- concept_processing_result;;
+payload_inform_energy => nrel_main_idtf:
+    [Оценки энергопотребления: r_1=42, r_2=37, r_3=51 кВт·ч]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Акт 3: propose от planner к safety_assessor — предложение
+// «выбрать r_2 как энергооптимальный».
+// ---------------------------------------------------------------------
+
+exchange_propose_001 <- concept_knowledge_exchange_act;;
+exchange_propose_001
+-> rrel_sender: agent_route_planner;
+-> rrel_receiver: agent_safety_assessor;
+-> rrel_act_type: concept_act_propose;
+-> rrel_payload: payload_proposal_r2;
+-> rrel_context: interaction_context_001;
+-> rrel_timestamp: [2025-09-12T14:08:55Z];
+-> rrel_message_id: [msg_003];;
+
+payload_proposal_r2 <- concept_decision_argument;;
+payload_proposal_r2 => nrel_main_idtf:
+    [Предложение: принять r_2 как итоговую рекомендацию по критерию
+     минимальной энергии] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Акт 4: accept-proposal от safety_assessor (после проверки).
+// ---------------------------------------------------------------------
+
+exchange_accept_001 <- concept_knowledge_exchange_act;;
+exchange_accept_001
+-> rrel_sender: agent_safety_assessor;
+-> rrel_receiver: agent_route_planner;
+-> rrel_act_type: concept_act_accept;
+-> rrel_payload: payload_safety_check_passed;
+-> rrel_context: interaction_context_001;
+-> rrel_timestamp: [2025-09-12T14:08:58Z];
+-> rrel_in_reply_to: [msg_003];;
+
+payload_safety_check_passed <- concept_processing_result;;
+payload_safety_check_passed => nrel_main_idtf:
+    [Подтверждение: маршрут r_2 удовлетворяет ограничениям безопасности]
+    (* <- lang_ru;; *);;

@@ -1,0 +1,146 @@
+// =====================================================================
+// rules/rules_trust_update.scs
+// Множество F_rule (часть π_tr) — правила обновления доверия.
+// Операционализируются sc-агентом agent_trust_evaluator.
+// =====================================================================
+
+section_rules_trust_update
+=> nrel_main_idtf:
+    [Подраздел. Правила обновления доверия (π_tr)] (* <- lang_ru;; *);
+    [Subsection. Trust Update Rules (π_tr)] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: action_update_trust_reliability;
+<- rrel_key_sc_element: action_update_trust_accuracy;
+<- rrel_key_sc_element: action_update_trust_security;
+<- rrel_key_sc_element: action_update_trust_transparency;;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_update_t_rel_on_outcome — sc-агент AgentUpdateTrustReliability
+// (ostis_ps_user_ecosystem/src/agent/agent_update_trust_reliability.*).
+// ---------------------------------------------------------------------
+
+action_update_trust_reliability
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: обновить надёжность t_rel] (* <- lang_ru;; *);
+    [action: update trust reliability t_rel] (* <- lang_en;; *);;
+
+rule -> rule_update_t_rel_on_outcome: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обновление t_rel по исходу взаимодействия)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [По итогам обработки подзадачи системой s наблюдается
+            индикатор успешности ν_rel (0 либо 1); обновить
+            t_rel(s, τ) ← (1−α) · t_rel(s, τ) + α · ν_rel,
+            где α — коэффициент сглаживания (типично 0.10), балансирующий
+            инерцию накопленной оценки и чувствительность к новому
+            наблюдению.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_update_t_acc_on_quality — sc-агент AgentUpdateTrustAccuracy
+// (ostis_ps_user_ecosystem/src/agent/agent_update_trust_accuracy.*).
+// ---------------------------------------------------------------------
+
+action_update_trust_accuracy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: обновить достоверность t_acc] (* <- lang_ru;; *);
+    [action: update trust accuracy t_acc] (* <- lang_en;; *);;
+
+rule -> rule_update_t_acc_on_quality: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обновление t_acc по достигнутой точности)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [По итогам обработки подзадачи наблюдается достигнутая
+            точность результата q_res (от 0 до 1); обновить
+            t_acc(s, τ) ← (1−β) · t_acc(s, τ) + β · q_res, где
+            β — коэффициент сглаживания.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_update_t_sec_on_incident — sc-агент AgentUpdateTrustSecurity
+// (ostis_ps_user_ecosystem/src/agent/agent_update_trust_security.*).
+// ---------------------------------------------------------------------
+
+action_update_trust_security
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: обновить безопасность t_sec] (* <- lang_ru;; *);
+    [action: update trust security t_sec] (* <- lang_en;; *);;
+
+rule -> rule_update_t_sec_on_incident: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обновление t_sec по инцидентам безопасности)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [По итогам обработки подзадачи наблюдается индикатор
+            отсутствия инцидента безопасности ν_sec (0 либо 1);
+            обновить t_sec(s, τ) ← (1−γ) · t_sec(s, τ) + γ · ν_sec,
+            где γ — коэффициент сглаживания. Регистрация инцидента
+            (security_incident, см. security_privacy.scs) немедленно
+            снижает t_sec на очередном шаге обновления.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_update_t_tr_on_justification — sc-агент
+// AgentUpdateTrustTransparency
+// (ostis_ps_user_ecosystem/src/agent/agent_update_trust_transparency.*).
+// ---------------------------------------------------------------------
+
+action_update_trust_transparency
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: обновить прозрачность t_tr] (* <- lang_ru;; *);
+    [action: update trust transparency t_tr] (* <- lang_en;; *);;
+
+rule -> rule_update_t_tr_on_justification: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(обновление t_tr по предоставлению обоснования)]
+        (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [По итогам обработки подзадачи наблюдается индикатор
+            предоставления обоснования ν_tr (0 либо 1) — факт того,
+            что система s сопроводила результат объяснением по
+            запросу; обновить
+            t_tr(s, τ) ← (1−δ) · t_tr(s, τ) + δ · ν_tr, где
+            δ — коэффициент сглаживания.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_aggregate_trust: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(агрегация компонентов доверия)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [trust(s, τ, h) = λ_rel·t_rel + λ_acc·t_acc + λ_sec·t_sec
+            + λ_tr·t_tr, Σ λ_k = 1. Веса задаются экспертно либо
+            обучаются. Скалярная оценка инкрементально обновляется и
+            используется функцией match(σ, s).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

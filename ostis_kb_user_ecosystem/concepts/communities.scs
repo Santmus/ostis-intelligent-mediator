@@ -1,0 +1,247 @@
+// =====================================================================
+// concepts/communities.scs
+// Подраздел: сообщества интеллектуальных систем (E_community).
+// Сообщество — динамически формируемая коалиция автономных ИС,
+// привлекаемых к коллективному решению пользовательского запроса.
+// Согласовано с теорией формирования коалиций MAS [33], организационными
+// моделями AGR [10] и парадигмой сообществ ostis-систем [3; 5; 29].
+// =====================================================================
+
+section_concept_communities
+=> nrel_main_idtf:
+    [Подраздел. Сообщества интеллектуальных систем] (* <- lang_ru;; *);
+    [Subsection. Communities of Intelligent Systems] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_community_of_intelligent_systems;
+<- rrel_key_sc_element: concept_coalition_formation_strategy;
+<- rrel_key_sc_element: concept_community_lifecycle_state;;
+
+// ---------------------------------------------------------------------
+// Класс сообщества.
+// ---------------------------------------------------------------------
+
+concept_community_of_intelligent_systems
+<- sc_node_class;
+=> nrel_main_idtf:
+    [сообщество интеллектуальных систем] (* <- lang_ru;; *);
+    [community of intelligent systems] (* <- lang_en;; *);
+=> nrel_idtf: [E_community];;
+
+concept_community_of_intelligent_systems
+<= nrel_inclusion: concept_ecosystem_component;;
+concept_community_of_intelligent_systems
+<= nrel_inclusion: concept_agent_class_group;;
+
+definition -> definition_community_of_intelligent_systems: ...
+(*
+    -> rrel_key_sc_element: concept_community_of_intelligent_systems;;
+    => nrel_main_idtf:
+        [Опр.(сообщество интеллектуальных систем)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Сообщество интеллектуальных систем — динамически формируемая
+            коалиция автономных интеллектуальных систем интеллектуальной
+            экосистемы, привлекаемых к коллективному решению конкретного
+            пользовательского запроса при условии семантической покрываемости
+            декомпозиции запроса множеством возможностей систем-участниц.
+            Сообщество существует на интервале жизненного цикла обработки
+            запроса и может реконфигурироваться при изменении состава
+            доступных компонентов экосистемы.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Разбиение по топологии взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_community_of_intelligent_systems <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение по топологии взаимодействия]
+       (* <- lang_ru;; *);;
+    -> concept_centralized_community;
+       concept_decentralized_community;
+       concept_hierarchical_community;
+       concept_federated_community;
+       concept_peer_to_peer_community;
+       concept_hub_and_spoke_community;;
+*);;
+
+concept_centralized_community
+<- sc_node_class;
+=> nrel_main_idtf: [централизованное сообщество ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [centralized community] (* <- lang_en;; *);;
+
+concept_decentralized_community
+<- sc_node_class;
+=> nrel_main_idtf: [децентрализованное сообщество ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [decentralized community] (* <- lang_en;; *);;
+
+concept_hierarchical_community
+<- sc_node_class;
+=> nrel_main_idtf: [иерархическое сообщество ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [hierarchical community] (* <- lang_en;; *);;
+
+concept_federated_community
+<- sc_node_class;
+=> nrel_main_idtf: [федеративное сообщество ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [federated community] (* <- lang_en;; *);;
+
+concept_peer_to_peer_community
+<- sc_node_class;
+=> nrel_main_idtf: [одноранговое сообщество ИС] (* <- lang_ru;; *);
+=> nrel_main_idtf: [peer-to-peer community] (* <- lang_en;; *);;
+
+concept_hub_and_spoke_community
+<- sc_node_class;
+=> nrel_main_idtf: [сообщество ИС типа «концентратор-лучи»] (* <- lang_ru;; *);
+=> nrel_main_idtf: [hub-and-spoke community] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Разбиение по режиму кооперации (3 базовых режима: cooperative,
+// competitive, hybrid + LLM-MAS как современный гибрид).
+// ---------------------------------------------------------------------
+
+concept_community_of_intelligent_systems <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение по режиму кооперации]
+       (* <- lang_ru;; *);;
+    -> concept_cooperative_community;
+       concept_competitive_community;
+       concept_hybrid_mode_community;
+       concept_llm_multi_agent_community;;
+*);;
+
+concept_cooperative_community
+<- sc_node_class;
+=> nrel_main_idtf: [кооперативное сообщество ИС] (* <- lang_ru;; *);;
+
+concept_competitive_community
+<- sc_node_class;
+=> nrel_main_idtf: [конкурентное сообщество ИС] (* <- lang_ru;; *);;
+
+concept_hybrid_mode_community
+<- sc_node_class;
+=> nrel_main_idtf:
+    [гибридное по режиму кооперации сообщество ИС] (* <- lang_ru;; *);;
+
+concept_llm_multi_agent_community
+<- sc_node_class;
+=> nrel_main_idtf:
+    [LLM-MAS сообщество ИС] (* <- lang_ru;; *);
+    [LLM-Multi-Agent community] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Стратегия формирования коалиции (Coalition Formation Strategy).
+// Реализует решение задачи (13) из формальной спецификации.
+// ---------------------------------------------------------------------
+
+concept_coalition_formation_strategy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия формирования коалиции] (* <- lang_ru;; *);
+    [coalition formation strategy] (* <- lang_en;; *);;
+
+concept_coalition_formation_strategy <= nrel_subdividing: ...
+(*
+    -> concept_strategy_cooperative_formation;
+       concept_strategy_competitive_formation;
+       concept_strategy_hybrid_formation;
+       concept_strategy_capability_match_based;
+       concept_strategy_trust_constrained;
+       concept_strategy_resource_aware;
+       concept_strategy_context_compat_optimal;;
+*);;
+
+concept_strategy_cooperative_formation
+<- sc_node_class;
+=> nrel_main_idtf: [кооперативная стратегия формирования] (* <- lang_ru;; *);;
+concept_strategy_competitive_formation
+<- sc_node_class;
+=> nrel_main_idtf: [конкурентная стратегия формирования] (* <- lang_ru;; *);;
+concept_strategy_hybrid_formation
+<- sc_node_class;
+=> nrel_main_idtf: [гибридная стратегия формирования] (* <- lang_ru;; *);;
+concept_strategy_capability_match_based
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия, основанная на функции match(σ, s)] (* <- lang_ru;; *);;
+concept_strategy_trust_constrained
+<- sc_node_class;
+=> nrel_main_idtf: [стратегия с ограничениями доверия] (* <- lang_ru;; *);;
+concept_strategy_resource_aware
+<- sc_node_class;
+=> nrel_main_idtf: [ресурсочувствительная стратегия] (* <- lang_ru;; *);;
+concept_strategy_context_compat_optimal
+<- sc_node_class;
+=> nrel_main_idtf:
+    [стратегия, максимизирующая ctx_compat] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Состояния жизненного цикла сообщества.
+// ---------------------------------------------------------------------
+
+concept_community_lifecycle_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние жизненного цикла сообщества] (* <- lang_ru;; *);
+    [community lifecycle state] (* <- lang_en;; *);;
+
+concept_community_lifecycle_state <= nrel_subdividing: ...
+(*
+    -> concept_state_proposed;
+       concept_state_formed;
+       concept_state_active;
+       concept_state_reconfiguring;
+       concept_state_dissolved;;
+*);;
+
+concept_state_proposed
+<- sc_node_class;
+=> nrel_main_idtf: [предложенное состояние] (* <- lang_ru;; *);;
+concept_state_formed
+<- sc_node_class;
+=> nrel_main_idtf: [сформированное состояние] (* <- lang_ru;; *);;
+concept_state_active
+<- sc_node_class;
+=> nrel_main_idtf: [активное состояние] (* <- lang_ru;; *);;
+concept_state_reconfiguring
+<- sc_node_class;
+=> nrel_main_idtf: [реконфигурируемое состояние] (* <- lang_ru;; *);;
+concept_state_dissolved
+<- sc_node_class;
+=> nrel_main_idtf: [распущенное состояние] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Ограничение покрытия декомпозиции.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_community_coverage: ...
+(*
+    -> rrel_key_sc_element: concept_community_of_intelligent_systems;;
+    => nrel_main_idtf:
+        [Утв.(сообщество, покрытие декомпозиции)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Множество интеллектуальных систем, входящих в сообщество,
+            должно образовывать покрытие множества подзадач декомпозиции
+            пользовательского запроса посредством отношения
+            nrel_assigned_to: для всякой подзадачи σ из T(q) существует
+            хотя бы одна ИС s, для которой выполнено assigned_to(σ, s).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_community_consistency: ...
+(*
+    -> rrel_key_sc_element: concept_community_of_intelligent_systems;;
+    => nrel_main_idtf:
+        [Утв.(сообщество, согласованность контекста)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для всякого членства nrel_member_of(s, K) должно выполняться
+            условие ctx_compat(C, s) ≥ θ_ctx, где C — контекст
+            обрабатываемого запроса, θ_ctx — порог контекстной
+            совместимости. Невыполнение запускает sc-агент
+            agent_coalition_reconfigurator.] (* <- lang_ru;; *);;
+    *);;
+*);;

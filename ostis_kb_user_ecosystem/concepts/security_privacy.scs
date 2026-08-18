@@ -1,0 +1,241 @@
+// =====================================================================
+// concepts/security_privacy.scs
+// Подраздел: безопасность и приватность взаимодействия в экосистеме.
+// Согласовано с требованиями [27], шаблонами SHACL [28] и нормативной
+// рамкой ЕС AI Act [41]. Развивает упомянутые в финальной модели
+// провенансные ограничения и контроль доступа.
+// =====================================================================
+
+section_concept_security_privacy
+=> nrel_main_idtf:
+    [Подраздел. Безопасность и приватность взаимодействия]
+    (* <- lang_ru;; *);
+    [Subsection. Security and Privacy of Interaction]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_security_property;
+<- rrel_key_sc_element: concept_privacy_property;
+<- rrel_key_sc_element: concept_security_incident;
+<- rrel_key_sc_element: concept_access_control_policy;
+<- rrel_key_sc_element: concept_personal_data;;
+
+// ---------------------------------------------------------------------
+// Корневые классы безопасности.
+// ---------------------------------------------------------------------
+
+concept_security_property
+<- sc_node_class;
+=> nrel_main_idtf:
+    [свойство безопасности] (* <- lang_ru;; *);
+    [security property] (* <- lang_en;; *);;
+
+concept_security_property <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [CIA-триада + Authenticity + Non-repudiation]
+       (* <- lang_ru;; *);;
+    -> concept_property_confidentiality;
+       concept_property_integrity;
+       concept_property_availability;
+       concept_property_authenticity;
+       concept_property_non_repudiation;
+       concept_property_auditability;;
+*);;
+
+concept_property_confidentiality <- sc_node_class;
+=> nrel_main_idtf: [конфиденциальность] (* <- lang_ru;; *);;
+concept_property_integrity <- sc_node_class;
+=> nrel_main_idtf: [целостность данных] (* <- lang_ru;; *);;
+concept_property_availability <- sc_node_class;
+=> nrel_main_idtf: [доступность] (* <- lang_ru;; *);;
+concept_property_authenticity <- sc_node_class;
+=> nrel_main_idtf: [аутентичность] (* <- lang_ru;; *);;
+concept_property_non_repudiation <- sc_node_class;
+=> nrel_main_idtf: [неотказуемость] (* <- lang_ru;; *);;
+concept_property_auditability <- sc_node_class;
+=> nrel_main_idtf: [аудируемость] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Свойства приватности.
+// ---------------------------------------------------------------------
+
+concept_privacy_property
+<- sc_node_class;
+=> nrel_main_idtf:
+    [свойство приватности] (* <- lang_ru;; *);
+    [privacy property] (* <- lang_en;; *);;
+
+concept_privacy_property <= nrel_subdividing: ...
+(*
+    -> concept_property_data_minimization;
+       concept_property_purpose_limitation;
+       concept_property_consent_compliance;
+       concept_property_right_to_explanation;
+       concept_property_right_to_erasure;
+       concept_property_data_residency;;
+*);;
+
+concept_property_data_minimization <- sc_node_class;
+=> nrel_main_idtf: [минимизация данных] (* <- lang_ru;; *);;
+concept_property_purpose_limitation <- sc_node_class;
+=> nrel_main_idtf: [ограничение цели обработки] (* <- lang_ru;; *);;
+concept_property_consent_compliance <- sc_node_class;
+=> nrel_main_idtf: [соответствие пользовательскому согласию] (* <- lang_ru;; *);;
+concept_property_right_to_explanation <- sc_node_class;
+=> nrel_main_idtf:
+    [право на объяснение автоматизированного решения] (* <- lang_ru;; *);;
+concept_property_right_to_erasure <- sc_node_class;
+=> nrel_main_idtf: [право на удаление] (* <- lang_ru;; *);;
+concept_property_data_residency <- sc_node_class;
+=> nrel_main_idtf: [требование локализации данных] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Инциденты безопасности.
+// ---------------------------------------------------------------------
+
+concept_security_incident
+<- sc_node_class;
+=> nrel_main_idtf:
+    [инцидент безопасности] (* <- lang_ru;; *);
+    [security incident] (* <- lang_en;; *);;
+
+concept_security_incident <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [STRIDE-классификация инцидентов] (* <- lang_ru;; *);;
+    -> concept_incident_spoofing;
+       concept_incident_tampering;
+       concept_incident_repudiation;
+       concept_incident_information_disclosure;
+       concept_incident_denial_of_service;
+       concept_incident_elevation_of_privilege;;
+*);;
+
+concept_incident_spoofing <- sc_node_class;
+=> nrel_main_idtf: [подмена идентификации (Spoofing)] (* <- lang_ru;; *);;
+concept_incident_tampering <- sc_node_class;
+=> nrel_main_idtf: [подделка данных (Tampering)] (* <- lang_ru;; *);;
+concept_incident_repudiation <- sc_node_class;
+=> nrel_main_idtf: [отказ от действий (Repudiation)] (* <- lang_ru;; *);;
+concept_incident_information_disclosure <- sc_node_class;
+=> nrel_main_idtf:
+    [раскрытие информации (Information Disclosure)] (* <- lang_ru;; *);;
+concept_incident_denial_of_service <- sc_node_class;
+=> nrel_main_idtf: [отказ в обслуживании (DoS)] (* <- lang_ru;; *);;
+concept_incident_elevation_of_privilege <- sc_node_class;
+=> nrel_main_idtf: [повышение привилегий (EoP)] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Политика контроля доступа.
+// ---------------------------------------------------------------------
+
+concept_access_control_policy
+<- sc_node_class;
+=> nrel_main_idtf:
+    [политика контроля доступа] (* <- lang_ru;; *);
+    [access control policy] (* <- lang_en;; *);;
+
+concept_access_control_policy <= nrel_subdividing: ...
+(*
+    -> concept_policy_rbac;
+       concept_policy_abac;
+       concept_policy_capability_based;
+       concept_policy_provenance_based;;
+*);;
+
+concept_policy_rbac <- sc_node_class;
+=> nrel_main_idtf: [RBAC — role-based] (* <- lang_ru;; *);;
+concept_policy_abac <- sc_node_class;
+=> nrel_main_idtf: [ABAC — attribute-based] (* <- lang_ru;; *);;
+concept_policy_capability_based <- sc_node_class;
+=> nrel_main_idtf: [политика на основе capability] (* <- lang_ru;; *);;
+concept_policy_provenance_based <- sc_node_class;
+=> nrel_main_idtf:
+    [политика на основе провенанса источника] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Персональные данные как первоклассная сущность.
+// ---------------------------------------------------------------------
+
+concept_personal_data
+<- sc_node_class;
+=> nrel_main_idtf:
+    [персональные данные пользователя] (* <- lang_ru;; *);
+    [personally identifiable information (PII)] (* <- lang_en;; *);;
+
+concept_personal_data <= nrel_subdividing: ...
+(*
+    -> concept_pii_identifier;
+       concept_pii_location;
+       concept_pii_biometric;
+       concept_pii_behavioral;
+       concept_pii_health;
+       concept_pii_financial;;
+*);;
+
+concept_pii_identifier <- sc_node_class;
+=> nrel_main_idtf: [PII: идентификатор личности] (* <- lang_ru;; *);;
+concept_pii_location <- sc_node_class;
+=> nrel_main_idtf: [PII: локационные данные] (* <- lang_ru;; *);;
+concept_pii_biometric <- sc_node_class;
+=> nrel_main_idtf: [PII: биометрические данные] (* <- lang_ru;; *);;
+concept_pii_behavioral <- sc_node_class;
+=> nrel_main_idtf: [PII: поведенческие данные] (* <- lang_ru;; *);;
+concept_pii_health <- sc_node_class;
+=> nrel_main_idtf: [PII: медицинские данные] (* <- lang_ru;; *);;
+concept_pii_financial <- sc_node_class;
+=> nrel_main_idtf: [PII: финансовые данные] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Отношения безопасности.
+// ---------------------------------------------------------------------
+
+nrel_security_violation_of
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [нарушает_свойство_безопасности*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_security_incident;
+=> nrel_second_domain: concept_security_property;;
+
+nrel_protected_by_policy
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [защищено_политикой*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_ecosystem_component;
+=> nrel_second_domain: concept_access_control_policy;;
+
+nrel_processes_personal_data
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [обрабатывает_персональные_данные*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_ecosystem_component;
+=> nrel_second_domain: concept_personal_data;;
+
+nrel_requires_consent_for
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [требует_согласия_на*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_ecosystem_component;
+=> nrel_second_domain: concept_personal_data;;
+
+// ---------------------------------------------------------------------
+// Определение защищённого взаимодействия.
+// ---------------------------------------------------------------------
+
+definition -> definition_secure_interaction: ...
+(*
+    -> rrel_key_sc_element: concept_security_property;;
+    => nrel_main_idtf: [Опр.(защищённое взаимодействие)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Защищённое взаимодействие пользователя с сообществом ИС —
+            взаимодействие, для которого выполнены свойства
+            конфиденциальности, целостности, доступности,
+            аутентичности и аудируемости; при обработке персональных
+            данных дополнительно соблюдаются согласие пользователя,
+            минимизация данных и ограничение цели обработки.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

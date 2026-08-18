@@ -1,0 +1,59 @@
+// =====================================================================
+// scenarios/scenario_coalition_reconfiguration.scs
+// Сценарий: реконфигурация коалиции при отказе одной из ИС-участниц
+// в ходе кооперативной обработки. Демонстрирует процесс π_rec.
+// =====================================================================
+
+section_scenario_coalition_reconfiguration
+=> nrel_main_idtf:
+    [Сценарий. Реконфигурация коалиции при отказе ИС]
+    (* <- lang_ru;; *);
+    [Scenario. Coalition Reconfiguration on IS Failure]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: failure_event_001;
+<- rrel_key_sc_element: reconfiguration_act_001;
+<- rrel_key_sc_element: community_route_planning_v2;;
+
+// Отказ системы ранжирования.
+failure_event_001 <- concept_event_constraint_violation;;
+failure_event_001 => nrel_main_idtf:
+    [Событие: intelligent_system_ranker недоступен (timeout)]
+    (* <- lang_ru;; *);;
+
+subtask_ranking => nrel_subtask_status: concept_subtask_status_failed;;
+
+// Понижение доверия к отказавшей ИС.
+trust_level_ranker_degraded <- concept_trust_level;;
+trust_level_ranker_degraded => nrel_main_idtf:
+    [Понижение доверия к intelligent_system_ranker: 0.71 → 0.58]
+    (* <- lang_ru;; *);;
+intelligent_system_ranker => nrel_has_trust_level:
+    trust_level_ranker_degraded;;
+
+// Альтернативная ИС.
+intelligent_system_ranker_alt <- concept_hybrid_intelligent_system;;
+intelligent_system_ranker_alt => nrel_main_idtf:
+    [Альтернативный ранжировщик (нейросимвольный)] (* <- lang_ru;; *);;
+
+// Реконфигурированное сообщество.
+community_route_planning_v2 <- concept_community_of_intelligent_systems;;
+community_route_planning_v2 => nrel_main_idtf:
+    [Сообщество v2 после реконфигурации] (* <- lang_ru;; *);;
+community_route_planning_v2 => nrel_serves_request: request_001;;
+community_route_planning_v2 <- concept_state_reconfiguring;;
+community_route_planning_v2 => nrel_includes: intelligent_system_route_planner;;
+community_route_planning_v2 => nrel_includes: intelligent_system_energy_model;;
+community_route_planning_v2 => nrel_includes: intelligent_system_ranker_alt;;
+
+subtask_ranking => nrel_assigned_to: intelligent_system_ranker_alt;;
+subtask_ranking => nrel_subtask_status: concept_subtask_status_reassigned;;
+
+// Акт реконфигурации.
+reconfiguration_act_001
+<- concept_process_coalition_reconfiguration;
+-> rrel_actor: agent_coalition_reconfigurator;
+-> rrel_input: failure_event_001;
+-> rrel_output: community_route_planning_v2;
+-> rrel_context: interaction_context_002;
+-> rrel_timestamp: [2025-09-12T14:14:45Z];;

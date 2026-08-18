@@ -1,0 +1,304 @@
+// =====================================================================
+// concepts/meta_model.scs
+// Метаонтологический уровень: формальная спецификация модели
+// взаимодействия как кортежа M_int = <E, R, A, F>, где
+//   E — множество классов сущностей предметной области;
+//   R — множество семантических отношений (бинарных и n-арных);
+//   A — множество атрибутов сущностей и отношений;
+//   F = F_ax ∪ F_rule ∪ F_constr ∪ F_prov — множество формальных
+//       средств интерпретации (аксиомы, правила, ограничения, шаблоны
+//       провенанса).
+// Согласовано с парадигмой OSTIS [1; 2; 5; 13] и принципом минимальной
+// концептуализации [12].
+// =====================================================================
+
+section_concept_meta_model
+=> nrel_main_idtf:
+    [Подраздел. Метамодель онтологии взаимодействия] (* <- lang_ru;; *);
+    [Subsection. Meta-Model of the Interaction Ontology] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_ontological_interaction_model;
+<- rrel_key_sc_element: concept_entity_class_set;
+<- rrel_key_sc_element: concept_relation_set;
+<- rrel_key_sc_element: concept_attribute_set;
+<- rrel_key_sc_element: concept_formal_means_set;
+<- rrel_key_sc_element: concept_axiom_set;
+<- rrel_key_sc_element: concept_rule_set;
+<- rrel_key_sc_element: concept_constraint_set;
+<- rrel_key_sc_element: concept_provenance_template_set;;
+
+// ---------------------------------------------------------------------
+// Корневой класс — онтологическая модель взаимодействия.
+// ---------------------------------------------------------------------
+
+concept_ontological_interaction_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтологическая модель взаимодействия] (* <- lang_ru;; *);
+    [ontological interaction model] (* <- lang_en;; *);
+=> nrel_idtf: [M_int];;
+
+concept_ontological_interaction_model
+<= nrel_inclusion: concept_ontology;;
+
+concept_ontology
+<- sc_node_class;
+=> nrel_main_idtf:
+    [онтология] (* <- lang_ru;; *);
+    [ontology] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Компоненты кортежа M_int = <E, R, A, F>.
+// ---------------------------------------------------------------------
+
+concept_entity_class_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество классов сущностей модели] (* <- lang_ru;; *);
+    [set of entity classes] (* <- lang_en;; *);
+=> nrel_idtf: [E];;
+
+concept_relation_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество семантических отношений модели] (* <- lang_ru;; *);
+    [set of semantic relations] (* <- lang_en;; *);
+=> nrel_idtf: [R];;
+
+concept_attribute_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество атрибутов модели] (* <- lang_ru;; *);
+    [set of attributes] (* <- lang_en;; *);
+=> nrel_idtf: [A];;
+
+concept_formal_means_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество формальных средств интерпретации] (* <- lang_ru;; *);
+    [set of formal interpretation means] (* <- lang_en;; *);
+=> nrel_idtf: [F];;
+
+concept_formal_means_set <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Композиция F = F_ax ∪ F_rule ∪ F_constr ∪ F_prov]
+       (* <- lang_ru;; *);;
+    -> concept_axiom_set;
+       concept_rule_set;
+       concept_constraint_set;
+       concept_provenance_template_set;;
+*);;
+
+concept_axiom_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество терминологических аксиом] (* <- lang_ru;; *);
+    [set of terminological axioms (F_ax)] (* <- lang_en;; *);
+=> nrel_idtf: [F_ax];;
+
+concept_rule_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество правил вывода] (* <- lang_ru;; *);
+    [set of inference rules (F_rule)] (* <- lang_en;; *);
+=> nrel_idtf: [F_rule];;
+
+concept_constraint_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество ограничений целостности] (* <- lang_ru;; *);
+    [set of integrity constraints (F_constr)] (* <- lang_en;; *);
+=> nrel_idtf: [F_constr];;
+
+concept_provenance_template_set
+<- sc_node_class;
+=> nrel_main_idtf:
+    [множество шаблонов фиксации происхождения] (* <- lang_ru;; *);
+    [set of provenance templates (F_prov)] (* <- lang_en;; *);
+=> nrel_idtf: [F_prov];;
+
+// ---------------------------------------------------------------------
+// Семантические группы классов E (декларативные / интенциональные /
+// агентные / контекстные / процессные / результирующие / ролевые).
+// ---------------------------------------------------------------------
+
+concept_entity_class_set <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение множества E по семантическим группам]
+       (* <- lang_ru;; *);;
+    -> concept_intentional_class_group;
+       concept_request_class_group;
+       concept_agent_class_group;
+       concept_context_class_group;
+       concept_process_class_group;
+       concept_result_class_group;
+       concept_meta_result_class_group;
+       concept_role_class_group;;
+*);;
+
+concept_intentional_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [интенциональная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [intentional class group] (* <- lang_en;; *);;
+
+concept_request_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [запросная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [request class group] (* <- lang_en;; *);;
+
+concept_agent_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [агентная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [agent class group] (* <- lang_en;; *);;
+
+concept_context_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [контекстная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [context class group] (* <- lang_en;; *);;
+
+concept_process_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [процессная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [process class group] (* <- lang_en;; *);;
+
+concept_result_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [результирующая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [result class group] (* <- lang_en;; *);;
+
+concept_meta_result_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [мета-результирующая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [meta-result class group] (* <- lang_en;; *);;
+
+concept_role_class_group
+<- sc_node_class;
+=> nrel_main_idtf: [ролевая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [role class group] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Семантические подмножества R (формула 3 финальной модели):
+// R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust.
+// ---------------------------------------------------------------------
+
+concept_relation_set <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение R по семи функциональным подмножествам]
+       (* <- lang_ru;; *);;
+    -> concept_relation_subset_structural;
+       concept_relation_subset_intentional;
+       concept_relation_subset_context;
+       concept_relation_subset_task;
+       concept_relation_subset_execution;
+       concept_relation_subset_provenance;
+       concept_relation_subset_trust;;
+*);;
+
+concept_relation_subset_structural
+<- sc_node_class;
+=> nrel_main_idtf:
+    [структурные отношения R_str] (* <- lang_ru;; *);
+=> nrel_idtf: [R_str];;
+
+concept_relation_subset_intentional
+<- sc_node_class;
+=> nrel_main_idtf:
+    [интенциональные отношения R_goal] (* <- lang_ru;; *);
+=> nrel_idtf: [R_goal];;
+
+concept_relation_subset_context
+<- sc_node_class;
+=> nrel_main_idtf:
+    [контекстные отношения R_ctx] (* <- lang_ru;; *);
+=> nrel_idtf: [R_ctx];;
+
+concept_relation_subset_task
+<- sc_node_class;
+=> nrel_main_idtf:
+    [задачные отношения R_task] (* <- lang_ru;; *);
+=> nrel_idtf: [R_task];;
+
+concept_relation_subset_execution
+<- sc_node_class;
+=> nrel_main_idtf:
+    [исполнительные отношения R_exec] (* <- lang_ru;; *);
+=> nrel_idtf: [R_exec];;
+
+concept_relation_subset_provenance
+<- sc_node_class;
+=> nrel_main_idtf:
+    [провенансные отношения R_prov] (* <- lang_ru;; *);
+=> nrel_idtf: [R_prov];;
+
+concept_relation_subset_trust
+<- sc_node_class;
+=> nrel_main_idtf:
+    [отношения доверия R_trust] (* <- lang_ru;; *);
+=> nrel_idtf: [R_trust];;
+
+// ---------------------------------------------------------------------
+// Принцип единого семантического представления.
+// ---------------------------------------------------------------------
+
+concept_unified_semantic_representation_principle
+<- sc_node_class;
+=> nrel_main_idtf:
+    [принцип единого семантического представления] (* <- lang_ru;; *);
+    [unified semantic representation principle] (* <- lang_en;; *);;
+
+definition -> definition_unified_representation: ...
+(*
+    -> rrel_key_sc_element: concept_unified_semantic_representation_principle;;
+    => nrel_main_idtf:
+        [Опр.(принцип единого семантического представления)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Все сущности, отношения, ограничения и процессы коллективной
+            обработки в модели M_int описываются в рамках одной формальной
+            системы — SC-кода — и доступны для семантического поиска,
+            интроспекции и логического вывода всеми компонентами
+            интеллектуальной экосистемы. Принцип согласуется с парадигмой
+            OSTIS и обеспечивает структурную и смысловую совместимость
+            компонентов в условиях коллективной обработки.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Свойство минимальной полноты M_int.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_minimal_completeness: ...
+(*
+    -> rrel_key_sc_element: concept_ontological_interaction_model;;
+    => nrel_main_idtf:
+        [Утв.(минимальная полнота кортежа M_int)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Кортеж M_int = <E, R, A, F> образует минимально полное
+            описание онтологии взаимодействия: уменьшение числа
+            компонентов нарушает либо декларативность (при объединении
+            E и R), либо логическую полноту (при исключении F);
+            увеличение — приводит к избыточности представления и нарушает
+            принцип минимальной концептуализации.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Метаотношение: связь между моделью M_int и её компонентами.
+// ---------------------------------------------------------------------
+
+nrel_model_component
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [компонент_модели*] (* <- lang_ru;; *);
+    [model_component*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;;
+
+concept_ontological_interaction_model => nrel_model_component: concept_entity_class_set;;
+concept_ontological_interaction_model => nrel_model_component: concept_relation_set;;
+concept_ontological_interaction_model => nrel_model_component: concept_attribute_set;;
+concept_ontological_interaction_model => nrel_model_component: concept_formal_means_set;;

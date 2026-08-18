@@ -1,0 +1,129 @@
+// =====================================================================
+// scenarios/scenario_explanation_construction.scs
+// Сценарий: построение трассируемого объяснения с применением шаблона
+// провенанса. Демонстрирует процесс π_exp.
+// =====================================================================
+
+section_scenario_explanation_construction
+=> nrel_main_idtf:
+    [Сценарий. Построение трассируемого объяснения] (* <- lang_ru;; *);
+    [Scenario. Trace-Based Explanation Construction] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: explanation_act_001;
+<- rrel_key_sc_element: explanation_collective_002;;
+
+// Акт построения объяснения как n-арная sc-конструкция.
+explanation_act_001
+<- concept_explanation_construction_act;
+-> rrel_actor: agent_explanation_builder;
+-> rrel_explanandum: integrated_result_001;
+-> rrel_explanation_type: concept_explanation_global;
+-> rrel_uses_results: { result_routes; result_energy; result_ranking };
+-> rrel_applies_rules: { rule_aggregate_results; rule_validate_integration };
+-> rrel_based_on: { domain_logistics; concept_source_user_history };
+-> rrel_construction_time: [2025-09-12T14:09:14Z];
+-> rrel_context: interaction_context_001;;
+
+// Объяснение как первоклассная sc-структура.
+explanation_collective_002 <- concept_explanation_global;;
+explanation_collective_002 => nrel_main_idtf:
+    [Объяснение результата 001: трассируемая цепочка от запроса
+     к итоговому ранжированию с указанием весов критериев
+     и провенансных связей частичных результатов]
+    (* <- lang_ru;; *);;
+
+integrated_result_001 => nrel_supported_by_explanation: explanation_collective_002;;
+integrated_result_001 => nrel_explained_by: explanation_collective_002;;
+
+// Провенансные связи использованных правил и источников.
+explanation_collective_002 => nrel_prov_used: rule_aggregate_results;;
+explanation_collective_002 => nrel_prov_used: rule_validate_integration;;
+explanation_collective_002 => nrel_prov_used: domain_logistics;;
+explanation_collective_002 => nrel_prov_was_attributed_to: agent_explanation_builder;;
+
+// Контрастивное объяснение.
+explanation_contrastive_001 <- concept_explanation_contrastive;;
+explanation_contrastive_001 => nrel_main_idtf:
+    [Контрастивное объяснение: почему r_2, а не r_1 на первом этапе
+     ранжирования (различие — энергопотребление меньше на 5 кВт·ч
+     при одинаковом времени)] (* <- lang_ru;; *);;
+
+// Метрики прозрачности применённые к сценарию.
+metric_pi_proc_scenario_001 <- concept_pi_proc;;
+metric_pi_proc_scenario_001 => nrel_main_idtf:
+    [π_proc = 8/8 = 1.0 (все процессы зафиксированы провенансом)]
+    (* <- lang_ru;; *);;
+
+metric_pi_dec_scenario_001 <- concept_pi_dec;;
+metric_pi_dec_scenario_001 => nrel_main_idtf:
+    [π_dec = 5/5 = 1.0 (все акты принятия решений зафиксированы)]
+    (* <- lang_ru;; *);;
+
+metric_pi_data_scenario_001 <- concept_pi_data;;
+metric_pi_data_scenario_001 => nrel_main_idtf:
+    [π_data = 12/12 = 1.0 (все используемые данные привязаны
+     к источникам знаний)] (* <- lang_ru;; *);;
+
+
+// =====================================================================
+// Фрагмент сценария: построение контрастивного объяснения
+// интегрированного результата с применением правил агрегации.
+// Реифицированный акт построения explanation_77 формализован как
+// n-арная sc-связь с ролевыми параметрами.
+// =====================================================================
+
+section_explanation_example
+=> nrel_main_idtf:
+    [Сценарий. Построение контрастивного объяснения] (* <- lang_ru;; *);
+    [Scenario. Contrastive Explanation Construction] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: explanation_77;
+<- rrel_key_sc_element: integrated_result_19;
+<- rrel_key_sc_element: contrastive_explanation;;
+
+// Интегрированный результат, подлежащий объяснению (объясняемое).
+integrated_result_19 <- concept_integrated_result;;
+integrated_result_19 => nrel_main_idtf:
+    [Интегрированный результат 19] (* <- lang_ru;; *);;
+
+// Тип объяснения — контрастивное.
+contrastive_explanation <- concept_explanation_contrastive;;
+contrastive_explanation => nrel_main_idtf:
+    [Контрастивное объяснение] (* <- lang_ru;; *);;
+
+// Использованный частичный результат.
+partial_result_3 <- concept_partial_result;;
+partial_result_3 => nrel_main_idtf:
+    [Частичный результат 3] (* <- lang_ru;; *);;
+
+// Применённое правило агрегации/голосования.
+rule_aggregation_voting <- concept_aggregation_rule;;
+rule_aggregation_voting => nrel_main_idtf:
+    [Правило агрегации с голосованием] (* <- lang_ru;; *);;
+
+// Онтология, на которой основано объяснение.
+ontology_medical_diag <- concept_ontology;;
+ontology_medical_diag => nrel_main_idtf:
+    [Онтология медицинской диагностики] (* <- lang_ru;; *);;
+
+// История пользователя как источник знаний.
+kb_user_history_42 <- concept_source_user_history;;
+kb_user_history_42 => nrel_main_idtf:
+    [История пользователя 42] (* <- lang_ru;; *);;
+
+// Реифицированный акт построения объяснения.
+explanation_77
+<- concept_explanation_construction_act;
+-> rrel_explanandum: integrated_result_19;
+-> rrel_explanation_type: contrastive_explanation;
+-> rrel_uses_results: partial_result_3;
+-> rrel_applies_rules: rule_aggregation_voting;
+-> rrel_based_on: ontology_medical_diag;
+-> rrel_based_on: kb_user_history_42;
+-> rrel_construction_time: [2025-09-12T14:09:14Z];;
+
+// Связь объяснения с интегрированным результатом.
+contrastive_explanation => nrel_prov_used: rule_aggregation_voting;;
+contrastive_explanation => nrel_prov_used: partial_result_3;;
+integrated_result_19 => nrel_explained_by: contrastive_explanation;;
+integrated_result_19 => nrel_supported_by_explanation: contrastive_explanation;;

@@ -1,0 +1,188 @@
+// =====================================================================
+// rules/rules_integrity_validation.scs
+// SHACL-совместимые правила валидации (агент agent_integrity_checker).
+// Каждое правило связано с экземпляром concept_shacl_shape либо
+// прямым ограничением F_constr.
+// =====================================================================
+
+section_rules_integrity_validation
+=> nrel_main_idtf:
+    [Подраздел. Правила валидации целостности (SHACL-shapes)]
+    (* <- lang_ru;; *);
+    [Subsection. Integrity Validation Rules (SHACL Shapes)] (* <- lang_en;; *);
+<- atomic_section;;
+
+// ---------------------------------------------------------------------
+// Shape: каждый concept_user_request должен иметь ровно одного автора.
+// ---------------------------------------------------------------------
+
+shape_user_request_authorship <- concept_shacl_node_shape;;
+shape_user_request_authorship => nrel_main_idtf:
+    [SHACL NodeShape: автор запроса] (* <- lang_ru;; *);;
+
+rule -> rule_validate_authorship_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_user_request_authorship)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [shape_user_request_authorship: targetClass concept_user_request;
+            property nrel_formulates⁻¹; minCount 1; maxCount 1;
+            class concept_user.
+            Нарушение → concept_cardinality_constraint_violation,
+            ссылка на ABox-фрагмент.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: каждый subtask имеет статус и приоритет.
+// ---------------------------------------------------------------------
+
+shape_subtask_status_priority <- concept_shacl_node_shape;;
+shape_subtask_status_priority => nrel_main_idtf:
+    [SHACL NodeShape: подзадача — статус и приоритет]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_subtask_status_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_subtask_status_priority)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_subtask;
+            property nrel_subtask_status — minCount 1;
+            property nrel_subtask_priority — minCount 1;
+            возможные значения статуса: см. composition
+            concept_subtask_status.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: каждый processing_result имеет provenance-запись и contextual
+// привязку.
+// ---------------------------------------------------------------------
+
+shape_result_provenance <- concept_shacl_node_shape;;
+shape_result_provenance => nrel_main_idtf:
+    [SHACL NodeShape: результат — провенанс и контекст]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_result_provenance_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_result_provenance)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_processing_result;
+            property nrel_has_provenance — minCount 1;
+            property nrel_generated_in_context — minCount 1;
+            property nrel_obtained_from — minCount 1.
+            Нарушение → concept_existence_constraint_violation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: integrated_result имеет объяснение и не имеет неразрешённого
+// конфликта.
+// ---------------------------------------------------------------------
+
+shape_integrated_result_complete <- concept_shacl_node_shape;;
+shape_integrated_result_complete => nrel_main_idtf:
+    [SHACL NodeShape: интегрированный результат — полнота]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_integrated_result_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_integrated_result_complete)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_integrated_result;
+            property nrel_explained_by — minCount 1;
+            qualifiedValueShape: ¬ ∃c. conflicts_with(target, c).
+            При наличии неразрешённого конфликта → откат
+            к agent_conflict_detector → агрегация по
+            rule_resolve_by_*.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: каждая ИС имеет capability_profile.
+// ---------------------------------------------------------------------
+
+shape_is_capability <- concept_shacl_node_shape;;
+shape_is_capability => nrel_main_idtf:
+    [SHACL NodeShape: ИС — обязательный профиль] (* <- lang_ru;; *);;
+
+rule -> rule_validate_is_capability_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_is_capability)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_intelligent_system;
+            property nrel_has_capability_profile — minCount 1;
+            qualifiedValueShape: класс concept_capability_profile.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: контекст содержит все 5 подконтекстов.
+// ---------------------------------------------------------------------
+
+shape_context_completeness <- concept_shacl_node_shape;;
+shape_context_completeness => nrel_main_idtf:
+    [SHACL NodeShape: полнота контекста взаимодействия]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_context_completeness: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация полноты контекста)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_interaction_context;
+            property rrel_goal_context — minCount 1;
+            property rrel_history_context — minCount 1;
+            property rrel_system_context — minCount 1;
+            property rrel_domain_context — minCount 1;
+            property rrel_user_situation_context — minCount 1.
+            Нарушение → agent_context_updater запускает
+            процедуру восполнения недостающих подконтекстов
+            из истории пользователя.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Shape: цепочка provenance замкнута до request.
+// ---------------------------------------------------------------------
+
+shape_provenance_chain_complete <- concept_shacl_property_shape;;
+shape_provenance_chain_complete => nrel_main_idtf:
+    [SHACL PropertyShape: полнота цепочки derived_from]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_provenance_chain: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(полнота цепочки provenance)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для всякого integrated_result ir должна существовать
+            transitive_path nrel_derived_from до экземпляра
+            concept_user_request. Иначе → нарушение цепочки
+            трассировки; π_proc < 1.0; эскалация
+            agent_provenance_registrar.] (* <- lang_ru;; *);;
+    *);;
+*);;

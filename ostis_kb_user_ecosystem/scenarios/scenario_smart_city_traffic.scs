@@ -1,0 +1,206 @@
+// =====================================================================
+// scenarios/scenario_smart_city_traffic.scs
+// Сценарий: интеллектуальная экосистема Smart City — управление
+// дорожным трафиком в реальном времени.
+// =====================================================================
+
+section_scenario_smart_city_traffic
+=> nrel_main_idtf:
+    [Сценарий. Управление трафиком в Smart City] (* <- lang_ru;; *);
+    [Scenario. Smart City Traffic Management] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: ecosystem_smart_city;
+<- rrel_key_sc_element: request_traffic_optimization;
+<- rrel_key_sc_element: collective_traffic_decision;;
+
+// ---------------------------------------------------------------------
+// Экосистема Smart City.
+// ---------------------------------------------------------------------
+
+ecosystem_smart_city <- concept_intelligent_ecosystem;;
+ecosystem_smart_city => nrel_main_idtf:
+    [Интеллектуальная экосистема Smart City Minsk] (* <- lang_ru;; *);;
+
+shared_memory_smart_city <- concept_shared_semantic_memory;;
+ecosystem_smart_city => nrel_owns_semantic_memory: shared_memory_smart_city;;
+
+// ---------------------------------------------------------------------
+// Пользователь — оператор центра управления.
+// ---------------------------------------------------------------------
+
+user_traffic_operator <- concept_decision_maker;;
+user_traffic_operator => nrel_main_idtf:
+    [Оператор городского центра управления трафиком]
+    (* <- lang_ru;; *);;
+
+request_traffic_optimization <- concept_user_request;;
+request_traffic_optimization <- concept_request_optimization;;
+request_traffic_optimization => nrel_main_idtf:
+    [Запрос: минимизировать средний tau (время в пути)
+     по проспекту Независимости в час пик с учётом аварии
+     на пересечении с ул. Сурганова]
+    (* <- lang_ru;; *);;
+user_traffic_operator => nrel_formulates: request_traffic_optimization;;
+
+goal_minimize_avg_tau <- concept_goal;;
+goal_minimize_avg_tau <- concept_goal_optimizational;;
+goal_minimize_avg_tau => nrel_main_idtf:
+    [Цель: min E при ограничении безопасности]
+    (* <- lang_ru;; *);;
+request_traffic_optimization => nrel_has_goal: goal_minimize_avg_tau;;
+
+// ---------------------------------------------------------------------
+// Контекст (с акцентом на C_s — состояние городской среды).
+// ---------------------------------------------------------------------
+
+interaction_context_smart_city <- concept_interaction_context;;
+interaction_context_smart_city => nrel_main_idtf:
+    [Контекст: 17:42, рабочий день, +2°C, мокрый асфальт,
+     ДТП на пересечении ИС3·К12] (* <- lang_ru;; *);;
+
+state_smart_city <- concept_system_context;;
+state_smart_city => nrel_main_idtf:
+    [Состояние: 47 светофорных групп онлайн, 12 камер с CV,
+     342 датчика загруженности; среднее заполнение 78%]
+    (* <- lang_ru;; *);;
+
+interaction_context_smart_city -> rrel_goal_context: goal_minimize_avg_tau;;
+interaction_context_smart_city -> rrel_system_context: state_smart_city;;
+interaction_context_smart_city -> rrel_domain_context: domain_urban_traffic;;
+interaction_context_smart_city -> rrel_history_context: history_traffic_30d;;
+interaction_context_smart_city -> rrel_user_situation_context: situation_operator_desktop;;
+
+domain_urban_traffic <- concept_domain_context;;
+domain_urban_traffic => nrel_main_idtf:
+    [Предметная область: городское движение] (* <- lang_ru;; *);;
+history_traffic_30d <- concept_history_context;;
+history_traffic_30d => nrel_main_idtf:
+    [История: 30 суток телеметрии трафика, 4 крупных инцидента]
+    (* <- lang_ru;; *);;
+situation_operator_desktop <- concept_user_situation_context;;
+situation_operator_desktop => nrel_main_idtf:
+    [Ситуация: рабочее место оператора, мульти-монитор]
+    (* <- lang_ru;; *);;
+
+request_traffic_optimization => nrel_has_context: interaction_context_smart_city;;
+
+// ---------------------------------------------------------------------
+// Декомпозиция.
+// ---------------------------------------------------------------------
+
+subtask_predict_demand <- concept_subtask;;
+subtask_predict_demand <- concept_task_type_estimation;;
+subtask_predict_demand => nrel_main_idtf:
+    [Подзадача: прогноз спроса трафика на 30 мин вперёд]
+    (* <- lang_ru;; *);;
+
+subtask_reroute_recommendation <- concept_subtask;;
+subtask_reroute_recommendation <- concept_task_type_planning;;
+subtask_reroute_recommendation => nrel_main_idtf:
+    [Подзадача: предложение объездных маршрутов] (* <- lang_ru;; *);;
+subtask_reroute_recommendation => nrel_subtask_depends_on: subtask_predict_demand;;
+
+subtask_signal_plan <- concept_subtask;;
+subtask_signal_plan <- concept_task_type_optimization;;
+subtask_signal_plan => nrel_main_idtf:
+    [Подзадача: оптимизация фаз светофоров на 6 ключевых узлах]
+    (* <- lang_ru;; *);;
+subtask_signal_plan => nrel_subtask_depends_on: subtask_predict_demand;;
+
+subtask_safety_check <- concept_subtask;;
+subtask_safety_check <- concept_task_type_diagnosis;;
+subtask_safety_check => nrel_main_idtf:
+    [Подзадача: проверка предлагаемого плана на нарушения
+     безопасности (пешеходы, спецтранспорт)]
+    (* <- lang_ru;; *);;
+subtask_safety_check => nrel_subtask_depends_on: subtask_signal_plan;;
+subtask_safety_check => nrel_subtask_depends_on: subtask_reroute_recommendation;;
+
+request_traffic_optimization => nrel_decomposed_into: subtask_predict_demand;;
+request_traffic_optimization => nrel_decomposed_into: subtask_reroute_recommendation;;
+request_traffic_optimization => nrel_decomposed_into: subtask_signal_plan;;
+request_traffic_optimization => nrel_decomposed_into: subtask_safety_check;;
+
+// ---------------------------------------------------------------------
+// Сообщество ИС Smart City.
+// ---------------------------------------------------------------------
+
+community_traffic <- concept_community_of_intelligent_systems;;
+community_traffic <- concept_decentralized_community;;
+community_traffic => nrel_main_idtf:
+    [Сообщество: управление трафиком] (* <- lang_ru;; *);;
+community_traffic => nrel_serves_request: request_traffic_optimization;;
+ecosystem_smart_city => nrel_hosts_community: community_traffic;;
+
+system_demand_forecaster <- concept_subsymbolic_intelligent_system;;
+system_demand_forecaster => nrel_main_idtf:
+    [ИС прогноза спроса (LSTM)] (* <- lang_ru;; *);;
+system_route_optimizer <- concept_hybrid_intelligent_system;;
+system_route_optimizer => nrel_main_idtf:
+    [ИС оптимизации маршрутов (graph + reinforcement)]
+    (* <- lang_ru;; *);;
+system_signal_controller <- concept_rule_based_intelligent_system;;
+system_signal_controller => nrel_main_idtf:
+    [ИС контроля светофоров (MILP-оптимизатор)] (* <- lang_ru;; *);;
+system_safety_inspector <- concept_symbolic_intelligent_system;;
+system_safety_inspector => nrel_main_idtf:
+    [ИС инспекции безопасности (онтологический ризонер)]
+    (* <- lang_ru;; *);;
+
+community_traffic => nrel_includes: system_demand_forecaster;;
+community_traffic => nrel_includes: system_route_optimizer;;
+community_traffic => nrel_includes: system_signal_controller;;
+community_traffic => nrel_includes: system_safety_inspector;;
+
+subtask_predict_demand        => nrel_assigned_to: system_demand_forecaster;;
+subtask_reroute_recommendation => nrel_assigned_to: system_route_optimizer;;
+subtask_signal_plan           => nrel_assigned_to: system_signal_controller;;
+subtask_safety_check          => nrel_assigned_to: system_safety_inspector;;
+
+// ---------------------------------------------------------------------
+// Конфликт и его разрешение.
+// ---------------------------------------------------------------------
+
+result_aggressive_plan <- concept_partial_result;;
+result_aggressive_plan => nrel_main_idtf:
+    [План А: сократить зелёный для пешеходов на 8с
+     → экономия 6.5 мин по проспекту]
+    (* <- lang_ru;; *);;
+system_signal_controller => nrel_produces: result_aggressive_plan;;
+
+result_safety_objection <- concept_partial_result;;
+result_safety_objection => nrel_main_idtf:
+    [Возражение: сокращение пешеходной фазы недопустимо
+     (зона школы)] (* <- lang_ru;; *);;
+system_safety_inspector => nrel_produces: result_safety_objection;;
+
+conflict_safety_vs_speed <- concept_value_conflict;;
+conflict_safety_vs_speed <- concept_result_conflict;;
+conflict_safety_vs_speed => nrel_main_idtf:
+    [Конфликт: эффективность vs безопасность]
+    (* <- lang_ru;; *);;
+result_aggressive_plan => nrel_conflicts_with: result_safety_objection;;
+
+collective_traffic_decision <- concept_collective_decision;;
+collective_traffic_decision => nrel_main_idtf:
+    [Решение: альтернативный план B (сохранение пешеходной фазы,
+     оптимизация фазы поворота на ул. Сурганова, объезд для 12%
+     потока → экономия 3.8 мин)] (* <- lang_ru;; *);;
+collective_traffic_decision => nrel_resolves_conflict: conflict_safety_vs_speed;;
+
+resolution_traffic
+<- concept_strategy_argumentation_based;
+-> rrel_decision_proposal: collective_traffic_decision;
+-> rrel_decision_counter_argument: result_aggressive_plan;
+-> rrel_decision_argument: result_safety_objection;
+-> rrel_decision_weight: [0.96];
+-> rrel_context: interaction_context_smart_city;;
+collective_traffic_decision => nrel_aggregated_by: resolution_traffic;;
+
+explanation_traffic <- concept_explanation_contrastive;;
+explanation_traffic => nrel_main_idtf:
+    [Контрастивное объяснение: план B вместо A; снижение выгоды
+     на 41%, но сохранение нормативной пешеходной фазы 24с
+     у зоны школы №12] (* <- lang_ru;; *);;
+collective_traffic_decision => nrel_supported_by_explanation: explanation_traffic;;
+collective_traffic_decision => nrel_delivered_to: user_traffic_operator;;
