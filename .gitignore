@@ -5,5 +5,8 @@
 ostis_ps_user_ecosystem/build/
 ostis_ps_user_ecosystem/repo/
 
+# локальные настройки Obsidian (workspace layout и т.п.), не контент
+agents_vault/.obsidian/
+
 # пока не версионируем диаграммы из этого репозитория
 Диаграммы к диссертации/
