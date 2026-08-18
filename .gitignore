@@ -1,4 +1,5 @@
 .DS_Store
+.claude/
 
 # сборочные и тестовые артефакты ostis_ps_user_ecosystem
 ostis_ps_user_ecosystem/build/
