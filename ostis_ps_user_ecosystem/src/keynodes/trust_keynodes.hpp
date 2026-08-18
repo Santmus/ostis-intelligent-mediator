@@ -26,4 +26,6 @@ public:
 
   static inline ScKeynode const action_update_trust_transparency{
       "action_update_trust_transparency", ScType::NodeConstClass};
+
+  static inline ScKeynode const action_aggregate_trust{"action_aggregate_trust", ScType::NodeConstClass};
 };

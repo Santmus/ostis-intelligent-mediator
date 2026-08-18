@@ -12,7 +12,8 @@ section_rules_trust_update
 <- rrel_key_sc_element: action_update_trust_reliability;
 <- rrel_key_sc_element: action_update_trust_accuracy;
 <- rrel_key_sc_element: action_update_trust_security;
-<- rrel_key_sc_element: action_update_trust_transparency;;
+<- rrel_key_sc_element: action_update_trust_transparency;
+<- rrel_key_sc_element: action_aggregate_trust;;
 
 // ---------------------------------------------------------------------
 // Класс действия для программной (C++) реализации
@@ -129,6 +130,18 @@ rule -> rule_update_t_tr_on_justification: ...
             δ — коэффициент сглаживания.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации rule_aggregate_trust
+// — sc-агент AgentAggregateTrust
+// (ostis_ps_user_ecosystem/src/agent/agent_aggregate_trust.*).
+// ---------------------------------------------------------------------
+
+action_aggregate_trust
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: агрегировать доверие trust] (* <- lang_ru;; *);
+    [action: aggregate trust] (* <- lang_en;; *);;
 
 rule -> rule_aggregate_trust: ...
 (*
