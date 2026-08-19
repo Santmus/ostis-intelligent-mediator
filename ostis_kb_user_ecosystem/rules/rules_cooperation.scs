@@ -8,7 +8,20 @@ section_rules_cooperation
 => nrel_main_idtf:
     [Подраздел. Правила кооперативной обработки (π_coop)] (* <- lang_ru;; *);
     [Subsection. Cooperative Processing Rules (π_coop)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_dispatch_ready_subtask;;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_dispatch_ready_subtask — sc-агент AgentDispatchReadySubtask
+// (ostis_ps_user_ecosystem/src/agent/agent_dispatch_ready_subtask.*).
+// ---------------------------------------------------------------------
+
+action_dispatch_ready_subtask
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: запустить готовую подзадачу] (* <- lang_ru;; *);
+    [action: dispatch ready subtask] (* <- lang_en;; *);;
 
 rule -> rule_dispatch_ready_subtask: ...
 (*

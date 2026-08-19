@@ -5,30 +5,15 @@
 #include <sc-memory/sc_memory_headers.hpp>
 
 #include "common/float_link_io.hpp"
+#include "common/relation_io.hpp"
 #include "keynodes/integration_keynodes.hpp"
 
+using trust_utils::LinkByRelation;
 using trust_utils::ReadFloatLinkContent;
+using trust_utils::TargetOf;
 
 namespace
 {
-// Ищет цель некорневой (не rrel_*) ориентированной бинарной связи
-// sourceAddr -[relationAddr]-> ?, как nrel_produced_by/nrel_has_trust_level.
-ScAddr TargetOf(ScAgentContext & context, ScAddr const & sourceAddr, ScAddr const & relationAddr)
-{
-  ScIterator5Ptr const it5 = context.CreateIterator5(
-      sourceAddr, ScType::ConstCommonArc, ScType::Unknown, ScType::ConstPermPosArc, relationAddr);
-  if (it5->Next())
-    return it5->Get(2);
-  return ScAddr::Empty;
-}
-
-void LinkByRelation(
-    ScAgentContext & context, ScAddr const & sourceAddr, ScAddr const & targetAddr, ScAddr const & relationAddr)
-{
-  ScAddr const arcAddr = context.GenerateConnector(ScType::ConstCommonArc, sourceAddr, targetAddr);
-  context.GenerateConnector(ScType::ConstPermPosArc, relationAddr, arcAddr);
-}
-
 float TrustWeightOf(ScAgentContext & context, ScAddr const & resultAddr)
 {
   ScAddr const systemAddr = TargetOf(context, resultAddr, IntegrationKeynodes::nrel_produced_by);

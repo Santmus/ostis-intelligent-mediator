@@ -110,6 +110,9 @@ status: реализован, покрыт тестами, проверен на
 ## Связи
 
 **Зависимости:** `common/float_link_io.hpp` (`ReadFloatLinkContent`),
+`common/relation_io.hpp` (`TargetOf`/`LinkByRelation` — при появлении
+[[AgentDispatchReadySubtask]], которому эти же функции понадобились
+во второй раз, вынесены из локальной копии в общий заголовок),
 `keynodes/integration_keynodes.hpp` (`IntegrationKeynodes`).
 
 **Читает:** `nrel_produced_by` каждого кандидата, `nrel_has_trust_level`
