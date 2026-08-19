@@ -9,7 +9,8 @@ section_rules_security_privacy
     [Подраздел. Правила безопасности и приватности (F_rule_sec)]
     (* <- lang_ru;; *);
     [Subsection. Security and Privacy Rules (F_rule_sec)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_detect_anomalous_request_rate;;
 
 rule -> rule_enforce_consent_check: ...
 (*
@@ -45,6 +46,23 @@ rule -> rule_data_minimization: ...
             Лишние PII обнуляются (redaction).] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации вычислимой части
+// rule_detect_anomalous_request_rate — sc-агент
+// AgentDetectAnomalousRequestRate
+// (ostis_ps_user_ecosystem/src/agent/agent_detect_anomalous_request_rate.*).
+// Выбор конкретного STRIDE-подкласса инцидента (DoS/Tampering) и
+// активация agent_coalition_reconfigurator/agent_provenance_registrar
+// не реализованы (см. комментарий в
+// agent_detect_anomalous_request_rate.hpp).
+// ---------------------------------------------------------------------
+
+action_detect_anomalous_request_rate
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: детектировать аномальную частоту запросов] (* <- lang_ru;; *);
+    [action: detect anomalous request rate] (* <- lang_en;; *);;
 
 rule -> rule_detect_anomalous_request_rate: ...
 (*

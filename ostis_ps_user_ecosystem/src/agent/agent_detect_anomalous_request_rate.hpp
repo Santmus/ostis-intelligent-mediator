@@ -1,0 +1,49 @@
+#pragma once
+
+#include <sc-memory/sc_agent.hpp>
+
+// Реализует вычислимую часть правила rule_detect_anomalous_request_rate
+// (ostis_kb_user_ecosystem/rules/rules_security_privacy.scs):
+//   anomalous <- rate(source, target, dt) > k_sigma * baseline_rate(target)
+//
+// В отличие от EMA-агентов доверия, k_sigma не имеет в тексте правила
+// характерного значения по умолчанию (у alpha/beta/gamma/delta было явное
+// "типично 0.10", у k_sigma -- нет никакого числа, только "27x" в
+// иллюстративном сценарии, что описывает конкретное НАБЛЮДЕНИЕ, а не
+// порог) -- поэтому k_sigma здесь аргумент действия, а не константа
+// в коде.
+//
+// Аргументы sc-действия action_detect_anomalous_request_rate:
+//   1) rate_link     -- числовая sc-ссылка с наблюдаемой частотой
+//                        запросов rate(source, target, dt)
+//   2) baseline_link -- числовая sc-ссылка с базовой линией
+//                        baseline_rate(target)
+//   3) k_sigma_link  -- числовая sc-ссылка с пороговым множителем k_sigma
+//   4) result_level  -- узел для индикатора аномалии (1 -- аномалия
+//                        обнаружена, 0 -- нет); если у него ещё нет
+//                        числовой sc-ссылки, она создаётся
+//
+// Результат: значение индикатора в value_link (4-й аргумент) записывается
+// на месте. Если аномалия обнаружена -- дополнительно генерируется
+// экземпляр concept_security_incident (без выбора конкретного STRIDE-
+// подкласса -- Denial of Service либо Tampering; критерий выбора в
+// тексте правила не формализован) и соединяется с result_level простой
+// положительной постоянной дугой (структурная связь для трассируемости,
+// не именованное отношение онтологии -- по аналогии с тем, как
+// trust_level хранит свой value_link). Не реализованы: активация
+// agent_coalition_reconfigurator и agent_provenance_registrar для
+// фиксации инцидента (оба вне зоны ответственности этого агента; второй
+// частично существует как AgentComputePiMetric, но не в виде,
+// вызываемом отсюда).
+//
+// baseline_link <= 0 обрабатывается отдельно (деление на 0
+// не определено): если при этом rate_link > 0, это трактуется как
+// аномалия (внезапный трафик у компонента без истории обращений);
+// если rate_link тоже <= 0 -- как отсутствие аномалии.
+class AgentDetectAnomalousRequestRate : public ScActionInitiatedAgent
+{
+public:
+  ScAddr GetActionClass() const override;
+
+  ScResult DoProgram(ScAction & action) override;
+};
