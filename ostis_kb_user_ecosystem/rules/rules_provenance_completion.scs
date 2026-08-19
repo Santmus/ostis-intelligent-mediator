@@ -9,7 +9,8 @@ section_rules_provenance_completion
 => nrel_main_idtf:
     [Подраздел. Правила восполнения провенанса] (* <- lang_ru;; *);
     [Subsection. Provenance Completion Rules] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_compute_pi_metric;;
 
 rule -> rule_auto_record_prov_entity: ...
 (*
@@ -42,6 +43,23 @@ rule -> rule_auto_record_prov_activity: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации вычислимой части
+// rule_compute_pi_metrics — sc-агент AgentComputePiMetric
+// (ostis_ps_user_ecosystem/src/agent/agent_compute_pi_metric.*).
+// Один и тот же агент вычисляет любую из трёх метрик (π_proc, π_dec,
+// π_data) в зависимости от того, какую группу элементов передал
+// вызывающий код; часть правила про создание
+// concept_integrity_violation и запуск rule_fill_missing_provenance
+// не реализована (см. комментарий в agent_compute_pi_metric.hpp).
+// ---------------------------------------------------------------------
+
+action_compute_pi_metric
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: вычислить метрику полноты провенанса π] (* <- lang_ru;; *);
+    [action: compute provenance completeness metric π] (* <- lang_en;; *);;
 
 rule -> rule_compute_pi_metrics: ...
 (*
