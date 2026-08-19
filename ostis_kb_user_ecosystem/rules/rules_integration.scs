@@ -11,7 +11,8 @@ section_rules_integration
     (* <- lang_ru;; *);
     [Subsection. Integration and Conflict Resolution Rules (π_intg)]
     (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_resolve_by_trust_weighted;;
 
 rule -> rule_detect_conflict: ...
 (*
@@ -59,6 +60,20 @@ rule -> rule_resolve_by_argumentation: ...
                   resolves_conflict(ir, c).] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации
+// rule_resolve_by_trust_weighted — sc-агент AgentResolveByTrustWeighted
+// (ostis_ps_user_ecosystem/src/agent/agent_resolve_by_trust_weighted.*).
+// Формирование текстового обоснования выбора не реализовано (задача
+// agent_explanation_builder, не реализованного в проекте).
+// ---------------------------------------------------------------------
+
+action_resolve_by_trust_weighted
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: разрешить конфликт по взвешенному доверию] (* <- lang_ru;; *);
+    [action: resolve conflict by trust-weighted vote] (* <- lang_en;; *);;
 
 rule -> rule_resolve_by_trust_weighted: ...
 (*
