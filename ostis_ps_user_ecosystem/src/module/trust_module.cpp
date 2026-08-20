@@ -9,11 +9,13 @@
 #include "agent/agent_detect_anomalous_request_rate.hpp"
 #include "agent/agent_resolve_by_trust_weighted.hpp"
 #include "agent/agent_dispatch_ready_subtask.hpp"
+#include "agent/agent_validate_cardinality_constraint.hpp"
 
 // AgentComputePiMetric (провенансные метрики), AgentDetectAnomalousRequestRate
-// (безопасность), AgentResolveByTrustWeighted (интеграция результатов)
-// и AgentDispatchReadySubtask (кооперативное исполнение) не о доверии,
-// но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
+// (безопасность), AgentResolveByTrustWeighted (интеграция результатов),
+// AgentDispatchReadySubtask (кооперативное исполнение) и
+// AgentValidateCardinalityConstraint (валидация целостности) не о
+// доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
 // иначе конфликт символов. Пока агентов немного, отдельная библиотека
@@ -27,4 +29,5 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentComputePiMetric>()
     ->Agent<AgentDetectAnomalousRequestRate>()
     ->Agent<AgentResolveByTrustWeighted>()
-    ->Agent<AgentDispatchReadySubtask>();
+    ->Agent<AgentDispatchReadySubtask>()
+    ->Agent<AgentValidateCardinalityConstraint>();

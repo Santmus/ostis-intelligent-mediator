@@ -85,6 +85,29 @@ definition -> definition_integrity_violation: ...
     *);;
 *);;
 
+// Конкретные подклассы нарушения, на которые ссылается прозаический
+// текст правил rules_integrity_validation.scs ("Нарушение →
+// concept_cardinality_constraint_violation" / "→
+// concept_existence_constraint_violation"), но которые до сих пор не
+// были объявлены как sc_node_class -- формализованы вместе с
+// AgentValidateCardinalityConstraint (ostis_ps_user_ecosystem).
+concept_cardinality_constraint_violation
+<- sc_node_class;
+<- concept_integrity_violation;
+=> nrel_main_idtf:
+    [нарушение кардинального ограничения] (* <- lang_ru;; *);;
+concept_existence_constraint_violation
+<- sc_node_class;
+<- concept_integrity_violation;
+=> nrel_main_idtf:
+    [нарушение ограничения существования] (* <- lang_ru;; *);;
+
+concept_integrity_violation <= nrel_subdividing: ...
+(*
+    -> concept_cardinality_constraint_violation;
+       concept_existence_constraint_violation;;
+*);;
+
 // ---------------------------------------------------------------------
 // SHACL-совместимые шейпы.
 // ---------------------------------------------------------------------

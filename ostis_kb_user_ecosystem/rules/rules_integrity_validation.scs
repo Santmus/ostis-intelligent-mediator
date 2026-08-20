@@ -10,7 +10,41 @@ section_rules_integrity_validation
     [Подраздел. Правила валидации целостности (SHACL-shapes)]
     (* <- lang_ru;; *);
     [Subsection. Integrity Validation Rules (SHACL Shapes)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_validate_cardinality_constraint;;
+
+// ---------------------------------------------------------------------
+// Механическое ядро, общее для шести shape'ов ниже (кроме
+// shape_provenance_chain_complete, требующего проверки транзитивного
+// пути, а не подсчёта дуг): подсчитать sc-дуги заданного отношения у
+// целевого элемента и сравнить со счётом [minCount, maxCount]. Каждый
+// shape описывает это в прозе (nrel_sc_text_translation) по-разному
+// ("property X minCount N", "property X⁻¹ minCount 1 maxCount 1",
+// "property rrel_Y — minCount 1"), но не различает формально три
+// встречающихся паттерна связи -- реализованы как явные маркеры режима,
+// т.к. агенту неоткуда иначе узнать, что именно считать.
+action_validate_cardinality_constraint <- sc_node_class;;
+action_validate_cardinality_constraint => nrel_main_idtf:
+    [проверить кардинальное ограничение] (* <- lang_ru;; *);;
+
+// Паттерн "source -[non-role]-> target" (например nrel_has_provenance
+// у shape_result_provenance).
+concept_cardinality_check_outgoing_non_role <- sc_node_class;;
+concept_cardinality_check_outgoing_non_role => nrel_main_idtf:
+    [проверка: исходящее не-ролевое отношение] (* <- lang_ru;; *);;
+
+// Паттерн "source⁻¹" (например nrel_formulates⁻¹ у
+// shape_user_request_authorship: считаются пользователи, для которых
+// target -- запрос).
+concept_cardinality_check_incoming_non_role <- sc_node_class;;
+concept_cardinality_check_incoming_non_role => nrel_main_idtf:
+    [проверка: входящее не-ролевое отношение] (* <- lang_ru;; *);;
+
+// Паттерн "source -[role]-> target" (пять rrel_*_context у
+// shape_context_completeness).
+concept_cardinality_check_outgoing_role <- sc_node_class;;
+concept_cardinality_check_outgoing_role => nrel_main_idtf:
+    [проверка: исходящее ролевое отношение] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
 // Shape: каждый concept_user_request должен иметь ровно одного автора.
@@ -34,6 +68,9 @@ rule -> rule_validate_authorship_shape: ...
             ссылка на ABox-фрагмент.] (* <- lang_ru;; *);;
     *);;
 *);;
+// Реализовано: action_validate_cardinality_constraint(request, nrel_formulates,
+// concept_cardinality_check_incoming_non_role, 1, 1, concept_cardinality_constraint_violation, result_level).
+// ostis_ps_user_ecosystem/src/agent/agent_validate_cardinality_constraint.cpp
 
 // ---------------------------------------------------------------------
 // Shape: каждый subtask имеет статус и приоритет.
@@ -59,6 +96,9 @@ rule -> rule_validate_subtask_status_shape: ...
             concept_subtask_status.] (* <- lang_ru;; *);;
     *);;
 *);;
+// Реализовано двумя вызовами action_validate_cardinality_constraint
+// (mode=concept_cardinality_check_outgoing_non_role, min=1, без max):
+// по nrel_subtask_status и по nrel_subtask_priority отдельно.
 
 // ---------------------------------------------------------------------
 // Shape: каждый processing_result имеет provenance-запись и contextual
@@ -85,6 +125,10 @@ rule -> rule_validate_result_provenance_shape: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+// Реализовано тремя вызовами action_validate_cardinality_constraint
+// (mode=outgoing_non_role, min=1, без max, violation_class=
+// concept_existence_constraint_violation): по nrel_has_provenance,
+// nrel_generated_in_context, nrel_obtained_from отдельно.
 
 // ---------------------------------------------------------------------
 // Shape: integrated_result имеет объяснение и не имеет неразрешённого
@@ -112,6 +156,11 @@ rule -> rule_validate_integrated_result_shape: ...
             rule_resolve_by_*.] (* <- lang_ru;; *);;
     *);;
 *);;
+// Частично реализовано: только property nrel_explained_by, вызовом
+// action_validate_cardinality_constraint (outgoing_non_role, min=1).
+// qualifiedValueShape (отсутствие неразрешённого конфликта) не
+// формализовано -- это не подсчёт дуг, а требует отдельной проверки
+// concept_result_conflict, не реализованной ни одним из 10 агентов.
 
 // ---------------------------------------------------------------------
 // Shape: каждая ИС имеет capability_profile.
@@ -134,6 +183,9 @@ rule -> rule_validate_is_capability_shape: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+// Частично реализовано: minCount-часть через
+// action_validate_cardinality_constraint (outgoing_non_role, min=1).
+// qualifiedValueShape (проверка класса цели) не реализована.
 
 // ---------------------------------------------------------------------
 // Shape: контекст содержит все 5 подконтекстов.
@@ -162,6 +214,13 @@ rule -> rule_validate_context_completeness: ...
             из истории пользователя.] (* <- lang_ru;; *);;
     *);;
 *);;
+// Реализовано пятью вызовами action_validate_cardinality_constraint
+// (mode=concept_cardinality_check_outgoing_role, min=1, без max): по
+// rrel_goal_context, rrel_history_context, rrel_system_context,
+// rrel_domain_context, rrel_user_situation_context отдельно.
+// Восполнение недостающих подконтекстов (agent_context_updater) не
+// реализовано -- это отдельное, не сформулированное как SHACL-shape
+// действие.
 
 // ---------------------------------------------------------------------
 // Shape: цепочка provenance замкнута до request.
