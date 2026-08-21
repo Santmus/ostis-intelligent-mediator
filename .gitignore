@@ -4,6 +4,7 @@
 # сборочные и тестовые артефакты ostis_ps_user_ecosystem
 ostis_ps_user_ecosystem/build/
 ostis_ps_user_ecosystem/repo/
+ostis_ps_user_ecosystem/scripts/__pycache__/
 
 # локальные настройки Obsidian (workspace layout и т.п.), не контент
 agents_vault/.obsidian/
