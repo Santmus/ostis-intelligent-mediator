@@ -5,17 +5,17 @@ tags: [repo, knowledge-base]
 
 # ostis_kb_user_ecosystem
 
-Каталог с онтологией на SCs (не входит в этот vault — рядом:
-`../ostis_kb_user_ecosystem/`). Ключевые для агентов файлы:
+Directory with the ontology in SCs (not inside this vault — next to it:
+`../ostis_kb_user_ecosystem/`). Files that are key for the agents:
 
-- `rules/rules_trust_update.scs` — все пять правил π_tr и классы
-  действий (`action_update_trust_*`, `action_aggregate_trust`).
-- `concepts/trust.scs` — модель [[Модель доверия]] и `concept_trust_level`.
+- `rules/rules_trust_update.scs` — all five π_tr rules and action classes
+  (`action_update_trust_*`, `action_aggregate_trust`).
+- `concepts/trust.scs` — the [[Trust Model]] and `concept_trust_level`.
 - `concepts/security_privacy.scs` — `concept_security_incident`,
-  STRIDE-классификация (контекст для [[AgentUpdateTrustSecurity]]).
-- `scenarios/scenario_trust_assessment.scs` — иллюстративный расчёт,
-  воспроизведённый в тестах [[AgentUpdateTrustReliability]] и
+  STRIDE classification (context for [[AgentUpdateTrustSecurity]]).
+- `scenarios/scenario_trust_assessment.scs` — illustrative calculation,
+  reproduced in tests for [[AgentUpdateTrustReliability]] and
   [[AgentAggregateTrust]].
 
-Симлинкован в `ostis-web-platform/knowledge-base/ostis_kb_user_ecosystem`
-для сборки БЗ через `sc-builder`.
+Symlinked into `ostis-web-platform/knowledge-base/ostis_kb_user_ecosystem`
+for KB assembly via `sc-builder`.

@@ -2,195 +2,194 @@
 type: agent
 tags: [agent, sc-agent, provenance, ratio]
 action_class: action_compute_pi_metric
-version: (текущий коммит ostis_ps_user_ecosystem)
-status: реализован, покрыт тестами, проверен на живом sc-server
+version: (current commit of ostis_ps_user_ecosystem)
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentComputePiMetric
 
-← [[00 Индекс]] · из [[Кандидаты на реализацию]] (топ-5, #1) · первый агент вне [[Модель доверия|модели доверия]]
+← [[Agent Index]] · from [[Implementation Backlog]] (top-5, #1) · first agent outside [[Trust Model|trust model]]
 
-> [!note] Один агент — три метрики
-> Правило `rule_compute_pi_metrics` описывает π_proc, π_dec, π_data как
-> **один и тот же расчёт** «доля элементов с провенансом» над тремя
-> разными множествами. Онтология не даёт единого формального класса для
-> Proc/Dec/Data (в отличие от `concept_trust_level`, общего для всех
-> компонент доверия), поэтому агент реализован обобщённо: какую именно
-> метрику считать, определяет **вызывающая сторона** — тем, какую группу
-> элементов она передала.
+> [!note] One agent — three metrics
+> The rule `rule_compute_pi_metrics` describes π_proc, π_dec, π_data as
+> **the same calculation** "share of elements with provenance" over three
+> different sets. The ontology does not provide a single formal class for
+> Proc/Dec/Data (unlike `concept_trust_level`, which is common to all
+> trust components), so the agent is implemented in a generalized way: **the caller**
+> determines which specific metric to compute by the group of
+> elements it passes.
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_compute_pi_metric` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentComputePiMetric : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_compute_pi_metric.{hpp,cpp}` |
-| Роль | Реализует вычислимую часть правила `rule_compute_pi_metrics` (часть `agent_provenance_registrar` из каталога `concepts/sc_agents.scs`) |
-| Правило БЗ | `rules/rules_provenance_completion.scs` → `rule_compute_pi_metrics` |
-| Модуль | `TrustModule` (не переименован — sc-machine допускает один модуль на разделяемую библиотеку; см. комментарий в `trust_module.cpp`) |
+| Action class system identifier (sc-IRI) | `action_compute_pi_metric` |
+| SC-node class type | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentComputePiMetric : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_compute_pi_metric.{hpp,cpp}` |
+| Role | Implements the computable part of rule `rule_compute_pi_metrics` (the `agent_provenance_registrar` part from directory `concepts/sc_agents.scs`) |
+| Knowledge base rule | `rules/rules_provenance_completion.scs` → `rule_compute_pi_metrics` |
+| Module | `TrustModule` (not renamed — sc-machine allows one module per shared library; see comment in `trust_module.cpp`) |
 
-## Назначение
+## Purpose
 
-**Проблема.** Модель прозрачности π = ⟨π_proc, π_dec, π_data⟩ (см.
-`concepts/provenance.scs`) требует уметь ответить на вопрос «какая доля
-процессов/решений/использованных данных реально снабжена провенансной
-записью?» — без этого утверждения о трассируемости коллективной
-обработки остаются декларативными.
+**Problem.** The transparency model π = ⟨π_proc, π_dec, π_data⟩ (see
+`concepts/provenance.scs`) must be able to answer the question "what share
+of processes/decisions/used data is actually supplied with a provenance
+record?" — without this, claims about the traceability of collective
+processing remain declarative.
 
-**Цель.** По явно переданному множеству элементов посчитать долю тех
-из них, что имеют исходящую связь `nrel_has_provenance` к
+**Goal.** For an explicitly passed set of elements, calculate the share of
+those that have an outgoing `nrel_has_provenance` relation to
 `concept_provenance_record`.
 
-**Ценность.** Единый, переиспользуемый расчёт для всех трёх метрик
-прозрачности — не нужно писать три отдельных агента почти с одинаковым
-кодом; агент честно нейтрален к тому, ЧТО именно измеряется.
+**Value.** A single, reusable calculation for all three transparency
+metrics — no need to write three separate agents with almost identical
+code; the agent is genuinely neutral about WHAT exactly is being measured.
 
-**Стейкхолдеры:** `agent_integrity_checker` (метрика — индикатор
-целостности), аудиторы/регуляторы, разработчики, отслеживающие полноту
-провенансной подсистемы.
+**Stakeholders:** `agent_integrity_checker` (the metric is an integrity
+indicator), auditors/regulators, developers tracking the completeness of
+the provenance subsystem.
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- посчитать `|группа|` (все элементы, на которые группа указывает
-  `ConstPermPosArc`) и `|{x ∈ группа : has_provenance(x)}|`;
-- вычислить долю `pi = withProvenance / total`;
-- записать результат в числовую sc-ссылку узла-приёмника, создав её при
-  первом обращении (тот же паттерн, что у [[AgentUpdateTrustReliability|trust-агентов]]);
-- корректно завершиться с ошибкой при отсутствии одного из двух
-  аргументов.
+- compute `|group|` (all elements that the group points to via
+  `ConstPermPosArc`) and `|{x ∈ group : has_provenance(x)}|`;
+- compute the ratio `pi = withProvenance / total`;
+- write the result into a numeric sc-link of the target node, creating it on
+  first access (same pattern as [[AgentUpdateTrustReliability|trust agents]]);
+- finish with an error correctly when one of the two arguments is missing.
 
-**Limitations (по коду):**
-- **не реализует** часть правила «если π < 1.0 — создать
-  `concept_integrity_violation` типа `transparency_gap`; запустить
-  `rule_fill_missing_provenance`» — в онтологии нет формально
-  определённого класса/отношения для типизации нарушения именно как
-  `transparency_gap` (только свободный текст правила), а
-  `rule_fill_missing_provenance` сама по себе — эвристика без алгоритма
-  (реконструкция из журнала событий/истории/timestamp-ов не
-  формализована). Агент **только вычисляет число**, ничего не
-  предпринимает по его итогам.
-- **пустая группа даёт `pi = 0`, не ошибку** — математически 0/0 не
-  определено, но агент трактует «нечего измерять» как «нулевая
-  полнота», а не как исключительную ситуацию. Если вызывающая сторона
-  случайно передаст пустую/неверную группу, это будет неотличимо от
-  «полного провала провенанса».
-- **не различает Proc/Dec/Data** — правильность результата целиком
-  зависит от того, что вызывающая сторона положила в группу; если туда
-  попадёт элемент не того типа (например, решение вместо процесса),
-  агент этого не заметит.
-- как и у трастовых агентов — не проверяет, что аргументы вообще
-  осмысленны семантически (только `IsElement`).
-- элемент считается «имеющим провенанс» при **любой** исходящей
-  `nrel_has_provenance` связи к чему угодно, без проверки, что цель —
-  действительно `concept_provenance_record`.
+**Limitations (per code):**
+- **does not implement** the part of the rule "if π < 1.0 — create a
+  `concept_integrity_violation` of type `transparency_gap`; run
+  `rule_fill_missing_provenance`" — the ontology has no formally
+  defined class/relation for typing a violation specifically as a
+  `transparency_gap` (only free-form rule text), and
+  `rule_fill_missing_provenance` itself is a heuristic without an algorithm
+  (reconstruction from event logs/history/timestamps is not
+  formalized). The agent **only computes the number** and takes no
+  action based on it.
+- **an empty group yields `pi = 0`, not an error** — mathematically 0/0 is
+  undefined, but the agent treats "nothing to measure" as "zero
+  completeness" rather than an exceptional situation. If the caller
+  accidentally passes an empty/incorrect group, it will be indistinguishable
+  from "total provenance failure".
+- **does not distinguish Proc/Dec/Data** — the correctness of the result
+  entirely depends on what the caller placed in the group; if an element of
+  the wrong type ends up there (e.g., a decision instead of a process),
+  the agent will not notice.
+- as with trust agents — does not verify that the arguments are
+  semantically meaningful in general (only `IsElement`).
+- an element is considered to "have provenance" if there is **any**
+  outgoing `nrel_has_provenance` relation to anything, without checking that
+  the target is actually a `concept_provenance_record`.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_compute_pi_metric>`.
+**Trigger:** arc `action_initiated -> <instance of action_compute_pi_metric>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `elements_group` | `ScAddr` узла с исходящими `ConstPermPosArc` к измеряемым элементам | обязателен | только `IsElement` |
-| 2 | `metric_level` | `ScAddr` узла-приёмника метрики | обязателен | только `IsElement` |
+| 1 | `elements_group` | `ScAddr` of a node with outgoing `ConstPermPosArc`s to the elements being measured | required | only `IsElement` |
+| 2 | `metric_level` | `ScAddr` of the metric target node | required | only `IsElement` |
 
-**Формат:** `elements_group` — не sc-ссылка и не число, а обычный узел,
-играющий роль контейнера-множества (членство — простые `ConstPermPosArc`
-дуги к элементам любого типа).
+**Format:** `elements_group` is not an sc-link or a number, but an ordinary node
+acting as a set container (membership is simple `ConstPermPosArc`
+arcs to elements of any type).
 
-## Выход
+## Output
 
-Обновлённая/созданная числовая sc-ссылка `value_link` на `metric_level`
-с содержимым `std::to_string(pi)`. Побочный эффект — генерация
-`value_link` + связывающей дуги при первом вызове. Успех —
+The updated/created numeric sc-link `value_link` on `metric_level`
+with content `std::to_string(pi)`. Side effect — generation of
+`value_link` + a connecting arc on first call. Success —
 `FinishSuccessfully()` + `FormResult(metricLevel, valueLink)`.
 
-## Связи
+## Links
 
-**Зависимости:** `common/float_link_io.hpp` (только `WriteFloatLinkContent`
-— чтения через него нет, значения читаются напрямую по признаку
-существования связи, а не как число), `keynodes/provenance_keynodes.hpp`
+**Dependencies:** `common/float_link_io.hpp` (only `WriteFloatLinkContent`
+— there are no reads through it, values are read directly by the sign of
+relation existence, not as a number), `keynodes/provenance_keynodes.hpp`
 (`ProvenanceKeynodes::nrel_has_provenance`, `action_compute_pi_metric`).
 
-**Читает:** членство `elements_group` (`ConstPermPosArc`), наличие
-`nrel_has_provenance` у каждого члена.
+**Reads:** membership of `elements_group` (`ConstPermPosArc`), presence of
+`nrel_has_provenance` for each member.
 
-**Пишет:** `value_link` узла `metric_level`.
+**Writes:** the `value_link` of node `metric_level`.
 
-**Workflow.** Первый агент в проекте, не относящийся к вектору доверия
-— начало реализации `agent_provenance_registrar`. Формально не связан с
-[[AgentAggregateTrust]] и остальными, но концептуально оба семейства
-(доверие и провенанс) питают целостность экосистемы, которую должен
-проверять ещё не реализованный `agent_integrity_checker` (см.
-[[Кандидаты на реализацию]]).
+**Workflow.** The first agent in the project outside the trust vector
+— the beginning of `agent_provenance_registrar` implementation. Not formally
+linked to [[AgentAggregateTrust]] and the others, but conceptually both
+families (trust and provenance) feed the integrity of the ecosystem,
+which the still-unimplemented `agent_integrity_checker` should verify (see
+[[Implementation Backlog]]).
 
-## Поведение
+## Behavior
 
 ```
-IF  elements_group не sc-элемент  OR  metric_level не sc-элемент
-THEN  залогировать ошибку → action.FinishWithError()  [СТОП]
+IF  elements_group is not an sc-element  OR  metric_level is not an sc-element
+THEN  log error → action.FinishWithError()  [STOP]
 
 ELSE
   total := 0; withProvenance := 0
-  FOR EACH member IN elements_group (по исходящим ConstPermPosArc):
+  FOR EACH member IN elements_group (via outgoing ConstPermPosArc):
     total += 1
-    IF  ∃ исходящая ConstCommonArc от member, помеченная nrel_has_provenance
+    IF  ∃ outgoing ConstCommonArc from member marked nrel_has_provenance
     THEN  withProvenance += 1
 
-  pi := total > 0 ? withProvenance / total : 0.0   // пустая группа -> 0, не ошибка
+  pi := total > 0 ? withProvenance / total : 0.0   // empty group -> 0, not error
 
-  IF  у metric_level нет value_link
-  THEN  создать value_link (ConstNodeLink) + дугу metric_level -> value_link
+  IF  metric_level has no value_link
+  THEN  create value_link (ConstNodeLink) + arc metric_level -> value_link
 
-  записать pi в value_link
+  write pi into value_link
   action.FormResult(metric_level, value_link)
   → action.FinishSuccessfully()
 ```
 
-**Обработка ошибок:** единственный путь к ошибке — отсутствие одного из
-двух узлов-аргументов; отсутствие связей `nrel_has_provenance` у членов
-группы или пустая группа ошибкой не считаются (см. Limitations).
+**Error handling:** the only path to an error is the absence of one of the
+two argument nodes; absence of `nrel_has_provenance` relations for group
+members or an empty group are not considered errors (see Limitations).
 
-**Таймауты:** как и у остальных агентов модуля — внутреннего таймаута
-нет, `DoProgram` синхронный; ожидание — на стороне вызывающего кода
-через `InitiateAndWait`.
+**Timeouts:** as with the rest of the module's agents — there is no internal
+timeout, `DoProgram` is synchronous; waiting is on the caller side
+via `InitiateAndWait`.
 
-## Безопасность
+## Security
 
-- Привилегии — как у остальных агентов `TrustModule`: без ACL, полный
-  доступ к sc-памяти в рамках процесса `sc-server`.
-- **Специфичный риск:** поскольку критерий «имеет провенанс» —
-  наличие *любой* `nrel_has_provenance`-связи без проверки цели, узел
-  можно «фиктивно» пометить как обладающий провенансом, связав его с
-  произвольным (не обязательно `concept_provenance_record`) элементом
-  — метрика π будет искусственно завышена без реального аудита.
-- Метрика π — абстрактное число, PII не содержит.
+- Privileges — same as other `TrustModule` agents: no ACL, full
+  access to sc-memory within the `sc-server` process.
+- **Specific risk:** because the criterion "has provenance" is the
+  presence of *any* `nrel_has_provenance` relation without checking the target,
+  a node can be "falsely" marked as having provenance by linking it to
+  an arbitrary (not necessarily `concept_provenance_record`) element
+  — the π metric will be artificially inflated without real auditing.
+- The π metric is an abstract number and contains no PII.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O; линейно по размеру группы — O(N) итераторов (по одному `CreateIterator5` на элемент) + O(1) на запись результата. Для больших групп (тысячи элементов) кратно дороже 2-аргументных trust-агентов. |
-| Accuracy | Не применимо к самой формуле (детерминированное деление); корректность проверена тестами, включая воспроизведение примера из диссертации. |
-| Cost | Пренебрежимо мал при типичных размерах группы. |
-| Алерты | Не реализованы — как и у остальных агентов проекта. Особенно уместен был бы алерт на «π резко упало между периодическими вычислениями» (в духе исходного правила «если π_• < 1.0 создать нарушение»), но эта часть правила сознательно не реализована (см. Limitations). |
+| Latency | Synchronous, no I/O; linear in group size — O(N) iterators (one `CreateIterator5` per element) + O(1) to write the result. For large groups (thousands of elements), significantly more expensive than 2-argument trust agents. |
+| Accuracy | Not applicable to the formula itself (deterministic division); correctness is verified by tests, including a reproduction of the reference scenario. |
+| Cost | Negligible for typical group sizes. |
+| Alerts | Not implemented — same as other agents in the project. An alert for "π dropped sharply between periodic computations" would be especially appropriate (in the spirit of the original rule "if π_• < 1.0 create a violation"), but this part of the rule was deliberately not implemented (see Limitations). |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_compute_pi_metric.cpp` (3 теста, все проходят; сценарий 2 дополнительно проверен на живом sc-server — получено `0.600000`).
+File: `tests/test_agent_compute_pi_metric.cpp` (3 tests, all pass; scenario 2 additionally verified on a live sc-server — result `0.600000`).
 
 **1. `ReproducesScenarioAllFiveHaveProvenance`**
-Вход: группа из 5 элементов, у всех есть `nrel_has_provenance`
-(воспроизводит «π_dec = 5/5 = 1.0» из `scenario_explanation_construction.scs`).
-Выход: `pi = 1.0`, `FinishedSuccessfully`.
+Input: group of 5 elements, all have `nrel_has_provenance`
+(reproduces "π_dec = 5/5 = 1.0" from `scenario_explanation_construction.scs`).
+Output: `pi = 1.0`, `FinishedSuccessfully`.
 
 **2. `ComputesPartialCoverageRatio`**
-Вход: группа из 5 элементов, у 3 есть провенанс, у 2 — нет.
-Выход: `pi = 3/5 = 0.6`, `FinishedSuccessfully` — подтверждает, что
-подсчёт не тривиален (не всегда 0 или 1).
+Input: group of 5 elements, 3 have provenance, 2 do not.
+Output: `pi = 3/5 = 0.6`, `FinishedSuccessfully` — confirms that
+the computation is non-trivial (not always 0 or 1).
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action without arguments.
+Output: `FinishedWithError`.

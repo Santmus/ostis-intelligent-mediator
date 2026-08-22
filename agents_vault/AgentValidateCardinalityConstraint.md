@@ -2,247 +2,242 @@
 type: agent
 tags: [agent, sc-agent, integrity, shacl, validation]
 action_class: action_validate_cardinality_constraint
-version: (текущий коммит ostis_ps_user_ecosystem)
-status: реализован, покрыт тестами, проверен на живом sc-server
+version: (current commit of ostis_ps_user_ecosystem)
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentValidateCardinalityConstraint
 
-← [[00 Индекс]] · из [[Кандидаты на реализацию]] (топ-5, #5, последний) · реализует ядро [[SHACL-shapes|rules_integrity_validation.scs]]
+← [[Agent Index]] · from [[Implementation Backlog]] (top-5, #5, last) · implements the core of `rules_integrity_validation.scs`
 
-> [!note] Один агент вместо шести
-> `rules_integrity_validation.scs` формулирует шесть SHACL-shape'ов
+> [!note] One agent instead of six
+> `rules_integrity_validation.scs` formulates six SHACL shapes
 > (`shape_user_request_authorship`, `shape_subtask_status_priority`,
 > `shape_result_provenance`, `shape_integrated_result_complete`,
-> `shape_is_capability`, `shape_context_completeness`). Все шесть
-> механически сводятся к одному и тому же действию: посчитать sc-дуги
-> заданного отношения у целевого элемента и сравнить со счётом
-> `[minCount, maxCount]`. Вместо шести почти идентичных C++-классов
-> реализован один общий агент, параметризованный отношением и
-> границами; какая именно комбинация параметров реализует какое
-> правило — задокументировано прямо в
-> `rules/rules_integrity_validation.scs` рядом с каждым правилом.
-> Седьмой shape, `shape_provenance_chain_complete`, требует проверки
-> транзитивного пути (`nrel_derived_from` до `concept_user_request`),
-> а не подсчёта дуг — не реализован этим агентом.
+> `shape_is_capability`, `shape_context_completeness`). All six
+> mechanically reduce to the same action: count the sc-arcs of a
+> given relation at the target element and compare the count with
+> `[minCount, maxCount]`. Instead of six nearly identical C++ classes,
+> one common agent has been implemented, parameterized by the relation
+> and bounds; which specific parameter combination implements which
+> rule is documented directly in
+> `rules/rules_integrity_validation.scs` next to each rule.
+> The seventh shape, `shape_provenance_chain_complete`, requires checking
+> a transitive path (`nrel_derived_from` to `concept_user_request`),
+> not counting arcs — it is not implemented by this agent.
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_validate_cardinality_constraint` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentValidateCardinalityConstraint : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_validate_cardinality_constraint.{hpp,cpp}` |
-| Роль | Реализует механическое ядро `agent_integrity_checker` (`rules_integrity_validation.scs`) |
-| Правило БЗ | `rules/rules_integrity_validation.scs` → `rule_validate_authorship_shape`, `rule_validate_subtask_status_shape`, `rule_validate_result_provenance_shape`, `rule_validate_integrated_result_shape` (частично), `rule_validate_is_capability_shape` (частично), `rule_validate_context_completeness` |
-| Модуль | `TrustModule` (см. [[AgentComputePiMetric]] — тот же аргумент про один модуль на `.dylib`) |
+| System identifier (sc-IRI) of the action class | `action_validate_cardinality_constraint` |
+| Type of sc-node of the class | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentValidateCardinalityConstraint : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_validate_cardinality_constraint.{hpp,cpp}` |
+| Role | Implements the mechanical core of `agent_integrity_checker` (`rules_integrity_validation.scs`) |
+| KB rule | `rules/rules_integrity_validation.scs` → `rule_validate_authorship_shape`, `rule_validate_subtask_status_shape`, `rule_validate_result_provenance_shape`, `rule_validate_integrated_result_shape` (partially), `rule_validate_is_capability_shape` (partially), `rule_validate_context_completeness` |
+| Module | `TrustModule` (see [[AgentComputePiMetric]] — same argument about one module per `.dylib`) |
 
-## Назначение
+## Purpose
 
-**Проблема.** Дисциплина целостности БЗ (формулы 4–7,
-`concepts/integrity.scs`) требует, чтобы у каждого экземпляра
-определённого класса были обязательные связи — автор запроса, статус
-подзадачи, провенанс результата и т.д. Без механической проверки такие
-требования остаются прозой в `nrel_sc_text_translation`, а не
-исполняемым правилом.
+**Problem.** The KB integrity discipline (formulas 4–7,
+`concepts/integrity.scs`) requires that every instance of a
+certain class has mandatory links — request author, subtask
+status, result provenance, etc. Without mechanical verification, such
+requirements remain prose in `nrel_sc_text_translation`, not an
+executable rule.
 
-**Цель.** Дать один универсальный, параметризуемый строительный блок
-"посчитать дуги отношения у элемента и сравнить с границами", из
-которого шесть SHACL-shape'ов проекта собираются как частные случаи
-(разными вызовами с разными аргументами), не дублируя логику подсчёта
-шесть раз.
+**Goal.** Provide a single universal, parameterizable building block
+"count the relation arcs at an element and compare with bounds", from
+which the project's six SHACL shapes are assembled as special cases
+(different calls with different arguments), without duplicating the counting
+logic six times.
 
-**Ценность.** SHACL-совместимость, заявленная в дизайне БЗ
-(`concepts/integrity.scs`: "Концептуально соотносится с подходом
-SHACL"), получает реальную вычислимую реализацию хотя бы для
-`minCount`/`maxCount`-части ограничений — самой механической и
-наименее неоднозначной части шести из семи shape'ов.
+**Value.** The SHACL compatibility declared in the KB design
+(`concepts/integrity.scs`: "Conceptually related to the SHACL approach")
+gets a real computable implementation at least for the
+`minCount`/`maxCount` part of constraints — the most mechanical and
+least ambiguous part of six out of seven shapes.
 
-**Стейкхолдеры:** `agent_integrity_checker` (концептуальный "хозяин"
-правил в каталоге `concepts/sc_agents.scs`, не реализован отдельным
-sc-агентом целиком — эта реализация покрывает только его
-кардинальную часть), `agent_coalition_reconfigurator` (потенциальный
-потребитель `concept_integrity_violation`, не вызывается этим агентом
-напрямую).
+**Stakeholders:** `agent_integrity_checker` (conceptual "owner" of the
+rules in the catalog `concepts/sc_agents.scs`, not implemented as a separate
+sc-agent in full — this implementation covers only its cardinality
+part), `agent_coalition_reconfigurator` (potential consumer of
+`concept_integrity_violation`, not invoked by this agent directly).
 
-## Компетенция
+## Capabilities
 
 **Capabilities:**
-- посчитать sc-дуги одного из трёх паттернов связи для заданного
-  отношения у заданного целевого элемента:
-  - **исходящее не-ролевое** (`target -[ConstCommonArc]-> ?`,
-    классифицируется `relation`) — например `nrel_has_provenance`;
-  - **входящее не-ролевое** (`? -[ConstCommonArc]-> target`,
-    классифицируется `relation`) — например `nrel_formulates⁻¹`;
-  - **исходящее ролевое** (`target -[ConstPermPosArc]-> ?`,
-    классифицируется `relation`) — например `rrel_goal_context`;
-- сравнить счёт с `[minCount, maxCount]` (пустая/нечисловая
-  `max_count`-ссылка трактуется как отсутствие верхней границы);
-- при нарушении создать экземпляр переданного класса нарушения
-  (`concept_cardinality_constraint_violation` или
-  `concept_existence_constraint_violation` — правила используют
-  разные классы для формально одинаковой механики подсчёта) и
-  подвесить его под `result_level`;
-- корректно завершиться с ошибкой при отсутствии любого из семи
-  аргументов или при нераспознанном `mode`.
+- count sc-arcs of one of three connection patterns for a given
+  relation at a given target element:
+  - **outgoing non-role** (`target -[ConstCommonArc]-> ?`,
+    classified as `relation`) — e.g. `nrel_has_provenance`;
+  - **incoming non-role** (`? -[ConstCommonArc]-> target`,
+    classified as `relation`) — e.g. `nrel_formulates⁻¹`;
+  - **outgoing role** (`target -[ConstPermPosArc]-> ?`,
+    classified as `relation`) — e.g. `rrel_goal_context`;
+- compare the count with `[minCount, maxCount]` (an empty/non-numeric
+  `max_count` link is treated as no upper bound);
+- on violation, create an instance of the passed violation class
+  (`concept_cardinality_constraint_violation` or
+  `concept_existence_constraint_violation` — rules use different
+  classes for formally identical counting mechanics) and attach it under
+  `result_level`;
+- finish correctly with an error when any of the seven arguments is
+  missing or when `mode` is unrecognized.
 
-**Limitations (по коду):**
-- **три паттерна связи — не автоматически распознаваемые**, а явно
-  переданный параметр `mode`. Ни один из шести shape'ов не
-  формализует направление/роль связи структурно — только прозой
-  ("property X⁻¹", "property rrel_Y") — поэтому три маркера-константы
+**Limitations (by code):**
+- **the three connection patterns are not auto-detected**, but an explicitly
+  passed `mode` parameter. None of the six shapes formalizes the
+  direction/role of the connection structurally — only in prose
+  ("property X⁻¹", "property rrel_Y") — therefore three marker constants
   (`concept_cardinality_check_outgoing_non_role` / `_incoming_non_role`
-  / `_outgoing_role`) были добавлены вместе с этой реализацией
-  (`rules_integrity_validation.scs`), а не взяты готовыми из
-  существующей онтологии.
-- **не проверяет `qualifiedValueShape`** — часть `shape_integrated_result_complete`
-  ("нет неразрешённого конфликта") и `shape_is_capability` ("класс
-  target — `concept_capability_profile`") не реализована: это не
-  подсчёт дуг, а отдельная проверка содержимого/класса цели.
-- **`shape_provenance_chain_complete` не реализован вовсе** — проверка
-  транзитивного пути `nrel_derived_from` принципиально другая задача
-  (обход графа, а не подсчёт инцидентных дуг).
-- **нарушение не связано формальным отношением с `target`** — только
-  подвешено под `result_level` (тот же приём, что и
-  `concept_security_incident` в [[AgentDetectAnomalousRequestRate]]).
-  Онтология проекта не определяет отношение "нарушение относится к
-  элементу", а текст правил ограничивается прозой "ссылка на
-  ABox-фрагмент" — агент честно этого не изобретает.
-- **не различает "нет ни одной дуги" от "относящаяся дуга есть, но не
-  того типа"** — просто считает совпадения по точному отношению; если
-  вызывающая сторона передаст не то отношение, агент этого не заметит.
-- **шесть shape'ов = минимум шесть-восемь отдельных вызовов** (по
-  одному на свойство): агент не принимает список свойств за один
-  вызов — с одной стороны, простота и однородность интерфейса; с
-  другой — оркестрация "весь shape целиком" ложится на вызывающую
-  сторону.
+  / `_outgoing_role`) were added together with this implementation
+  (`rules_integrity_validation.scs`), rather than taken ready-made from
+  the existing ontology.
+- **does not check `qualifiedValueShape`** — part of `shape_integrated_result_complete`
+  ("no unresolved conflict") and `shape_is_capability` ("target class is
+  `concept_capability_profile`") is not implemented: this is not arc
+  counting, but a separate check of the target's content/class.
+- **`shape_provenance_chain_complete` is not implemented at all** — checking
+  the transitive path `nrel_derived_from` is a fundamentally different task
+  (graph traversal, not counting incident arcs).
+- **the violation is not linked by a formal relation to `target`** — it is only
+  attached under `result_level` (same technique as
+  `concept_security_incident` in [[AgentDetectAnomalousRequestRate]]).
+  The project ontology does not define a relation "violation relates to
+  element", and the rule text is limited to prose "reference to an
+  ABox fragment" — the agent honestly does not invent this.
+- **does not distinguish "no arcs at all" from "a related arc exists, but not
+  of the right type"** — it simply counts matches by exact relation; if the
+  caller passes the wrong relation, the agent will not notice.
+- **six shapes = at least six to eight separate calls** (one per property):
+  the agent does not accept a list of properties in one call — on one
+  hand, simplicity and uniformity of interface; on the other, the
+  orchestration of "the whole shape at once" falls on the caller.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_validate_cardinality_constraint>`.
+**Trigger:** arc `action_initiated -> <instance of action_validate_cardinality_constraint>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `target` | существующий sc-элемент | обязателен | только `IsElement` |
-| 2 | `relation` | существующее sc-отношение (`nrel_*`/`rrel_*`) | обязателен | только `IsElement` |
-| 3 | `mode` | один из `concept_cardinality_check_outgoing_non_role` / `_incoming_non_role` / `_outgoing_role` | обязателен | `IsElement` + сверка с тремя известными константами; иначе → ошибка |
-| 4 | `min_count` | числовая sc-ссылка | обязателен | `IsElement`; должна парситься как число, иначе → ошибка |
-| 5 | `max_count` | числовая sc-ссылка | обязателен как элемент, но допускает пустое/нечисловое содержимое | `IsElement`; непарсящееся содержимое трактуется как "верхней границы нет", а не ошибка |
-| 6 | `violation_class` | существующий `sc_node_class` нарушения | обязателен | только `IsElement` |
-| 7 | `result_level` | узел-приёмник индикатора | обязателен | только `IsElement` |
+| 1 | `target` | existing sc-element | required | only `IsElement` |
+| 2 | `relation` | existing sc-relation (`nrel_*`/`rrel_*`) | required | only `IsElement` |
+| 3 | `mode` | one of `concept_cardinality_check_outgoing_non_role` / `_incoming_non_role` / `_outgoing_role` | required | `IsElement` + check against three known constants; otherwise → error |
+| 4 | `min_count` | numeric sc-link | required | `IsElement`; must parse as a number, otherwise → error |
+| 5 | `max_count` | numeric sc-link | required as an element, but allows empty/non-numeric content | `IsElement`; unparsable content is treated as "no upper bound", not an error |
+| 6 | `violation_class` | existing violation `sc_node_class` | required | only `IsElement` |
+| 7 | `result_level` | indicator receiver node | required | only `IsElement` |
 
-## Выход
+## Output
 
-Новая/обновлённая sc-ссылка `value_link` на `result_level` с `1.0`
-(в границах) или `0.0` (нарушение). Если нарушение — дополнительно:
-новый экземпляр `violation_class`, подвешенный под `result_level`
-через `ConstPermPosArc` (без отдельной связи с `target`). Успех —
+A new/updated sc-link `value_link` on `result_level` with `1.0`
+(within bounds) or `0.0` (violation). If violation — additionally:
+a new instance of `violation_class`, attached under `result_level`
+via `ConstPermPosArc` (without a separate link to `target`). Success —
 `FinishSuccessfully()` + `FormResult(target, valueLink)`.
 
-## Связи
+## Connections
 
-**Зависимости:** `common/float_link_io.hpp` (`ReadFloatLinkContent`/
-`WriteFloatLinkContent` — переиспользованы без изменений, третий раз
-подряд), `keynodes/integrity_keynodes.hpp` (`IntegrityKeynodes`, новый
-файл).
+**Dependencies:** `common/float_link_io.hpp` (`ReadFloatLinkContent`/
+`WriteFloatLinkContent` — reused unchanged, third time in a row),
+`keynodes/integrity_keynodes.hpp` (`IntegrityKeynodes`, new file).
 
-**Читает:** дуги `relation` у `target` (в одном из трёх паттернов),
-содержимое `min_count`/`max_count`.
+**Reads:** arcs of `relation` at `target` (in one of the three patterns),
+content of `min_count`/`max_count`.
 
-**Пишет:** `value_link` на `result_level`; при нарушении — новый узел
-класса `violation_class`.
+**Writes:** `value_link` to `result_level`; on violation — a new node of
+class `violation_class`.
 
-**Workflow.** Независим от остальных девяти агентов проекта по
-данным — не читает и не пишет доверие/провенанс/подзадачи/интеграцию.
-Единственный агент, оперирующий доменом «целостность БЗ»
+**Workflow.** Independent of the other nine agents of the project in terms
+of data — does not read or write trust/provenance/subtasks/integration.
+The only agent operating in the "KB integrity" domain
 (`concept_integrity_constraint`/`concept_integrity_violation`).
 
-## Поведение
+## Behavior
 
 ```
-IF любой из семи аргументов не sc-элемент
+IF any of the seven arguments is not an sc-element
 THEN FinishWithError()
 
-ELSE IF mode не один из трёх известных маркеров
+ELSE IF mode is not one of the three known markers
 THEN FinishWithError()
 
-ELSE IF min_count не парсится как число
+ELSE IF min_count does not parse as a number
 THEN FinishWithError()
 
 ELSE
-  hasMax := max_count парсится как число
-  count  := число дуг relation у target по паттерну mode
+  hasMax := max_count parses as a number
+  count  := number of relation arcs at target according to mode pattern
 
   valid := count >= minCount AND (NOT hasMax OR count <= maxCount)
 
   IF NOT valid
   THEN
-    создать узел класса violation_class
-    подвесить его под result_level (ConstPermPosArc)
+    create a node of class violation_class
+    attach it under result_level (ConstPermPosArc)
 
-  записать (valid ? 1.0 : 0.0) в value_link result_level (создать при отсутствии)
+  write (valid ? 1.0 : 0.0) to value_link result_level (create if missing)
   action.FormResult(target, value_link)
   → action.FinishSuccessfully()
 ```
 
-**Обработка ошибок/таймауты:** как у остальных агентов — `DoProgram`
-синхронный, ожидание на стороне вызывающего кода через
-`InitiateAndWait`.
+**Error handling/timeouts:** same as other agents — `DoProgram` is
+synchronous, waiting is on the caller side via `InitiateAndWait`.
 
-## Безопасность
+## Security
 
-- Привилегии — как у остальных агентов `TrustModule`: без ACL, полный
-  доступ к sc-памяти в рамках процесса `sc-server`.
-- **Специфичный риск:** агент доверяет вызывающей стороне в выборе
-  `relation`/`mode`/`violation_class` — можно вызвать его с
-  несоответствующей друг другу тройкой (например, ролевым отношением
-  в режиме `outgoing_non_role`) и получить количество 0 без сигнала об
-  ошибке, что будет выглядеть как обоснованное нарушение, а на деле —
-  ошибка вызывающей стороны.
-- Не проверяется, что `target` действительно принадлежит классу,
-  который данный shape предполагает (`targetClass` из прозы правил) —
-  агент проверит кардинальность отношения у любого переданного узла.
-- Данные (счётчики дуг, классы нарушений) — не PII.
+- Privileges — same as other `TrustModule` agents: no ACL, full access
+  to sc-memory within the `sc-server` process.
+- **Specific risk:** the agent trusts the caller in choosing
+  `relation`/`mode`/`violation_class` — it can be invoked with a mutually
+  inconsistent triple (for example, a role relation in `outgoing_non_role`
+  mode) and yield a count of 0 with no error signal, which will look like
+  a justified violation, but is in fact a caller error.
+- It is not checked that `target` actually belongs to the class
+  assumed by the given shape (`targetClass` from the rule prose) —
+  the agent will check the cardinality of the relation at any passed node.
+- Data (arc counters, violation classes) is not PII.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O; линейно по числу инцидентных дуг заданного отношения у `target` (обычно единицы). |
-| Accuracy | Не применимо — детерминированное сравнение счёта с границами; корректность проверена тестами на обоих паттернах (не-ролевой исходящий/входящий) и обоих исходах (в границах/нарушение). |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. Уместен был бы алерт на серию нарушений одного `violation_class` за короткий период — сигнал систематической проблемы генерации данных, а не единичного случая. |
+| Latency | Synchronous, no I/O; linear in the number of incident arcs of the given relation at `target` (usually single digits). |
+| Accuracy | Not applicable — deterministic comparison of count with bounds; correctness verified by tests on both patterns (non-role outgoing/incoming) and both outcomes (within bounds/violation). |
+| Cost | Negligible. |
+| Alerts | Not implemented. An alert on a series of violations of the same `violation_class` in a short period would be appropriate — a signal of a systematic data generation problem, not an isolated case. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_validate_cardinality_constraint.cpp` (3 теста,
-все проходят; все три сценария дополнительно проверены на живом
-sc-server реальными данными онтологии).
+File: `tests/test_agent_validate_cardinality_constraint.cpp` (3 tests,
+all pass; all three scenarios were additionally verified on a live
+sc-server with real ontology data).
 
 **1. `ValidatesWhenCountWithinBounds`**
-Воспроизводит `shape_result_provenance`: три исходящие связи одного
-отношения, `minCount=1`, без `maxCount`.
-Выход: индикатор `1.0`, нарушение не создано.
-На живом сервере — `shape_context_completeness` на реальном
-`interaction_context_001` (`rrel_goal_context`, из
-`scenario_request_processing.scs`, где заданы все 5 подконтекстов):
-индикатор `1.0`, без нарушения.
+Reproduces `shape_result_provenance`: three outgoing links of one
+relation, `minCount=1`, no `maxCount`.
+Output: indicator `1.0`, no violation created.
+On the live server — `shape_context_completeness` on the real
+`interaction_context_001` (`rrel_goal_context`, from
+`scenario_request_processing.scs`, where all 5 subcontexts are specified):
+indicator `1.0`, no violation.
 
 **2. `CreatesViolationWhenCountBelowMinimum`**
-Воспроизводит `shape_user_request_authorship`: `nrel_formulates⁻¹` без
-единого входящего пользователя, `minCount=1, maxCount=1`.
-Выход: индикатор `0.0`, создан узел класса
-`concept_cardinality_constraint_violation`, подвешенный под
+Reproduces `shape_user_request_authorship`: `nrel_formulates⁻¹` with no
+incoming user at all, `minCount=1, maxCount=1`.
+Output: indicator `0.0`, a node of class
+`concept_cardinality_constraint_violation` created and attached under
 `result_level`.
-На живом сервере — тот же shape на реальном `request_001`
-(в БЗ ровно один `user_alice => nrel_formulates: request_001`):
-индикатор `1.0` (в границах `[1,1]`), без нарушения; отдельно
-проверен нарушающий случай на изолированном узле без единой
-`nrel_generated_in_context` (`shape_result_provenance`) — индикатор
-`0.0`, нарушение класса `concept_existence_constraint_violation`
-создано корректно.
+On the live server — the same shape on the real `request_001`
+(in the KB there is exactly one `user_alice => nrel_formulates: request_001`):
+indicator `1.0` (within bounds `[1,1]`), no violation; the violating case
+was separately tested on an isolated node without a single
+`nrel_generated_in_context` (`shape_result_provenance`) — indicator
+`0.0`, violation of class `concept_existence_constraint_violation`
+created correctly.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action without arguments.
+Output: `FinishedWithError`.

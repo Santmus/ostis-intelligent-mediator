@@ -3,140 +3,139 @@ type: agent
 tags: [agent, trust-agent, sc-agent, ema]
 action_class: action_update_trust_accuracy
 version: 72ba122 (2026-08-18)
-status: реализован, покрыт тестами, проверен на живом sc-server
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentUpdateTrustAccuracy
 
-← [[00 Индекс]] · компонента [[Модель доверия|t_acc]] · паттерн как у [[AgentUpdateTrustReliability]]
+← [[Agent Index]] · component of [[Trust Model|t_acc]] · same pattern as [[AgentUpdateTrustReliability]]
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_update_trust_accuracy` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentUpdateTrustAccuracy : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_update_trust_accuracy.{hpp,cpp}` |
-| Роль | Исполнитель правила `rule_update_t_acc_on_quality` (π_tr) |
-| Правило БЗ | `rules/rules_trust_update.scs` → `rule_update_t_acc_on_quality` |
-| Версия | commit `72ba122` |
+| Action class system identifier (sc-IRI) | `action_update_trust_accuracy` |
+| Class sc-node type | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentUpdateTrustAccuracy : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_update_trust_accuracy.{hpp,cpp}` |
+| Role | Executor of rule `rule_update_t_acc_on_quality` (π_tr) |
+| KB rule | `rules/rules_trust_update.scs` → `rule_update_t_acc_on_quality` |
+| Version | commit `72ba122` |
 
-## Назначение
+## Purpose
 
-**Проблема.** `t_rel` ([[AgentUpdateTrustReliability]]) отвечает только
-за факт успеха/провала, но не за *качество* успешного результата. Две
-системы могут одинаково «не падать», но выдавать разного качества
-ответы — это отдельная компонента доверия `t_acc` («достоверность»),
-отслеживающая метрики качества на тестовых/исторических данных.
+**Problem.** `t_rel` ([[AgentUpdateTrustReliability]]) only handles the
+success/failure fact, not the *quality* of a successful result. Two
+systems may equally “not fail” but produce answers of different quality —
+this is a separate trust component `t_acc` (“accuracy”), which tracks
+quality metrics on test/historical data.
 
-**Цель.** После каждой обработанной подзадачи зафиксировать достигнутую
-точность результата `q_res ∈ [0,1]` (в отличие от бинарного ν_rel — это
-непрерывная метрика качества) и сгладить накопленную оценку `t_acc` в
-её сторону.
+**Goal.** After each processed subtask, record the achieved result
+accuracy `q_res ∈ [0,1]` (unlike binary ν_rel, this is a continuous
+quality metric) and smooth the accumulated `t_acc` estimate toward it.
 
-**Ценность.** Позволяет `match(σ, s)` различать не просто «работает/не
-работает», а «работает и выдаёт качественный результат» — важно там,
-где приемлемы только системы выше определённого порога точности
-(например, медицинская диагностика, финансовые решения).
+**Value.** Allows `match(σ, s)` to distinguish not just
+“works/doesn’t work” but “works and produces a quality result” — important
+where only systems above a certain accuracy threshold are acceptable
+(e.g., medical diagnosis, financial decisions).
 
-**Стейкхолдеры:** те же, что у [[AgentUpdateTrustReliability]], плюс —
-в первую очередь домены с жёсткими требованиями к качеству результата
-(см. `scenario_medical_diagnostics.scs`, `scenario_financial_decision_support.scs`
-в [[ostis_kb_user_ecosystem]]).
+**Stakeholders:** same as [[AgentUpdateTrustReliability]], plus —
+primarily domains with strict result-quality requirements (see
+`scenario_medical_diagnostics.scs`, `scenario_financial_decision_support.scs`
+in [[ostis_kb_user_ecosystem]]).
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- по паре (узел `trust_level`, sc-ссылка с `q_res`) вычислить
-  экспоненциально сглаженное новое значение `t_acc`;
-- создать sc-ссылку при первом обращении (нейтральный старт `t_acc = 0`);
-- вернуть обновлённые `trust_level`/`value_link` в результате действия;
-- корректно завершиться с ошибкой при некорректных аргументах.
+- for a pair (node `trust_level`, sc-link with `q_res`) compute the
+  exponentially smoothed new value of `t_acc`;
+- create an sc-link on first access (neutral start `t_acc = 0`);
+- return the updated `trust_level`/`value_link` in the action result;
+- correctly finish with an error on invalid arguments.
 
-**Limitations (по коду, идентично [[AgentUpdateTrustReliability]]):**
-- не проверяет принадлежность первого аргумента `concept_trust_level` —
-  только `IsElement`;
-- не проверяет, что `q_res` действительно ∈ [0,1] — принимает любое
-  число, парсящееся `std::stof`;
-- не пишет провенанс (какая именно подзадача дала это `q_res`);
-- β = 0.10 — константа в коде, не настраиваемая по контексту/системе;
-- дополнительно к общим ограничениям: **не определяет метод измерения
-  `q_res`** — расчёт точности (по эталону, по разметке, по
-  ансамблю-судье и т.д.) полностью вне зоны ответственности агента,
-  он лишь принимает уже готовое число.
+**Limitations (by code, identical to [[AgentUpdateTrustReliability]]):**
+- does not check whether the first argument belongs to `concept_trust_level` —
+  only `IsElement`;
+- does not check that `q_res` is actually ∈ [0,1] — accepts any number
+  parseable by `std::stof`;
+- does not write provenance (which specific subtask produced this `q_res`);
+- β = 0.10 — a constant in code, not configurable by context/system;
+- in addition to common limitations: **does not determine the method of
+  measuring `q_res`** — accuracy calculation (against ground truth, by
+  labeling, by an ensemble judge, etc.) is fully outside the agent’s
+  responsibility; it only accepts an already prepared number.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_update_trust_accuracy>`.
+**Trigger:** arc `action_initiated -> <instance of action_update_trust_accuracy>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `trust_level` | `ScAddr` | обязателен | только `IsElement` |
-| 2 | `quality_link` | `ScAddr` sc-ссылки с `q_res` | обязателен | `IsElement` + парсится `std::stof` |
+| 1 | `trust_level` | `ScAddr` | required | only `IsElement` |
+| 2 | `quality_link` | `ScAddr` sc-link with `q_res` | required | `IsElement` + parseable by `std::stof` |
 
-**Формат:** `quality_link` — текстовая sc-ссылка, например `"0.9"`.
+**Format:** `quality_link` — a textual sc-link, e.g. `"0.9"`.
 
-## Выход
+## Output
 
-Обновлённая/созданная sc-ссылка `value_link` на `trust_level` с
-содержимым `std::to_string(newTAcc)`. Побочный эффект — генерация
-`value_link` + связывающей дуги при первом вызове. Успех —
+Updated/created sc-link `value_link` on `trust_level` with content
+`std::to_string(newTAcc)`. Side effect — generating `value_link` + a
+binding arc on the first call. Success —
 `FinishSuccessfully()` + `FormResult(trustLevel, valueLink)`.
 
-## Связи
+## Relations
 
-Зависимости, чтение/запись — идентичны [[AgentUpdateTrustReliability]]
-(общий `common/float_link_io.hpp`, `TrustKeynodes`). Независим от
-остальных трёх EMA-агентов; результат читает [[AgentAggregateTrust]].
+Dependencies, read/write — identical to [[AgentUpdateTrustReliability]]
+(common `common/float_link_io.hpp`, `TrustKeynodes`). Independent of the
+other three EMA agents; the result is read by [[AgentAggregateTrust]].
 
-## Поведение
+## Behavior
 
 ```
-IF  trust_level не sc-элемент  OR  quality_link не sc-элемент
+IF  trust_level is not an sc-element  OR  quality_link is not an sc-element
 THEN  FinishWithError()
 
-ELSE IF  содержимое quality_link не число
+ELSE IF  quality_link content is not a number
 THEN  FinishWithError()
 
 ELSE
-  currentTAcc := значение value_link, если есть, ИНАЧЕ 0 (+ создать при отсутствии)
+  currentTAcc := value of value_link if present, OTHERWISE 0 (+ create if missing)
   newTAcc := (1 - β) * currentTAcc + β * q_res       // β = 0.10
-  записать newTAcc, FormResult(...), FinishSuccessfully()
+  write newTAcc, FormResult(...), FinishSuccessfully()
 ```
 
-Обработка ошибок и таймауты — как у [[AgentUpdateTrustReliability]]
-(таймаут задаёт вызывающая сторона через `InitiateAndWait`, у самого
-агента внутреннего ожидания нет).
+Error handling and timeouts — same as [[AgentUpdateTrustReliability]]
+(the caller sets the timeout via `InitiateAndWait`; the agent itself has
+no internal waiting).
 
-## Безопасность
+## Security
 
-Идентично [[AgentUpdateTrustReliability]]: полные привилегии процесса
-`sc-server`, без ACL на уровне агента; тот же риск — произвольный узел
-может быть принят как `trust_level` без проверки класса. `q_res` —
-абстрактная метрика качества, PII не содержит.
+Identical to [[AgentUpdateTrustReliability]]: full privileges of the
+`sc-server` process, no ACL at the agent level; the same risk — an
+arbitrary node may be accepted as `trust_level` without class check. `q_res`
+is an abstract quality metric and contains no PII.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Та же характеристика, что у [[AgentUpdateTrustReliability]] — синхронно, без I/O. |
-| Accuracy | Не применимо (детерминированная формула); корректность проверена тестами. |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. |
+| Latency | Same characteristic as [[AgentUpdateTrustReliability]] — synchronous, no I/O. |
+| Accuracy | Not applicable (deterministic formula); correctness verified by tests. |
+| Cost | Negligible. |
+| Alerts | Not implemented. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_update_trust_accuracy.cpp` (3 теста, все проходят; сценарий 1 дополнительно проверен на живом sc-server).
+File: `tests/test_agent_update_trust_accuracy.cpp` (3 tests, all pass; scenario 1 additionally verified on a live sc-server).
 
 **1. `UpdatesTAccOnQualityResult`**
-Вход: `t_acc = 0.70`, `q_res = 0.90`.
-Выход: `t_acc_new = 0.9·0.70 + 0.1·0.90 = 0.72`, `FinishedSuccessfully`.
+Input: `t_acc = 0.70`, `q_res = 0.90`.
+Output: `t_acc_new = 0.9·0.70 + 0.1·0.90 = 0.72`, `FinishedSuccessfully`.
 
 **2. `CreatesValueLinkWhenMissing`**
-Вход: `trust_level` без sc-ссылки, `q_res = 1.0`.
-Выход: создаётся ссылка со значением `0.9·0 + 0.1·1.0 = 0.10`.
+Input: `trust_level` without an sc-link, `q_res = 1.0`.
+Output: a link is created with value `0.9·0 + 0.1·1.0 = 0.10`.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action without arguments.
+Output: `FinishedWithError`.

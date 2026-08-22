@@ -2,130 +2,126 @@
 type: agent
 tags: [agent, sc-agent, cooperation, state-machine]
 action_class: action_propagate_to_dependent
-version: (текущий коммит ostis_ps_user_ecosystem)
-status: реализован, покрыт тестами
+version: (current commit of ostis_ps_user_ecosystem)
+status: implemented, covered by tests
 ---
 
 # AgentPropagateToDependent
 
-← [[00 Индекс]] · из [[Кандидаты на реализацию]] (`rules_cooperation.scs`, вслед за [[AgentRegisterPartialResult]])
+← [[Agent Index]] · from [[Implementation Backlog]] (`rules_cooperation.scs`, after [[AgentRegisterPartialResult]])
 
-> [!note] Получатель — сама зависимая подзадача, не назначенная ей система
-> В отличие от [[AgentDispatchReadySubtask]], где `rrel_receiver` — это
-> система-исполнитель, здесь получателем inform-акта взята сама σ':
-> на момент пропагации σ' может быть ещё не назначена (`task_allocator`
-> ещё не отработал), а правило требует именно «сделать результат
-> входом σ'» — адресат по смыслу текста правила сама подзадача.
+> [!note] Receiver is the dependent subtask itself, not the system assigned to it
+> Unlike [[AgentDispatchReadySubtask]], where `rrel_receiver` is the
+> executing system, here the receiver of the inform act is taken to be σ' itself:
+> at the time of propagation σ' may not yet be assigned (`task_allocator`
+> has not yet run), and the rule requires exactly “make the result an
+> input of σ'” — so, by the meaning of the rule text, the addressee is the subtask itself.
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_propagate_to_dependent` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentPropagateToDependent : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_propagate_to_dependent.{hpp,cpp}` |
-| Роль | Реализует `rule_propagate_to_dependent` (`agent_cooperative_executor`, `rules_cooperation.scs`) |
-| Правило БЗ | `rules/rules_cooperation.scs` → `rule_propagate_to_dependent` |
-| Модуль | `TrustModule` (см. [[AgentComputePiMetric]] — тот же аргумент про один модуль на `.dylib`) |
+| System identifier (sc-IRI) of the action class | `action_propagate_to_dependent` |
+| sc-node class type | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentPropagateToDependent : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_propagate_to_dependent.{hpp,cpp}` |
+| Role | Implements `rule_propagate_to_dependent` (`agent_cooperative_executor`, `rules_cooperation.scs`) |
+| KB rule | `rules/rules_cooperation.scs` → `rule_propagate_to_dependent` |
+| Module | `TrustModule` (see [[AgentComputePiMetric]] — same argument about one module per `.dylib`) |
 
-## Назначение
+## Purpose
 
-**Проблема.** Завершение подзадачи σ само по себе не делает её
-результат видимым для подзадач σ', которые от неё зависят
-(`nrel_subtask_depends_on`) — без явного шага их придётся опрашивать
-или полагаться на внешний оркестратор.
+**Problem.** Completion of subtask σ by itself does not make its result
+visible to subtasks σ' that depend on it
+(`nrel_subtask_depends_on`) — without an explicit step, they would have
+to be polled or rely on an external orchestrator.
 
-**Цель.** Найти все σ', зависящие от только что завершённой σ, и
-сделать результат r доступным каждой из них как вход — через
-коммуникативный акт `concept_knowledge_exchange_act` типа
-`concept_act_inform`.
+**Goal.** Find all σ' that depend on the just-completed σ and make the
+result r available to each of them as an input — via a communicative act
+`concept_knowledge_exchange_act` of type `concept_act_inform`.
 
-**Ценность.** Замыкает граф зависимостей подзадач
-(`nrel_subtask_depends_on`) в исполняемый push-механизм: как только σ
-завершена, все ожидающие её σ' узнают об этом без опроса — тот же
-принцип, что демонстрирует обмен `inform`-актами в
+**Value.** Closes the subtask dependency graph
+(`nrel_subtask_depends_on`) into an executable push mechanism: as soon as
+σ is completed, all σ' waiting for it learn about it without polling —
+the same principle demonstrated by `inform` act exchange in
 `scenario_knowledge_exchange.scs`.
 
-**Стейкхолдеры:** `agent_cooperative_executor` (концептуальный «хозяин»
-правила, фиксированный отправитель акта), подзадачи σ', ожидающие
-входных данных от σ.
+**Stakeholders:** `agent_cooperative_executor` (conceptual “owner” of the
+rule, fixed sender of the act), subtasks σ' waiting for input from σ.
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- проверить, что σ действительно `completed` (агент безопасен для
-  спекулятивного вызова — как и [[AgentDispatchReadySubtask]]);
-- найти все σ' с исходящей дугой `σ' -[nrel_subtask_depends_on]-> σ`
-  (обратный обход — не тот же порядок, что читает
-  `AllDependenciesCompleted` в [[AgentDispatchReadySubtask]]);
-- для каждой найденной σ' сгенерировать `concept_knowledge_exchange_act`
-  с ролями sender/receiver/act_type/payload;
-- записать в узел-приёмник число пропагированных подзадач (0, если σ
-  ещё не `completed` или зависимых σ' нет), создав sc-ссылку при первом
-  обращении;
-- корректно завершиться с ошибкой при отсутствии обязательных
-  аргументов.
+- verify that σ is indeed `completed` (the agent is safe for
+  speculative invocation — same as [[AgentDispatchReadySubtask]]);
+- find all σ' with an outgoing edge `σ' -[nrel_subtask_depends_on]-> σ`
+  (reverse traversal — not the same order as read by
+  `AllDependenciesCompleted` in [[AgentDispatchReadySubtask]]);
+- for each found σ' generate a `concept_knowledge_exchange_act`
+  with roles sender/receiver/act_type/payload;
+- write into the receiver node the number of propagated subtasks (0 if σ
+  is not yet `completed` or has no dependent σ'), creating an sc-link on first access;
+- terminate correctly with an error when mandatory arguments are missing.
 
-**Limitations (по коду):**
-- **не заполняет** `rrel_context`/`rrel_timestamp` в создаваемых актах
-  — тот же пробел, что и у [[AgentDispatchReadySubtask]]: правило не
-  указывает источник контекста/времени.
-- **отправитель акта — фиксированный `agent_cooperative_executor`**,
-  не параметр — то же ограничение, что и у [[AgentDispatchReadySubtask]].
-- **получатель — сама подзадача σ', а не назначенная ей система** — см.
-  примечание выше; если в дальнейшем `task_allocator` назначит σ'
-  систему, эта связь никак не используется агентом при построении акта.
-- **не проверяет цикличность** графа зависимостей — как и
-  [[AgentDispatchReadySubtask]], обнаружение цикла вне области этого
-  агента (`rule_check_acyclicity`, не реализовано).
-- **индикатор — не булев, а счётчик** пропагированных σ' — единственный
-  агент проекта, где числовой индикатор не 0/1, а произвольное
-  неотрицательное число.
+**Limitations (per code):**
+- **does not fill** `rrel_context`/`rrel_timestamp` in the created acts
+  — same gap as [[AgentDispatchReadySubtask]]: the rule does not specify
+  a context/time source.
+- **sender of the act is fixed `agent_cooperative_executor`**,
+  not a parameter — same limitation as [[AgentDispatchReadySubtask]].
+- **receiver is the subtask σ' itself, not the system assigned to it** —
+  see the note above; if `task_allocator` later assigns a system to σ',
+  that link is not used by this agent when building the act.
+- **does not check cyclicity** of the dependency graph — same as
+  [[AgentDispatchReadySubtask]], cycle detection is outside the scope of
+  this agent (`rule_check_acyclicity`, not implemented).
+- **indicator is not boolean but a counter** of propagated σ' — the only
+  agent in the project where the numeric indicator is not 0/1 but an
+  arbitrary non-negative number.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_propagate_to_dependent>`.
+**Trigger:** edge `action_initiated -> <instance of action_propagate_to_dependent>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `result` | частичный результат r, полученный по σ | обязателен | только `IsElement` |
-| 2 | `subtask` | только что завершённая подзадача σ | обязателен | только `IsElement` |
-| 3 | `result_level` | узел-приёмник индикатора | обязателен | только `IsElement` |
+| 1 | `result` | partial result r obtained from σ | required | only `IsElement` |
+| 2 | `subtask` | just-completed subtask σ | required | only `IsElement` |
+| 3 | `result_level` | indicator receiver node | required | only `IsElement` |
 
-## Выход
+## Output
 
-Обновлённая/созданная sc-ссылка `value_link` на `result_level` со
-значением — числом пропагированных зависимых подзадач (0, если σ ещё
-не `completed`). Если пропагация произошла — дополнительно: по одному
-новому `concept_knowledge_exchange_act` на каждую σ' (sender=
+Updated/created sc-link `value_link` on `result_level` with value equal
+to the number of propagated dependent subtasks (0 if σ is not yet
+`completed`). If propagation occurred — additionally: one new
+`concept_knowledge_exchange_act` for each σ' (sender=
 `agent_cooperative_executor`, receiver=σ', act_type=`concept_act_inform`,
-payload=`result`). Успех — `FinishSuccessfully()` +
+payload=`result`). Success — `FinishSuccessfully()` +
 `FormResult(subtask, valueLink)`.
 
-## Связи
+## Connections
 
-**Зависимости:** `common/float_link_io.hpp` (`WriteFloatLinkContent`),
-`common/relation_io.hpp` (`TargetOf`, `LinkByRole` — вынесен сюда вместе
-с [[AgentRegisterPartialResult]], обобщение локального `LinkByRole` из
-[[AgentDispatchReadySubtask]]), `keynodes/task_keynodes.hpp`
+**Dependencies:** `common/float_link_io.hpp` (`WriteFloatLinkContent`),
+`common/relation_io.hpp` (`TargetOf`, `LinkByRole` — moved here together
+with [[AgentRegisterPartialResult]], generalization of the local `LinkByRole`
+from [[AgentDispatchReadySubtask]]), `keynodes/task_keynodes.hpp`
 (`TaskKeynodes`).
 
-**Читает:** `nrel_subtask_status` подзадачи σ, все σ' с исходящей
-`nrel_subtask_depends_on` на σ (обратный обход).
+**Reads:** `nrel_subtask_status` of subtask σ, all σ' with an outgoing
+`nrel_subtask_depends_on` to σ (reverse traversal).
 
-**Пишет:** по одному `concept_knowledge_exchange_act` на каждую
-найденную σ', `value_link` `result_level`.
+**Writes:** one `concept_knowledge_exchange_act` for each found σ',
+`value_link` `result_level`.
 
-**Workflow.** Третий, заключительный шаг жизненного цикла подзадачи в
+**Workflow.** Third and final step in the lifecycle of a subtask in
 `agent_cooperative_executor`: [[AgentDispatchReadySubtask]] →
-[[AgentRegisterPartialResult]] (переводит σ в `completed`, что здесь и
-читается как предусловие) → **AgentPropagateToDependent**.
+[[AgentRegisterPartialResult]] (sets σ to `completed`, which is read here
+as a precondition) → **AgentPropagateToDependent**.
 
-## Поведение
+## Behavior
 
 ```
-IF  result не sc-элемент  OR  subtask не sc-элемент  OR  result_level не sc-элемент
+IF  result is not an sc-element  OR  subtask is not an sc-element  OR  result_level is not an sc-element
 THEN  FinishWithError()
 
 ELSE
@@ -136,59 +132,57 @@ ELSE
   IF  completed
   THEN
     FOR EACH σ' WITH σ' -[nrel_subtask_depends_on]-> subtask:
-      создать concept_knowledge_exchange_act:
+      create concept_knowledge_exchange_act:
         rrel_sender   = agent_cooperative_executor
         rrel_receiver = σ'
         rrel_act_type = concept_act_inform
         rrel_payload  = result
       count += 1
 
-  записать count в value_link result_level (создать при отсутствии)
+  write count into value_link result_level (create if absent)
   action.FormResult(subtask, value_link)
   → action.FinishSuccessfully()
 ```
 
-**Обработка ошибок/таймауты:** как у остальных агентов — `DoProgram`
-синхронный, ожидание на стороне вызывающего кода через
-`InitiateAndWait`.
+**Error handling / timeouts:** same as the other agents — `DoProgram`
+is synchronous; waiting is on the caller side via `InitiateAndWait`.
 
-## Безопасность
+## Security
 
-- Привилегии — как у остальных агентов `TrustModule`: без ACL, полный
-  доступ к sc-памяти в рамках процесса `sc-server`.
-- **Специфичный риск:** агент может разослать произвольный `result`
-  ЛЮБОЙ подзадаче, найденной как зависимая от переданной `subtask`, без
-  проверки, что вызывающая сторона имела на это право — то же общее
-  для проекта отсутствие аутентификации инициатора действия, здесь с
-  реальным побочным эффектом (коммуникативный акт на каждую σ').
-- Не проверяется, что `result`/`subtask` действительно принадлежат
-  соответствующим классам онтологии (только `IsElement`).
-- Данные — не PII напрямую, но `concept_knowledge_exchange_act` несёт
-  `rrel_payload=result`, который может содержать реальный
-  пользовательский результат.
+- Privileges — same as the other agents of `TrustModule`: no ACL, full
+  access to sc-memory within the `sc-server` process.
+- **Specific risk:** the agent can send an arbitrary `result` to ANY
+  subtask found as dependent on the passed `subtask`, without verifying
+  that the caller was authorized to do so — same project-wide absence
+  of action initiator authentication, here with a real side effect (one
+  communicative act for each σ').
+- It is not verified that `result`/`subtask` actually belong to the
+  corresponding ontology classes (only `IsElement`).
+- Data — not PII directly, but `concept_knowledge_exchange_act` carries
+  `rrel_payload=result`, which may contain a real user result.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O; линейно по числу прямых зависимых подзадач (обычно единицы). |
-| Accuracy | Не применимо — детерминированный обход графа, не предсказание; корректность проверена тестами на обоих исходах (completed/не completed). |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. |
+| Latency | Synchronous, no I/O; linear in the number of direct dependent subtasks (usually small). |
+| Accuracy | Not applicable — deterministic graph traversal, not prediction; correctness is verified by tests on both outcomes (completed / not completed). |
+| Cost | Negligible. |
+| Alerts | Not implemented. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_propagate_to_dependent.cpp` (3 теста, все проходят). Также покрыт вторым `TEST_F` в `tests/test_integration_request_pipeline.cpp` (`DispatchesRegistersAndPropagatesAlongSubtaskChain`), где выступает завершающим звеном цепочки Dispatch → Register → Propagate.
+File: `tests/test_agent_propagate_to_dependent.cpp` (3 tests, all pass). Also covered by the second `TEST_F` in `tests/test_integration_request_pipeline.cpp` (`DispatchesRegistersAndPropagatesAlongSubtaskChain`), where it acts as the final link in the Dispatch → Register → Propagate chain.
 
 **1. `PropagatesToAllDependentsWhenSubtaskCompleted`**
-Вход: σ `completed`, две зависимые σ' (`σ' -[depends_on]-> σ`).
-Выход: индикатор `2.0`, обеим σ' создан inform-акт с
-`rrel_receiver=σ'` и `rrel_payload=result`.
+Input: σ is `completed`, two dependent σ' (`σ' -[depends_on]-> σ`).
+Output: indicator `2.0`, an inform act created for both σ' with
+`rrel_receiver=σ'` and `rrel_payload=result`.
 
 **2. `DoesNotPropagateWhenSubtaskNotCompleted`**
-Вход: σ в статусе `in_progress`, одна зависимая σ'.
-Выход: индикатор `0.0`, никакой акт не создан.
+Input: σ in `in_progress` status, one dependent σ'.
+Output: indicator `0.0`, no act created.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action without arguments.
+Output: `FinishedWithError`.

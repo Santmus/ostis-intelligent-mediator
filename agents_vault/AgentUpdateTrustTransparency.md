@@ -3,134 +3,133 @@ type: agent
 tags: [agent, trust-agent, sc-agent, ema]
 action_class: action_update_trust_transparency
 version: 72ba122 (2026-08-18)
-status: реализован, покрыт тестами, проверен на живом sc-server
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentUpdateTrustTransparency
 
-← [[00 Индекс]] · компонента [[Модель доверия|t_tr]] · паттерн как у [[AgentUpdateTrustReliability]]
+← [[Agent Index]] · component of [[Trust Model|t_tr]] · pattern same as [[AgentUpdateTrustReliability]]
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_update_trust_transparency` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentUpdateTrustTransparency : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_update_trust_transparency.{hpp,cpp}` |
-| Роль | Исполнитель правила `rule_update_t_tr_on_justification` (π_tr) |
-| Правило БЗ | `rules/rules_trust_update.scs` → `rule_update_t_tr_on_justification` |
-| Версия | commit `72ba122` |
+| System identifier (sc-IRI) of action class | `action_update_trust_transparency` |
+| sc-node class type | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentUpdateTrustTransparency : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_update_trust_transparency.{hpp,cpp}` |
+| Role | Executor of rule `rule_update_t_tr_on_justification` (π_tr) |
+| KB rule | `rules/rules_trust_update.scs` → `rule_update_t_tr_on_justification` |
+| Version | commit `72ba122` |
 
-## Назначение
+## Purpose
 
-**Проблема.** Объяснимость — не статическое архитектурное свойство
-системы («умеет объяснять / не умеет»), а *наблюдаемое поведение*:
-насколько часто система реально сопровождает результат обоснованием,
-когда его запрашивают. Это отдельная, историческая, эмпирическая
-метрика — `t_tr` (см. определение `concept_trust_component_transparency`
-в `concepts/trust.scs`: «не подменяет объяснение e в составе
-конкретного результата»).
+**Problem.** Explainability is not a static architectural property of a
+system ("can explain / cannot explain"), but an *observed behavior*:
+how often the system actually accompanies a result with a justification
+when one is requested. This is a separate, historical, empirical
+metric — `t_tr` (see the definition of `concept_trust_component_transparency`
+in `concepts/trust.scs`: "does not substitute explanation e as part of a
+concrete result").
 
-**Цель.** После каждого запроса обоснования зафиксировать, было ли оно
-фактически предоставлено (`ν_tr ∈ {0,1}`), и сгладить `t_tr` в его
-сторону.
+**Goal.** After each justification request, record whether it was
+actually provided (`ν_tr ∈ {0,1}`) and smooth `t_tr` toward that value.
 
-**Ценность.** Позволяет отличать системы, которые декларируют
-поддержку объяснений, от систем, которые их *реально* предоставляют по
-запросу — важно в доменах, требующих аудируемости решений
-(здравоохранение, финансы, право).
+**Value.** Distinguishes systems that declare support for explanations
+from systems that *actually* provide them on request — important in
+domains requiring decision auditability (healthcare, finance, law).
 
-**Стейкхолдеры:** пользователи, которым нужно обоснование решения;
-аудиторы/регуляторы; оркестраторы, выбирающие между системами при
-требовании объяснимости.
+**Stakeholders:** users who need a justification for a decision;
+auditors/regulators; orchestrators choosing between systems when
+explainability is required.
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- по паре (узел `trust_level`, sc-ссылка с `ν_tr`) вычислить
-  экспоненциально сглаженное новое значение `t_tr`;
-- создать sc-ссылку при первом обращении (нейтральный старт `t_tr = 0`);
-- вернуть обновлённые `trust_level`/`value_link`;
-- корректно завершиться с ошибкой при некорректных аргументах.
+- given a pair (`trust_level` node, sc-link with `ν_tr`), compute the
+  exponentially smoothed new value of `t_tr`;
+- create an sc-link on first access (neutral start `t_tr = 0`);
+- return updated `trust_level`/`value_link`;
+- correctly finish with error on invalid arguments.
 
-**Limitations (по коду, идентично [[AgentUpdateTrustReliability]]):**
-- не проверяет принадлежность `trust_level` классу `concept_trust_level`;
-- не проверяет диапазон `ν_tr`;
-- не пишет провенанс (какой именно запрос обоснования дал этот индикатор);
-- δ = 0.10 — константа в коде;
-- **не оценивает качество самого обоснования** — только бинарный факт
-  «предоставлено / не предоставлено»; пустая отписка и содержательное
-  объяснение с точки зрения этого агента неразличимы.
+**Limitations (by code, identical to [[AgentUpdateTrustReliability]]):**
+- does not check whether `trust_level` belongs to class `concept_trust_level`;
+- does not check the range of `ν_tr`;
+- does not write provenance (which specific justification request produced this indicator);
+- δ = 0.10 — constant in code;
+- **does not assess the quality of the justification itself** — only the binary fact
+  "provided / not provided"; a boilerplate dismissal and a substantive
+  explanation are indistinguishable from this agent's perspective.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_update_trust_transparency>`.
+**Trigger:** arc `action_initiated -> <instance of action_update_trust_transparency>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `trust_level` | `ScAddr` | обязателен | только `IsElement` |
-| 2 | `justification_link` | `ScAddr` sc-ссылки с `ν_tr` | обязателен | `IsElement` + парсится `std::stof` |
+| 1 | `trust_level` | `ScAddr` | required | only `IsElement` |
+| 2 | `justification_link` | `ScAddr` sc-link with `ν_tr` | required | `IsElement` + parsed by `std::stof` |
 
-**Формат:** текстовая sc-ссылка, `"1.0"` (обоснование предоставлено) или `"0.0"`.
+**Format:** textual sc-link, `"1.0"` (justification provided) or `"0.0"`.
 
-## Выход
+## Output
 
-Обновлённая/созданная sc-ссылка `value_link` на `trust_level`. Побочный
-эффект — генерация `value_link` + дуги при первом вызове. Успех —
+Updated/created sc-link `value_link` for `trust_level`. Side effect —
+generation of `value_link` + arc on first call. Success —
 `FinishSuccessfully()` + `FormResult(trustLevel, valueLink)`.
 
-## Связи
+## Connections
 
-Идентично остальным EMA-агентам: `common/float_link_io.hpp`,
-`TrustKeynodes`. Независим от [[AgentUpdateTrustReliability]] /
-[[AgentUpdateTrustAccuracy]] / [[AgentUpdateTrustSecurity]]; результат
-читает [[AgentAggregateTrust]].
+Identical to other EMA agents: `common/float_link_io.hpp`,
+`TrustKeynodes`. Independent of [[AgentUpdateTrustReliability]] /
+[[AgentUpdateTrustAccuracy]] / [[AgentUpdateTrustSecurity]]; the result is
+read by [[AgentAggregateTrust]].
 
-## Поведение
+## Behavior
 
 ```
-IF  trust_level не sc-элемент  OR  justification_link не sc-элемент
+IF  trust_level is not an sc-element  OR  justification_link is not an sc-element
 THEN  FinishWithError()
 
-ELSE IF  содержимое justification_link не число
+ELSE IF  justification_link content is not a number
 THEN  FinishWithError()
 
 ELSE
-  currentTTr := значение value_link, если есть, ИНАЧЕ 0 (+ создать при отсутствии)
+  currentTTr := value of value_link if exists, ELSE 0 (+ create if missing)
   newTTr := (1 - δ) * currentTTr + δ * ν_tr          // δ = 0.10
-  записать newTTr, FormResult(...), FinishSuccessfully()
+  write newTTr, FormResult(...), FinishSuccessfully()
 ```
 
-Обработка ошибок/таймауты — как у [[AgentUpdateTrustReliability]].
+Error handling/timeouts — same as [[AgentUpdateTrustReliability]].
 
-## Безопасность
+## Security
 
-Идентично остальным EMA-агентам: полные привилегии процесса
-`sc-server`, без проверки класса `trust_level`. `ν_tr` — абстрактный
-индикатор, PII не содержит.
+Identical to other EMA agents: full privileges of the `sc-server`
+process, without class check of `trust_level`. `ν_tr` is an abstract
+indicator, contains no PII.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O. |
-| Accuracy | Не применимо к формуле; корректность проверена тестами. |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. |
+| Latency | Synchronous, no I/O. |
+| Accuracy | Not applicable to the formula; correctness verified by tests. |
+| Cost | Negligible. |
+| Alerts | Not implemented. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_update_trust_transparency.cpp` (3 теста, все проходят; сценарий 1 дополнительно проверен на живом sc-server).
+File: `tests/test_agent_update_trust_transparency.cpp` (3 tests, all
+passing; scenario 1 additionally verified on a live sc-server).
 
 **1. `UpdatesTTrOnJustificationProvided`**
-Вход: `t_tr = 0.60`, `ν_tr = 1` (обоснование предоставлено).
-Выход: `t_tr_new = 0.9·0.60 + 0.1·1.0 = 0.64`, `FinishedSuccessfully`.
+Input: `t_tr = 0.60`, `ν_tr = 1` (justification provided).
+Output: `t_tr_new = 0.9·0.60 + 0.1·1.0 = 0.64`, `FinishedSuccessfully`.
 
 **2. `CreatesValueLinkWhenMissing`**
-Вход: `trust_level` без sc-ссылки, `ν_tr = 1`.
-Выход: создаётся ссылка со значением `0.9·0 + 0.1·1 = 0.10`.
+Input: `trust_level` without an sc-link, `ν_tr = 1`.
+Output: link created with value `0.9·0 + 0.1·1 = 0.10`.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action with no arguments.
+Output: `FinishedWithError`.

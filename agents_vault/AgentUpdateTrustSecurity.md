@@ -3,161 +3,157 @@ type: agent
 tags: [agent, trust-agent, sc-agent, ema, security]
 action_class: action_update_trust_security
 version: 72ba122 (2026-08-18)
-status: реализован, покрыт тестами, проверен на живом sc-server
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentUpdateTrustSecurity
 
-← [[00 Индекс]] · компонента [[Модель доверия|t_sec]] · паттерн как у [[AgentUpdateTrustReliability]]
+← [[Agent Index]] · component of the [[Trust Model|t_sec]] · same pattern as [[AgentUpdateTrustReliability]]
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_update_trust_security` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentUpdateTrustSecurity : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_update_trust_security.{hpp,cpp}` |
-| Роль | Исполнитель правила `rule_update_t_sec_on_incident` (π_tr) |
-| Правило БЗ | `rules/rules_trust_update.scs` → `rule_update_t_sec_on_incident` |
-| Версия | commit `72ba122` |
+| System identifier (sc-IRI) of the action class | `action_update_trust_security` |
+| Type of sc-node class | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentUpdateTrustSecurity : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_update_trust_security.{hpp,cpp}` |
+| Role | Executor of rule `rule_update_t_sec_on_incident` (π_tr) |
+| KB rule | `rules/rules_trust_update.scs` → `rule_update_t_sec_on_incident` |
+| Version | commit `72ba122` |
 
-## Назначение
+## Purpose
 
-**Проблема.** Система может быть надёжной и точной, но при этом
-нарушать политики безопасности или становиться источником инцидентов
-(см. STRIDE-классификацию в `concepts/security_privacy.scs`:
-Spoofing/Tampering/Repudiation/Information Disclosure/DoS/EoP). Это
-отдельное измерение доверия — `t_sec`.
+**Problem.** A system can be reliable and accurate while still violating
+security policies or becoming a source of incidents (see the STRIDE
+classification in `concepts/security_privacy.scs`:
+Spoofing/Tampering/Repudiation/Information Disclosure/DoS/EoP). This is a
+separate dimension of trust — `t_sec`.
 
-**Цель.** После каждой обработанной подзадачи зафиксировать, был ли
-зарегистрирован инцидент безопасности (`ν_sec = 0`) или нет
-(`ν_sec = 1`), и обновить `t_sec` тем же EMA-паттерном, что и остальные
-компоненты.
+**Goal.** After each processed subtask, record whether a security incident was
+registered (`ν_sec = 0`) or not (`ν_sec = 1`), and update `t_sec` using the
+same EMA pattern as the other components.
 
-**Ценность.** «Немедленное снижение при инциденте на очередном шаге
-обновления», о котором говорит текст правила, — это не отдельная
-специальная логика, а прямое следствие формулы при `ν_sec = 0`: модель
-самонастраивается, снижая вероятность назначения подзадач системе,
-допустившей нарушение, без ручного вмешательства (см.
-`affirmation_trust_self_calibration` в `concepts/trust.scs`).
+**Value.** The "immediate drop on incident at the next update step" mentioned
+in the rule text is not a separate special logic; it is a direct consequence of
+the formula when `ν_sec = 0`: the model self-calibrates, reducing the
+probability of assigning subtasks to a system that has committed a violation,
+without manual intervention (see `affirmation_trust_self_calibration` in
+`concepts/trust.scs`).
 
-**Стейкхолдеры:** офицеры безопасности/комплаенс, оркестраторы задач с
-повышенными требованиями к защите данных (см. `nrel_processes_personal_data`,
-`concept_access_control_policy` в `concepts/security_privacy.scs`),
-конечные пользователи, чьи данные обрабатывает `s`.
+**Stakeholders:** security/compliance officers, task orchestrators with
+heightened data-protection requirements (see `nrel_processes_personal_data`,
+`concept_access_control_policy` in `concepts/security_privacy.scs`), end users
+whose data are processed by `s`.
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- по паре (узел `trust_level`, sc-ссылка с `ν_sec`) вычислить
-  экспоненциально сглаженное новое значение `t_sec`;
-- создать sc-ссылку при первом обращении (нейтральный старт `t_sec = 0`
-  — здесь стоит явно отметить: «новая система» стартует с t_sec=0, а не
-  с «презумпции безопасности» 1; это общий для всех компонент выбор
-  модели, но для t_sec он особенно заметен);
-- вернуть обновлённые `trust_level`/`value_link`;
-- корректно завершиться с ошибкой при некорректных аргументах.
+- For a pair (`trust_level` node, sc-link with `ν_sec`) compute the
+  exponentially smoothed new value of `t_sec`;
+- Create an sc-link on first access (neutral start `t_sec = 0` — note
+  explicitly: a "new system" starts at `t_sec = 0`, not from a "presumption of
+  security" of 1; this is a model-wide choice, but it is especially noticeable
+  for `t_sec`);
+- Return the updated `trust_level`/`value_link`;
+- Terminate correctly with an error on incorrect arguments.
 
-**Limitations (по коду):**
-- те же базовые ограничения, что у [[AgentUpdateTrustReliability]]
-  (нет проверки класса `trust_level`, нет проверки диапазона, нет
-  провенанса, γ = 0.10 — константа);
-- **ключевое отличие от «умного» агента безопасности**: этот код **не
-  детектирует и не классифицирует инциденты** сам — он лишь применяет
-  формулу к уже готовому индикатору `ν_sec`, который должен вычислить
-  внешний механизм (например, сопоставление с
-  `concept_security_incident`/`nrel_security_violation_of` из
-  `security_privacy.scs`). Регистрация конкретного инцидента,
-  упомянутая в тексте правила, — ответственность вызывающей стороны,
-  не этого агента.
-- как следствие — при ошибочном/устаревшем внешнем детекторе `t_sec`
-  будет обновляться на основе неверного сигнала, и агент этого никак
-  не проверит и не заметит.
+**Limitations (per code):**
+- Same basic limitations as [[AgentUpdateTrustReliability]] (no `trust_level`
+  class check, no range check, no provenance, `γ = 0.10` is a constant);
+- **Key difference from a "smart" security agent:** this code **does not detect
+  or classify incidents** itself — it only applies the formula to the already
+  prepared indicator `ν_sec`, which an external mechanism must compute (e.g.,
+  matching against `concept_security_incident`/`nrel_security_violation_of` in
+  `security_privacy.scs`). Registering a specific incident, as mentioned in the
+  rule text, is the responsibility of the caller, not of this agent.
+- Consequently, if the external detector is wrong or stale, `t_sec` will be
+  updated from an incorrect signal, and the agent will neither check nor notice
+  it.
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_update_trust_security>`.
+**Trigger:** arc `action_initiated -> <instance of action_update_trust_security>`.
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `trust_level` | `ScAddr` | обязателен | только `IsElement` |
-| 2 | `incident_link` | `ScAddr` sc-ссылки с `ν_sec` ∈ {0,1} | обязателен | `IsElement` + парсится `std::stof` |
+| 1 | `trust_level` | `ScAddr` | required | `IsElement` only |
+| 2 | `incident_link` | `ScAddr` of an sc-link with `ν_sec` ∈ {0,1} | required | `IsElement` + parsed with `std::stof` |
 
-**Формат:** `incident_link` — текстовая sc-ссылка, `"1.0"` (инцидентов
-не было) или `"0.0"` (инцидент зарегистрирован).
+**Format:** `incident_link` is a textual sc-link, `"1.0"` (no incident) or
+`"0.0"` (incident registered).
 
-## Выход
+## Output
 
-Обновлённая/созданная sc-ссылка `value_link` на `trust_level`.
-Побочный эффект — генерация `value_link` + дуги при первом вызове.
-Успех — `FinishSuccessfully()` + `FormResult(trustLevel, valueLink)`.
+The updated/created sc-link `value_link` of `trust_level`. Side effect:
+generating `value_link` + arc on first call. Success: `FinishSuccessfully()` +
+`FormResult(trustLevel, valueLink)`.
 
-## Связи
+## Links
 
-Идентично остальным трём EMA-агентам: `common/float_link_io.hpp`,
-`TrustKeynodes`. Концептуально связан с онтологией безопасности
-(`concept_security_incident` и STRIDE-классы в `security_privacy.scs`),
-но **программно с ней не интегрирован** — это чисто числовой обработчик.
-Результат читает [[AgentAggregateTrust]].
+Identical to the other three EMA agents: `common/float_link_io.hpp`,
+`TrustKeynodes`. Conceptually related to the security ontology
+(`concept_security_incident` and STRIDE classes in `security_privacy.scs`), but
+**not programmatically integrated** with it — this is a purely numeric handler.
+The result is read by [[AgentAggregateTrust]].
 
-## Поведение
+## Behavior
 
 ```
-IF  trust_level не sc-элемент  OR  incident_link не sc-элемент
+IF  trust_level is not an sc-element  OR  incident_link is not an sc-element
 THEN  FinishWithError()
 
-ELSE IF  содержимое incident_link не число
+ELSE IF  content of incident_link is not a number
 THEN  FinishWithError()
 
 ELSE
-  currentTSec := значение value_link, если есть, ИНАЧЕ 0 (+ создать при отсутствии)
+  currentTSec := value of value_link if present, ELSE 0 (+ create if absent)
   newTSec := (1 - γ) * currentTSec + γ * ν_sec       // γ = 0.10
-  записать newTSec, FormResult(...), FinishSuccessfully()
+  write newTSec, FormResult(...), FinishSuccessfully()
 ```
 
-Пример немедленного снижения: `t_sec = 0.955`, инцидент (`ν_sec = 0`)
-→ `t_sec_new = 0.9 · 0.955 + 0.1 · 0 ≈ 0.860` за один шаг.
+Example of immediate drop: `t_sec = 0.955`, incident (`ν_sec = 0`) →
+`t_sec_new = 0.9 · 0.955 + 0.1 · 0 ≈ 0.860` in one step.
 
-Обработка ошибок/таймауты — как у [[AgentUpdateTrustReliability]].
+Error handling/timeouts — same as [[AgentUpdateTrustReliability]].
 
-## Безопасность
+## Security
 
-- Привилегии процесса — как у всех агентов модуля (без ACL, полный
-  доступ к sc-памяти).
-- **Специфичный для этого агента риск:** поскольку он ничего не
-  проверяет о характере «инцидента», ложноположительный или
-  ложноотрицательный внешний детектор напрямую и без дополнительных
-  проверок исказит компоненту доверия, отвечающую именно за
-  безопасность — то есть баг в *другом* компоненте экосистемы способен
-  тихо подорвать доверие к добросовестной системе (или наоборот,
-  скрыть реальный инцидент).
-- Сам `ν_sec` — абстрактный индикатор, PII не содержит; но если
-  `incident_link` в будущем расширят деталями инцидента, эти детали
-  не должны попадать в текстовое содержимое sc-ссылки без отдельной
-  политики хранения.
+- Process privileges — same as all agents in the module (no ACL, full access
+  to sc-memory).
+- **Agent-specific risk:** because it does not verify the nature of the
+  "incident," a false-positive or false-negative external detector will directly
+  and without additional checks distort the trust component that is responsible
+  specifically for security — i.e., a bug in *another* component of the ecosystem
+  can silently undermine trust in an honest system (or, conversely, hide a real
+  incident).
+- The `ν_sec` itself is an abstract indicator and contains no PII; but if
+  `incident_link` is later extended with incident details, those details must not
+  be placed in the textual content of the sc-link without a separate storage
+  policy.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O — как у остальных EMA-агентов. |
-| Accuracy | Не применимо к самой формуле; но **зависит от точности внешнего детектора инцидентов**, которую этот агент не измеряет. |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. Для t_sec особенно важны — резкое падение стоит поднимать как сигнал офицеру безопасности, а не только тихо учитывать в trust. |
+| Latency | Synchronous, no I/O — same as the other EMA agents. |
+| Accuracy | Not applicable to the formula itself; but **depends on the accuracy of the external incident detector**, which this agent does not measure. |
+| Cost | Negligible. |
+| Alerts | Not implemented. For `t_sec` they are especially important — a sharp drop should be raised as a signal to a security officer, not only silently factored into trust. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_update_trust_security.cpp` (3 теста, все проходят; сценарий 1 дополнительно проверен на живом sc-server).
+File: `tests/test_agent_update_trust_security.cpp` (3 tests, all passing;
+scenario 1 additionally verified on a live sc-server).
 
 **1. `DecreasesTSecOnIncident`**
-Вход: `t_sec = 0.95`, `ν_sec = 0` (инцидент).
-Выход: `t_sec_new = 0.9·0.95 + 0.1·0 = 0.855`, `FinishedSuccessfully`.
+Input: `t_sec = 0.95`, `ν_sec = 0` (incident).
+Output: `t_sec_new = 0.9·0.95 + 0.1·0 = 0.855`, `FinishedSuccessfully`.
 
 **2. `CreatesValueLinkWhenMissing`**
-Вход: `trust_level` без sc-ссылки, `ν_sec = 1`.
-Выход: создаётся ссылка со значением `0.9·0 + 0.1·1 = 0.10`.
+Input: `trust_level` without an sc-link, `ν_sec = 1`.
+Output: a link is created with value `0.9·0 + 0.1·1 = 0.10`.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action without arguments.
+Output: `FinishedWithError`.

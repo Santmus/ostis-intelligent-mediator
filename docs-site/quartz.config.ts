@@ -8,12 +8,12 @@ import * as Plugin from "./quartz/plugins"
  */
 const config: QuartzConfig = {
   configuration: {
-    pageTitle: "Интеллектуальный посредник (OSTIS)",
+    pageTitle: "Intelligent Mediator (OSTIS)",
     pageTitleSuffix: "",
     enableSPA: true,
     enablePopovers: true,
     analytics: null,
-    locale: "ru-RU",
+    locale: "en-US",
     baseUrl: "Santmus.github.io/ostis-intelligent-mediator",
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",

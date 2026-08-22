@@ -3,204 +3,209 @@ type: agent
 tags: [agent, trust-agent, sc-agent, ema]
 action_class: action_update_trust_reliability
 version: 72ba122 (2026-08-18)
-status: реализован, покрыт тестами, проверен на живом sc-server
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentUpdateTrustReliability
 
-← [[00 Индекс]] · компонента [[Модель доверия|t_rel]]
+← [[Agent Index]] · component of [[Trust Model|t_rel]]
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_update_trust_reliability` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentUpdateTrustReliability : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_update_trust_reliability.{hpp,cpp}` |
-| Роль | Исполнитель правила `rule_update_t_rel_on_outcome` (π_tr) — реактивный sc-агент, пассивно ждущий инициации действия своего класса |
-| Правило БЗ | `rules/rules_trust_update.scs` → `rule_update_t_rel_on_outcome` |
-| Версия | commit `72ba122` (первая и текущая реализация, изменений после первичного коммита не было) |
+| System identifier (sc-IRI) of the action class | `action_update_trust_reliability` |
+| sc-node class type | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentUpdateTrustReliability : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_update_trust_reliability.{hpp,cpp}` |
+| Role | Executor of rule `rule_update_t_rel_on_outcome` (π_tr) — a reactive sc-agent passively waiting for an action of its class to be initiated |
+| KB rule | `rules/rules_trust_update.scs` → `rule_update_t_rel_on_outcome` |
+| Version | commit `72ba122` (first and current implementation; no changes since the initial commit) |
 
-## Назначение
+## Purpose
 
-**Проблема.** Доверие к интеллектуальной системе `s` нельзя один раз
-назначить вручную и забыть — оно должно отражать *фактическую* историю
-взаимодействий, а не статичную метку. Компонента `t_rel` конкретно
-отвечает за «доступность и корректность ответов» — самый базовый вопрос
-«эта система вообще стабильно отвечает и не падает/не ошибается?».
+**Problem.** Trust in an intelligent system `s` cannot be set once by hand
+and forgotten — it must reflect the *actual* interaction history, not a
+static label. The `t_rel` component specifically handles «availability and
+correctness of responses» — the most basic question: «does this system
+respond stably at all and not crash or err?».
 
-**Цель.** После каждого взаимодействия с системой `s` зафиксировать,
-был ли исход успешным (ν_rel ∈ {0,1}), и сдвинуть накопленную оценку
-`t_rel` в его сторону — не мгновенно (единичный сбой не должен обнулять
-репутацию), но и не бесконечно медленно (устойчивая деградация должна
-быть заметна за разумное число взаимодействий).
+**Goal.** After every interaction with system `s`, record whether the
+outcome was successful (ν_rel ∈ {0,1}) and shift the accumulated `t_rel`
+score toward it — not instantly (a single failure should not wipe out
+reputation), but not infinitely slowly either (steady degradation should
+be noticeable after a reasonable number of interactions).
 
-**Ценность.** Даёт остальной системе (в первую очередь функции подбора
-исполнителя `match(σ, s)`) актуальный, самообновляющийся сигнал —
-избавляет от ручной калибровки доверия и от резких скачков из-за
-одного случайного сбоя.
+**Value.** Gives the rest of the system (primarily the executor-selection
+function `match(σ, s)`) an up-to-date, self-updating signal — eliminating
+manual trust calibration and sharp jumps from a single random failure.
 
-**Стейкхолдеры:**
-- оркестраторы/диспетчеры подзадач (потребители `t_rel` через `match`);
-- разработчики и администраторы экосистемы (мониторинг деградации систем);
-- сами интеллектуальные системы `s` — от `t_rel` зависит, сколько работы им будут доверять;
-- конечные пользователи — косвенно, через качество маршрутизации задач.
+**Stakeholders:**
+- orchestrators/subtask dispatchers (consumers of `t_rel` via `match`);
+- ecosystem developers and administrators (monitoring system degradation);
+- the intelligent systems `s` themselves — `t_rel` determines how much work will be entrusted to them;
+- end users — indirectly, through the quality of task routing.
 
-## Компетенция
+## Competence
 
-**Capabilities (что умеет):**
-- по паре (узел `trust_level`, sc-ссылка с индикатором) вычислить
-  экспоненциально сглаженное новое значение `t_rel`;
-- создать числовую sc-ссылку для `trust_level`, если её ещё нет
-  (нейтральный старт `t_rel = 0`);
-- вернуть в результате действия обновлённые `trust_level` и `value_link`;
-- корректно завершиться с ошибкой при некорректных аргументах, не
-  оставляя действие «зависшим».
+**Capabilities (what it can do):**
+- from the pair (a `trust_level` node, an sc-link with the indicator)
+  compute a new exponentially smoothed `t_rel` value;
+- create a numeric sc-link for `trust_level` if it does not yet exist
+  (neutral start `t_rel = 0`);
+- return the updated `trust_level` and `value_link` in the action result;
+- complete correctly with an error on invalid arguments, without leaving
+  the action «stuck».
 
-**Limitations (чего не умеет — проверено по коду):**
-- **не проверяет**, что первый аргумент действительно является
-  экземпляром `concept_trust_level` — код делает только
-  `m_context.IsElement(trustLevelAddr)`. Любой существующий sc-узел
-  будет молча принят, и на него навесится числовая sc-ссылка.
-- **не проверяет диапазон** индикатора: `ν_rel` может быть любым
-  числом, парсящимся `std::stof` (в т.ч. отрицательным или > 1) — тогда
-  `t_rel` выйдет за онтологически ожидаемый диапазон [0,1] без ошибки.
-- **не пишет провенанс**: нет связи с конкретным взаимодействием/
-  подзадачей, которое вызвало обновление — из sc-памяти нельзя
-  восстановить «почему `t_rel` изменился именно тогда» без внешнего лога.
-- **не адаптирует коэффициент**: α = 0.10 — константа в коде, единая
-  для всех систем и контекстов; изменить можно только пересборкой.
-- не выполняет никаких side-эффектов кроме записи значения (не шлёт
-  уведомления, не пишет в лог ничего, кроме `m_logger.Debug`).
+**Limitations (what it cannot do — verified from the code):**
+- does **not verify** that the first argument is actually an instance of
+  `concept_trust_level` — the code only does
+  `m_context.IsElement(trustLevelAddr)`. Any existing sc-node will be
+  silently accepted, and a numeric sc-link will be attached to it.
+- does not check the indicator range: `ν_rel` can be any number parseable
+  by `std::stof` (including negative or > 1) — then `t_rel` will exceed
+  the ontologically expected range [0,1] without error.
+- does not write provenance: there is no link to the specific interaction/
+  subtask that triggered the update — from sc-memory alone it is impossible
+  to reconstruct «why `t_rel` changed at that exact moment» without an
+  external log.
+- does not adapt the coefficient: α = 0.10 is a constant in the code,
+  uniform for all systems and contexts; it can only be changed by
+  rebuilding.
+- does not perform any side effects other than writing the value (does
+  not send notifications, does not write to the log except for
+  `m_logger.Debug`).
 
-## Вход
+## Input
 
-**Триггер.** Событие `ScEventAfterGenerateOutgoingArc` на элементе
-подписки `action_initiated` — то есть генерация дуги
-`action_initiated -> <экземпляр action_update_trust_reliability>`
-(`ConstPermPosArc`). Обычный способ — вызов `ScAction::Initiate()` /
-`InitiateAndWait()` после `SetArguments(...)`.
+**Trigger.** Event `ScEventAfterGenerateOutgoingArc` on the
+`action_initiated` subscription element — i.e., generating the arc
+`action_initiated -> <instance of action_update_trust_reliability>`
+(`ConstPermPosArc`). The usual way is to call `ScAction::Initiate()` /
+`InitiateAndWait()` after `SetArguments(...)`.
 
-**Параметры действия (оба обязательны, оптциональных нет):**
+**Action parameters (both mandatory, no optional ones):**
 
-| № | Роль | Тип | Обязательность | Валидация |
+| # | Role | Type | Required | Validation |
 |---|---|---|---|---|
-| 1 | `trust_level` | `ScAddr` любого sc-элемента | обязателен | только `IsElement` |
-| 2 | `outcome_link` | `ScAddr` sc-ссылки | обязателен | `IsElement` + `GetLinkContent` + `std::stof` не бросает |
+| 1 | `trust_level` | `ScAddr` of any sc-element | required | only `IsElement` |
+| 2 | `outcome_link` | `ScAddr` of an sc-link | required | `IsElement` + `GetLinkContent` + `std::stof` does not throw |
 
-**Формат:** индикатор — sc-ссылка с **текстовым** содержимым числа,
-например `"1.0"` или `"0"` (не сырые байты float).
+**Format:** the indicator is an sc-link with **textual** numeric content,
+e.g. `"1.0"` or `"0"` (not raw float bytes).
 
-## Выход
+## Output
 
-**Результат.** Обновлённая (или впервые созданная) числовая sc-ссылка
-`value_link`, привязанная к `trust_level` дугой `ConstPermPosArc`; её
-содержимое перезаписывается на `std::to_string(newTRel)` (формат вида
-`"0.838000"`).
+**Result.** The updated (or newly created) numeric sc-link `value_link`
+attached to `trust_level` by a `ConstPermPosArc`; its content is
+overwritten to `std::to_string(newTRel)` (format like `"0.838000"`).
 
-**Побочные эффекты:** если у `trust_level` не было sc-ссылки —
-генерируются новый узел (`ScType::ConstNodeLink`) и связывающая его дуга.
+**Side effects:** if `trust_level` had no sc-link — a new node
+(`ScType::ConstNodeLink`) and the arc connecting it are generated.
 
-**Критерий успеха:** `action.FinishSuccessfully()` и
-`action.FormResult(trustLevelAddr, valueLinkAddr)` — структура
-результата содержит оба узла. Проверяется в тестах через
-`IsFinishedSuccessfully()` + чтение обновлённого содержимого ссылки.
+**Success criterion:** `action.FinishSuccessfully()` and
+`action.FormResult(trustLevelAddr, valueLinkAddr)` — the result structure
+contains both nodes. Checked in tests via `IsFinishedSuccessfully()` +
+reading the updated link content.
 
-## Связи
+## Relations
 
-**Зависимости (код):**
+**Dependencies (code):**
 - `common/float_link_io.hpp` — `trust_utils::ReadFloatLinkContent` / `WriteFloatLinkContent`.
 - `keynodes/trust_keynodes.hpp` — `TrustKeynodes::concept_trust_level`, `action_update_trust_reliability`.
 - sc-machine: `ScActionInitiatedAgent`, `ScAction`, `ScAgentContext`.
 
-**Читает:** классификацию `trust_level` (неявно — только через попытку
-найти его sc-ссылку), текущее содержимое `value_link` (если есть),
-содержимое `outcome_link`.
+**Reads:** classification of `trust_level` (implicitly — only by trying to
+find its sc-link), current content of `value_link` (if any), content of
+`outcome_link`.
 
-**Пишет:** содержимое `value_link` (создаёт при отсутствии + связывающую дугу).
+**Writes:** content of `value_link` (creates it if missing + the
+connecting arc).
 
-**Workflow.** Один из четырёх независимых «листовых» узлов конвейера
-π_tr — не зависит от [[AgentUpdateTrustAccuracy]] / [[AgentUpdateTrustSecurity]] /
-[[AgentUpdateTrustTransparency]], но его результат (значение `t_rel`)
-читает [[AgentAggregateTrust]] при агрегации.
+**Workflow.** One of four independent «leaf» nodes of the π_tr pipeline —
+does not depend on [[AgentUpdateTrustAccuracy]] /
+[[AgentUpdateTrustSecurity]] / [[AgentUpdateTrustTransparency]], but its
+result (the `t_rel` value) is read by [[AgentAggregateTrust]] during
+aggregation.
 
-## Поведение
+## Behavior
 
 ```
-IF  trust_level не sc-элемент  OR  outcome_link не sc-элемент
-THEN  залогировать ошибку → action.FinishWithError()  [СТОП]
+IF  trust_level is not an sc-element  OR  outcome_link is not an sc-element
+THEN  log error → action.FinishWithError()  [STOP]
 
-ELSE IF  содержимое outcome_link не парсится как число
-THEN  залогировать ошибку → action.FinishWithError()  [СТОП]
+ELSE IF  content of outcome_link does not parse as a number
+THEN  log error → action.FinishWithError()  [STOP]
 
 ELSE
-  currentTRel := значение value_link, если он существует у trust_level, ИНАЧЕ 0
-  IF value_link не существовал
-  THEN  создать value_link (ConstNodeLink) + дугу trust_level -> value_link
+  currentTRel := value of value_link if it exists for trust_level, ELSE 0
+  IF value_link did not exist
+  THEN  create value_link (ConstNodeLink) + arc trust_level -> value_link
 
   newTRel := (1 - α) * currentTRel + α * outcome     // α = 0.10
-  записать newTRel в value_link (как текст)
+  write newTRel into value_link (as text)
   action.FormResult(trust_level, value_link)
   → action.FinishSuccessfully()
 ```
 
-**Обработка ошибок:** оба провала (нет аргументов / не число) дают
-одинаковый `action.FinishWithError()` — снаружи (по статусу действия)
-они неразличимы, различить можно только по логу sc-server
-(`AgentUpdateTrustReliability: action does not have both arguments.`
-vs `...outcome argument is not a numeric sc-link.`).
+**Error handling:** both failures (missing arguments / not a number)
+produce the same `action.FinishWithError()` — from the outside (by action
+status) they are indistinguishable; they can only be distinguished by the
+sc-server log (`AgentUpdateTrustReliability: action does not have both
+arguments.` vs `...outcome argument is not a numeric sc-link.`).
 
-**Таймауты:** у самого агента внутреннего таймаута нет — `DoProgram`
-синхронный и завершается за один проход без ожиданий/циклов. Таймаут
-задаёт **вызывающая сторона** через `InitiateAndWait(maxCustomerWaitingTime)`
-(в тестах — 2000 мс); он реализован в `ScAction`/`ScWaiterActionFinished`
-самого sc-machine, а не в этом агенте.
+**Timeouts:** the agent itself has no internal timeout — `DoProgram` is
+synchronous and completes in one pass without waits/loops. The timeout is
+set by the **calling side** via
+`InitiateAndWait(maxCustomerWaitingTime)` (2000 ms in tests); it is
+implemented in `ScAction`/`ScWaiterActionFinished` of sc-machine itself,
+not in this agent.
 
-## Безопасность
+## Security
 
-- **Права:** агент выполняется в процессе `sc-server` с теми же
-  привилегиями, что и любое другое загруженное расширение — отдельной
-  песочницы/ACL на уровне агента в этом проекте нет; технически может
-  прочитать/создать/стереть любой sc-элемент, не только связанный с
-  доверием.
-- **Ограничения:** из-за отсутствия проверки принадлежности
-  `concept_trust_level` (см. Limitations) вызывающая сторона может
-  передать произвольный узел, и агент молча припишет ему числовое
-  значение — это реальный риск целостности данных при некорректном
-  вызове, не только теоретический.
-- **Чувствительные данные:** сам `t_rel` — абстрактный скаляр, PII не
-  содержит. Риск — только если `trust_level` в другой части онтологии
-  связан с идентифицируемой сущностью (конкретным пользователем/
-  организацией); в это значение и его sc-ссылку не следует напрямую
-  вписывать персональные данные.
-- **Аутентификация/авторизация:** агент не проверяет, кто инициировал
-  действие — доверяет любому источнику дуги `action_initiated`; контроль
-  доступа (если нужен) должен быть на стороне того, кто её генерирует
-  (в этом проекте не реализован).
+- **Rights:** the agent runs inside the `sc-server` process with the same
+  privileges as any other loaded extension — there is no separate
+  sandbox/ACL at the agent level in this project; technically it can
+  read/create/erase any sc-element, not only those related to trust.
+- **Limitations:** because membership in `concept_trust_level` is not
+  checked (see Limitations), the caller may pass an arbitrary node, and
+  the agent will silently assign it a numeric value — this is a real
+  data-integrity risk on incorrect invocation, not merely theoretical.
+- **Sensitive data:** `t_rel` itself is an abstract scalar and contains
+  no PII. Risk exists only if `trust_level` is linked in another part of
+  the ontology to an identifiable entity (a specific user/organization);
+  personal data should not be written directly into this value or its
+  sc-link.
+- **Authentication/authorization:** the agent does not check who initiated
+  the action — it trusts any source of the `action_initiated` arc; access
+  control (if needed) must be on the side of whatever generates that arc
+  (not implemented in this project).
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронная операция без I/O: 1 итератор + 0–2 генерации + 1–2 чтения/записи sc-элементов. В gtest весь тест-кейс (включая инициализацию/остановку sc-memory) — 9–19 мс; собственно код `DoProgram` — на порядки быстрее, отдельный бенчмарк не проводился. |
-| Accuracy | Не применимо в ML-смысле — детерминированная арифметика, не модель. «Точность» = корректность формулы, проверяется юнит-тестами с ручным расчётом ожидаемого значения. |
-| Cost | Пренебрежимо мал: без внешних вызовов, без GPU/API, только операции sc-memory. |
-| Алерты | **Не реализованы.** Нет наблюдаемости за пересечением критических порогов (например, резкое падение `t_rel`). Рекомендация на будущее — отдельный агент/подписка на событие изменения `value_link`, генерирующая алерт при выходе за порог. |
+| Latency | Synchronous operation with no I/O: 1 iterator + 0–2 generations + 1–2 reads/writes of sc-elements. In gtest the whole test case (including sc-memory init/shutdown) is 9–19 ms; the `DoProgram` code itself is orders of magnitude faster; no separate benchmark was run. |
+| Accuracy | Not applicable in the ML sense — deterministic arithmetic, not a model. «Accuracy» = correctness of the formula, verified by unit tests with manual calculation of the expected value. |
+| Cost | Negligible: no external calls, no GPU/API, only sc-memory operations. |
+| Alerts | **Not implemented.** No observability for crossing critical thresholds (e.g., a sharp drop in `t_rel`). Future recommendation — a separate agent/subscription to the `value_link` change event, generating an alert when a threshold is crossed. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_update_trust_reliability.cpp` (3 теста, все проходят; 2-й и часть 1-го дополнительно перепроверены вручную на живом sc-server).
+File: `tests/test_agent_update_trust_reliability.cpp` (3 tests, all pass;
+the 2nd and part of the 1st were additionally verified manually on a live
+sc-server).
 
 **1. `UpdatesTRelOnSuccessfulOutcome`**
-Вход: `trust_level` с текущим `t_rel = 0.82`, `outcome_link = 1.0`.
-Ожидаемый выход: `t_rel_new = 0.9·0.82 + 0.1·1.0 = 0.838`, действие `FinishedSuccessfully`.
+Input: `trust_level` with current `t_rel = 0.82`, `outcome_link = 1.0`.
+Expected output: `t_rel_new = 0.9·0.82 + 0.1·1.0 = 0.838`, action
+`FinishedSuccessfully`.
 
 **2. `CreatesValueLinkWhenMissing`**
-Вход: `trust_level` без числовой sc-ссылки, `outcome_link = 1.0`.
-Ожидаемый выход: создаётся новая sc-ссылка со значением
-`0.9·0 + 0.1·1.0 = 0.10`, действие `FinishedSuccessfully`.
+Input: `trust_level` without a numeric sc-link, `outcome_link = 1.0`.
+Expected output: a new sc-link is created with value
+`0.9·0 + 0.1·1.0 = 0.10`, action `FinishedSuccessfully`.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов (`SetArguments()` без параметров).
-Ожидаемый выход: действие `FinishedWithError`, значение не создаётся.
+Input: action without arguments (`SetArguments()` with no parameters).
+Expected output: action `FinishedWithError`, no value is created.

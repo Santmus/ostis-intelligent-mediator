@@ -3,17 +3,15 @@ type: index
 tags: [moc]
 ---
 
-# Интеллектуальный посредник (OSTIS)
+# Intelligent Mediator (OSTIS)
 
-Документация к диссертационной работе **«Модели и методы взаимодействия
-пользователей с сообществами интеллектуальных систем»** (Казаченко Е. А.,
-БГУИР, научная школа OSTIS, рук. Шункевич Д. В.) — онтологические
-описания реализованных sc-агентов и обзор нереализованных кандидатов.
+Ontological descriptions of the implemented sc-agents and an overview of the
+remaining implementation candidates for the intelligent mediator project.
 
-→ [[00 Индекс]] — карта агентов, точка входа в документацию.
+→ [[Agent Index]] — agent map, entry point into the documentation.
 
-→ [[Кандидаты на реализацию]] — обзор оставшихся правил диссертации с
-оценкой готовности каждого к реализации.
+→ [[Implementation Backlog]] — overview of the remaining rules with an
+assessment of each one's readiness for implementation.
 
-→ [[Модель доверия]] — модель вектора доверия T(s,τ), лежащая в основе
+→ [[Trust Model]] — the trust vector model T(s,τ) that underlies
 `agent_trust_evaluator`.

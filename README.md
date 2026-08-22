@@ -1,90 +1,86 @@
 # ostis-intelligent-mediator
 
-Код к диссертационной работе **«Модели и методы взаимодействия
-пользователей с сообществами интеллектуальных систем»** (Казаченко Е. А.,
-БГУИР, научная школа OSTIS, рук. Шункевич Д. В.).
+Users today interact not with a single intelligent system but with a
+community of them — and are forced to decide whom to address, how to
+combine heterogeneous answers, and whom to trust when they contradict.
+This project lifts that coordination into a separate layer: an
+intelligent mediator that accepts a goal in the domain language rather
+than a command in the interface language. Unlike classical mediators
+(e.g., Wiederhold et al.), which mediate data and their representations,
+here the user's intention and the competencies of the executors are
+mediated, while the set of participants remains open.
 
-Пользователь сегодня обращается не к одной интеллектуальной системе, а к
-их сообществу — и вынужден сам решать, кому адресовать задачу, как
-совместить разнородные ответы и кому верить, когда они противоречат друг
-другу. Работа выносит эту координацию в отдельный слой —
-интеллектуального посредника, который принимает цель на языке предметной
-области, а не команду на языке интерфейса. В отличие от классических
-посреднических решений (Видерхольд и др.), где медиируются данные и их
-представления, здесь медиируются намерение пользователя и компетенции
-исполнителей, а состав участников остаётся открытым.
-
-Этот репозиторий — операционализация части формальных правил
-диссертации на платформе [OSTIS](https://github.com/ostis-ai): онтология
-посредника на языке SCs и модуль C++ sc-агентов поверх
+This repository is an operationalization of formal rules on the
+[OSTIS](https://github.com/ostis-ai) platform: a mediator ontology in SCs
+and a C++ sc-agent module on top of
 [sc-machine](https://github.com/ostis-ai/sc-machine).
 
-## Структура репозитория
+## Repository structure
 
 ```
 .
-├── ostis_kb_user_ecosystem/   # онтология (SCs): концепты, отношения, правила, аксиомы, сценарии
-├── ostis_ps_user_ecosystem/   # программная система (C++): модуль sc-агентов TrustModule + тесты
-└── agents_vault/              # Obsidian-vault: онтологическая документация по каждому агенту
+├── ostis_kb_user_ecosystem/   # ontology (SCs): concepts, relations, rules, axioms, scenarios
+├── ostis_ps_user_ecosystem/   # program system (C++): TrustModule sc-agents + tests
+└── agents_vault/              # Obsidian vault: ontological documentation for each agent
 ```
 
-### `ostis_kb_user_ecosystem/` — база знаний
+### `ostis_kb_user_ecosystem/` — knowledge base
 
-SCs-исходники, предназначенные для сборки через `sc-builder` в составе
+SCs sources intended to be built with `sc-builder` as part of
 `ostis-web-platform`:
 
-- `concepts/` — базовые понятия (в т.ч. `concept_sc_agent`, каталог из
-  12 агентов, задуманных диссертацией);
-- `relations/`, `definitions/`, `axioms/` — отношения и формальный
-  аппарат онтологии;
-- `rules/` — формальные правила по каждому агенту (например,
+- `concepts/` — basic concepts (including `concept_sc_agent` and the
+  catalog of 12 agents);
+- `relations/`, `definitions/`, `axioms/` — ontology relations and
+  formal apparatus;
+- `rules/` — formal rules for each agent (e.g.,
   `rules_trust_update.scs`, `rules_cooperation.scs`,
   `rules_integrity_validation.scs`);
-- `scenarios/`, `examples/` — иллюстративные сценарии, используемые как
-  контрольные примеры в тестах;
-- `tests/` — SCs-тесты онтологии.
+- `scenarios/`, `examples/` — illustrative scenarios used as fixtures in
+  tests;
+- `tests/` — SCs ontology tests.
 
-### `ostis_ps_user_ecosystem/` — программная система
+### `ostis_ps_user_ecosystem/` — program system
 
-CMake-проект на C++17, собираемый против `sc-machine`. Все агенты живут
-в одном модуле `TrustModule` (`SC_MODULE_REGISTER`) и одной разделяемой
-библиотеке `ostis-ps-trust`, независимо от предметной области:
+A C++17 CMake project built against `sc-machine`. All agents live in a
+single `TrustModule` (`SC_MODULE_REGISTER`) and one shared library
+`ostis-ps-trust`, domain-independent:
 
-- `src/agent/` — реализация sc-агентов (`ScActionInitiatedAgent`);
-- `src/keynodes/` — типизированные обёртки над sc-элементами по доменам;
-- `src/common/` — переиспользуемые утилиты чтения/записи sc-памяти;
-- `src/module/` — регистрация `TrustModule`;
-- `tests/` — GTest-тесты, включая сквозные интеграционные сценарии;
-- `scripts/run_agent.py` — запуск любого агента на живом `sc-server`
-  через `py-sc-client`, без сборки C++-тестов.
+- `src/agent/` — sc-agent implementations (`ScActionInitiatedAgent`);
+- `src/keynodes/` — typed wrappers for sc-elements by domain;
+- `src/common/` — reusable sc-memory read/write utilities;
+- `src/module/` — `TrustModule` registration;
+- `tests/` — GTest tests, including end-to-end integration scenarios;
+- `scripts/run_agent.py` — run any agent against a live `sc-server` via
+  `py-sc-client`, without rebuilding C++ tests.
 
-### `agents_vault/` — онтологическая документация
+### `agents_vault/` — ontological documentation
 
-Obsidian-vault: по одной заметке на агент (Идентификация → Назначение →
-Компетенция → Вход → Выход → Связи → Поведение → Безопасность →
-Метрики → Тесты) плюс индекс [`00 Индекс.md`](agents_vault/00%20Индекс.md)
-и обзор нереализованных кандидатов
-[`Кандидаты на реализацию.md`](agents_vault/Кандидаты%20на%20реализацию.md).
+Obsidian vault: one note per agent (Identification → Purpose →
+Competence → Input → Output → Links → Behavior → Security → Metrics →
+Tests) plus the index [`Agent Index.md`](agents_vault/Agent%20Index.md)
+and an overview of unimplemented candidates
+[`Implementation Backlog.md`](agents_vault/Implementation%20Backlog.md).
 
-## Реализованные агенты
+## Implemented agents
 
-12 sc-агентов модуля `TrustModule`, операционализирующих 3 из 12 файлов
-правил каталога `concepts/sc_agents.scs`:
+Twelve sc-agents of the `TrustModule` operationalize rules from the
+`concepts/sc_agents.scs` catalog:
 
-| Группа | Агенты | Правила |
+| Group | Agents | Rules |
 |---|---|---|
-| `agent_trust_evaluator` (доверие, полностью) | `AgentUpdateTrustReliability`, `AgentUpdateTrustAccuracy`, `AgentUpdateTrustSecurity`, `AgentUpdateTrustTransparency`, `AgentAggregateTrust` | `rules_trust_update.scs` |
-| `agent_cooperative_executor` (кооперация, полностью) | `AgentDispatchReadySubtask`, `AgentRegisterPartialResult`, `AgentPropagateToDependent` | `rules_cooperation.scs` |
-| Прочие | `AgentComputePiMetric`, `AgentDetectAnomalousRequestRate`, `AgentResolveByTrustWeighted`, `AgentValidateCardinalityConstraint` | `rules_provenance_completion.scs` (частично), `rules_security_privacy.scs`, `rules_integration.scs` (частично), `rules_integrity_validation.scs` (частично) |
+| `agent_trust_evaluator` (trust, complete) | `AgentUpdateTrustReliability`, `AgentUpdateTrustAccuracy`, `AgentUpdateTrustSecurity`, `AgentUpdateTrustTransparency`, `AgentAggregateTrust` | `rules_trust_update.scs` |
+| `agent_cooperative_executor` (cooperation, complete) | `AgentDispatchReadySubtask`, `AgentRegisterPartialResult`, `AgentPropagateToDependent` | `rules_cooperation.scs` |
+| Others | `AgentComputePiMetric`, `AgentDetectAnomalousRequestRate`, `AgentResolveByTrustWeighted`, `AgentValidateCardinalityConstraint` | `rules_provenance_completion.scs` (partial), `rules_security_privacy.scs`, `rules_integration.scs` (partial), `rules_integrity_validation.scs` (partial) |
 
-Подробная карта агентов, зависимостей и сквозных тестов —
-в [`agents_vault/00 Индекс.md`](agents_vault/00%20Индекс.md).
+A detailed map of agents, dependencies, and end-to-end tests is in
+[`agents_vault/Agent Index.md`](agents_vault/Agent%20Index.md).
 
-## Сборка и тесты
+## Build and tests
 
-Требуется собранный рядом [sc-machine](https://github.com/ostis-ai/sc-machine)
-(`../sc-machine/build/Release` по умолчанию, переопределяется через
-`SC_MACHINE_BUILD_DIR`) и GTest.
+Requires a built [sc-machine](https://github.com/ostis-ai/sc-machine)
+side by side (`../sc-machine/build/Release` by default, overridable via
+`SC_MACHINE_BUILD_DIR`) and GTest.
 
 ```bash
 cmake -S ostis_ps_user_ecosystem -B ostis_ps_user_ecosystem/build
@@ -92,11 +88,11 @@ cmake --build ostis_ps_user_ecosystem/build
 ctest --test-dir ostis_ps_user_ecosystem/build
 ```
 
-Для запуска агента на живом `sc-server` без пересборки тестов —
-`ostis_ps_user_ecosystem/scripts/run_agent.py` (см. docstring файла).
+To run an agent against a live `sc-server` without rebuilding tests, use
+`ostis_ps_user_ecosystem/scripts/run_agent.py` (see the file docstring).
 
-## Дальнейшие шаги
+## Next steps
 
-Обзор оставшихся нереализованных агентов/правил с оценкой готовности
-каждого (ГОТОВО / ЧАСТИЧНО / НЕТ) — в
-[`agents_vault/Кандидаты на реализацию.md`](agents_vault/Кандидаты%20на%20реализацию.md).
+An overview of the remaining unimplemented agents/rules with a readiness
+assessment for each (READY / PARTIAL / NO) is in
+[`agents_vault/Implementation Backlog.md`](agents_vault/Implementation%20Backlog.md).

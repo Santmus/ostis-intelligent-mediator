@@ -3,208 +3,204 @@ type: agent
 tags: [agent, trust-agent, sc-agent, aggregation]
 action_class: action_aggregate_trust
 version: f05766f (2026-08-18)
-status: реализован, покрыт тестами, проверен на живом sc-server
+status: implemented, covered by tests, verified on a live sc-server
 ---
 
 # AgentAggregateTrust
 
-← [[00 Индекс]] · агрегирует [[AgentUpdateTrustReliability|t_rel]],
+← [[Agent Index]] · aggregates [[AgentUpdateTrustReliability|t_rel]],
 [[AgentUpdateTrustAccuracy|t_acc]], [[AgentUpdateTrustSecurity|t_sec]],
-[[AgentUpdateTrustTransparency|t_tr]] → скаляр `trust` в [[Модель доверия]]
+[[AgentUpdateTrustTransparency|t_tr]] → scalar `trust` in [[Trust Model]]
 
-> [!note] Отличие от четырёх остальных агентов
-> Это **не** экспоненциальное сглаживание одного индикатора во времени
-> — это мгновенный пересчёт скаляра из уже посчитанных компонент.
-> Каждый вызов **перезаписывает** `trust` заново, а не смешивает его со
-> старым значением.
+> [!note] Difference from the four other agents
+> This is **not** exponential smoothing of a single indicator over time
+> — it is an instantaneous recalculation of the scalar from already computed components.
+> Each call **overwrites** `trust` from scratch, rather than blending it with the
+> old value.
 
-## Идентификация
+## Identification
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Системный идентификатор (sc-IRI) класса действия | `action_aggregate_trust` |
-| Тип sc-узла класса | `ScType::NodeConstClass` (`sc_node_class`) |
-| C++ класс | `AgentAggregateTrust : public ScActionInitiatedAgent` |
-| Файлы | `src/agent/agent_aggregate_trust.{hpp,cpp}` |
-| Роль | Исполнитель правила `rule_aggregate_trust` (π_tr) — «сборщик» конвейера, финальный шаг после четырёх EMA-агентов |
-| Правило БЗ | `rules/rules_trust_update.scs` → `rule_aggregate_trust` |
-| Версия | commit `f05766f` |
+| System identifier (sc-IRI) of the action class | `action_aggregate_trust` |
+| Type of sc-node class | `ScType::NodeConstClass` (`sc_node_class`) |
+| C++ class | `AgentAggregateTrust : public ScActionInitiatedAgent` |
+| Files | `src/agent/agent_aggregate_trust.{hpp,cpp}` |
+| Role | Executor of rule `rule_aggregate_trust` (π_tr) — the pipeline “collector”, final step after the four EMA agents |
+| KB rule | `rules/rules_trust_update.scs` → `rule_aggregate_trust` |
+| Version | commit `f05766f` |
 
-## Назначение
+## Purpose
 
-**Проблема.** Функции подбора исполнителя `match(σ, s)` нужна **одна**
-скалярная оценка доверия, а не вектор из четырёх независимых чисел —
-нужно свернуть `T(s,τ) = ⟨t_rel,t_acc,t_sec,t_tr⟩` в `trust(s,τ,h)` по
-явным, объяснимым весам.
+**Problem.** The executor-matching function `match(σ, s)` needs **one**
+scalar trust estimate, not a vector of four independent numbers —
+`T(s,τ) = ⟨t_rel,t_acc,t_sec,t_tr⟩` must be folded into `trust(s,τ,h)` using
+explicit, explainable weights.
 
-**Цель.** Прочитать текущие значения всех четырёх компонент и вычислить
+**Goal.** Read the current values of all four components and compute
 `trust = λ_rel·t_rel + λ_acc·t_acc + λ_sec·t_sec + λ_tr·t_tr`.
 
-**Ценность.** Единая точка агрегации — веса заданы в одном месте
-(экспертно), а не размазаны по потребителям `trust`; при необходимости
-изменить относительную важность компонент (например, поднять вес
-безопасности для критичных доменов) — правка в одном файле, а не во
-всех местах, где используется доверие.
+**Value.** A single aggregation point — weights are defined in one place
+(expert-defined), not spread across every consumer of `trust`; when it is
+necessary to change the relative importance of components (for example, raise
+the security weight for critical domains), the change is made in one file, not
+everywhere trust is used.
 
-**Стейкхолдеры:** `match(σ, s)` и всё, что на нём построено
-(маршрутизация подзадач); архитекторы, задающие веса `λ`; аудиторы,
-которым нужна объяснимая (не «чёрный ящик») формула итоговой оценки.
+**Stakeholders:** `match(σ, s)` and everything built on it (subtask routing);
+architects who set the weights `λ`; auditors who need an explainable (not
+“black-box”) formula for the final score.
 
-## Компетенция
+## Competence
 
 **Capabilities:**
-- прочитать текущее значение каждой из четырёх компонент (по узлу
-  `trust_level` каждой — найти её `value_link` и распарсить число);
-- вычислить взвешенную сумму с фиксированными весами
+- read the current value of each of the four components (via each component’s
+  `trust_level` node — find its `value_link` and parse the number);
+- compute the weighted sum with fixed weights
   `λ = (0.40, 0.25, 0.15, 0.20)`, Σλ = 1;
-- записать результат в `value_link` пятого («выходного») узла,
-  создав его при первом обращении (как и в остальных агентах);
-- вернуть `trust_level`/`value_link` в результате действия.
+- write the result into the `value_link` of the fifth (“output”) node,
+  creating it on first access (as in the other agents);
+- return `trust_level`/`value_link` in the action result.
 
-**Limitations (по коду):**
-- **отсутствующая компонента молча трактуется как `t_k = 0`**, а не как
-  ошибка: если, например, [[AgentUpdateTrustAccuracy]] ещё ни разу не
-  вызывался для данной системы, `t_acc` в формуле окажется 0, и это
-  никак не отличить от «реально измеренной нулевой точности» — риск
-  занизить `trust` из-за отсутствия данных, а не из-за плохого качества.
-- то же самое происходит, если `value_link` **существует, но его
-  содержимое не парсится как число** — `ReadFloatLinkContent` вернёт
-  `false`, но локальная переменная так и останется `0.0f`; ошибка
-  никак не всплывает наружу.
-- не проверяет, что все пять аргументов относятся к **одной и той же**
-  системе `s` и контексту `τ` — просто получает пять адресов и
-  доверяет, что вызывающая сторона передала согласованный набор.
-- веса `λ` — константы в коде (`ms_lambdaRel`/`ms_lambdaAcc`/
-  `ms_lambdaSec`/`ms_lambdaTr`), не параметр действия; правило БЗ
-  допускает «либо обучаются» — обучение/настройка весов по обратной
-  связи **не реализованы**.
-- не проверяет `Σλ = 1` во время выполнения — это инвариант, который
-  соблюдён вручную при выборе констант, не гарантирован программно.
-- как и у остальных агентов — нет проверки, что аргументы 1–4
-  действительно являются `concept_trust_level` (только `IsElement`).
+**Limitations (by code):**
+- **a missing component is silently treated as `t_k = 0`**, not as an error:
+  if, for example, [[AgentUpdateTrustAccuracy]] has never been called for this
+  system, `t_acc` in the formula will be 0, and this is indistinguishable from
+  “a truly measured zero accuracy” — risk of lowering `trust` due to missing
+  data rather than poor quality.
+- the same happens if the `value_link` **exists but its content does not parse
+  as a number** — `ReadFloatLinkContent` returns `false`, but the local variable
+  remains `0.0f`; the error does not surface.
+- it does not check that all five arguments belong to the **same** system `s`
+  and context `τ` — it simply receives five addresses and trusts that the caller
+  passed a consistent set.
+- weights `λ` are constants in the code (`ms_lambdaRel`/`ms_lambdaAcc`/
+  `ms_lambdaSec`/`ms_lambdaTr`), not an action parameter; the KB rule mentions
+  “or learned” — weight learning/tuning from feedback **is not implemented**.
+- it does not check `Σλ = 1` at runtime — this is an invariant maintained
+  manually when choosing constants, not guaranteed programmatically.
+- as with the other agents, there is no check that arguments 1–4 are actually
+  `concept_trust_level` (only `IsElement`).
 
-## Вход
+## Input
 
-**Триггер:** дуга `action_initiated -> <экземпляр action_aggregate_trust>`.
+**Trigger:** arc `action_initiated -> <instance of action_aggregate_trust>`.
 
-| № | Роль | Что | Обязательность | Валидация |
+| # | Role | What | Mandatory | Validation |
 |---|---|---|---|---|
-| 1 | `t_rel_level` | узел компоненты t_rel | обязателен | только `IsElement` |
-| 2 | `t_acc_level` | узел компоненты t_acc | обязателен | только `IsElement` |
-| 3 | `t_sec_level` | узел компоненты t_sec | обязателен | только `IsElement` |
-| 4 | `t_tr_level` | узел компоненты t_tr | обязателен | только `IsElement` |
-| 5 | `trust_level` | узел-приёмник итоговой оценки | обязателен | только `IsElement` |
+| 1 | `t_rel_level` | node of component t_rel | mandatory | only `IsElement` |
+| 2 | `t_acc_level` | node of component t_acc | mandatory | only `IsElement` |
+| 3 | `t_sec_level` | node of component t_sec | mandatory | only `IsElement` |
+| 4 | `t_tr_level` | node of component t_tr | mandatory | only `IsElement` |
+| 5 | `trust_level` | receiver node for the final score | mandatory | only `IsElement` |
 
-Опциональных параметров нет — все пять обязательны (хотя отсутствие
-*значения* у 1–4, в отличие от отсутствия самого узла, ошибкой не
-считается, см. Limitations).
+There are no optional parameters — all five are mandatory (although the
+absence of a *value* for 1–4, unlike the absence of the node itself, is not
+considered an error, see Limitations).
 
-## Выход
+## Output
 
-Обновлённая/созданная sc-ссылка `value_link` на 5-м аргументе
-(`trust_level`) с текстовым содержимым `trust`. Побочный эффект —
-генерация `value_link` + связывающей дуги при первом вызове. Успех —
-`action.FinishSuccessfully()` + `action.FormResult(trustLevelAddr, valueLinkAddr)`.
+Updated/created sc-link `value_link` on the 5th argument (`trust_level`) with
+textual content `trust`. Side effect — generation of `value_link` + connecting
+arc on first call. Success — `action.FinishSuccessfully()` +
+`action.FormResult(trustLevelAddr, valueLinkAddr)`.
 
-## Связи
+## Links
 
-**Зависимости:** `common/float_link_io.hpp`, `TrustKeynodes`,
+**Dependencies:** `common/float_link_io.hpp`, `TrustKeynodes`,
 `ScActionInitiatedAgent`.
 
-**Читает:** `value_link` каждого из четырёх узлов-аргументов 1–4 (не
-трогает и не проверяет их классификацию).
+**Reads:** `value_link` of each of the four argument nodes 1–4 (does not touch
+or check their classification).
 
-**Пишет:** `value_link` пятого аргумента (создаёт при отсутствии).
+**Writes:** `value_link` of the fifth argument (creates if absent).
 
-**Workflow.** Единственный агент модуля, зависящий от результатов
-остальных четырёх — но не вызывающий их сам: порядок «сначала обновить
-t_rel/t_acc/t_sec/t_tr, потом агрегировать» обеспечивает **внешний**
-оркестратор. Сам `AgentAggregateTrust` об этом порядке ничего не знает
-и с готовностью посчитает `trust` даже по частично «пустым» (нулевым)
-компонентам.
+**Workflow.** The only agent in the module that depends on the results of the
+other four — but it does not invoke them itself: the order “first update
+t_rel/t_acc/t_sec/t_tr, then aggregate” is enforced by an **external**
+orchestrator. `AgentAggregateTrust` itself knows nothing about this order and is
+happy to compute `trust` even from partially “empty” (zero) components.
 
-## Поведение
+## Behavior
 
 ```
-IF  любой из пяти аргументов не sc-элемент
-THEN  залогировать ошибку → action.FinishWithError()  [СТОП]
+IF  any of the five arguments is not an sc-element
+THEN  log error → action.FinishWithError()  [STOP]
 
 ELSE
   FOR EACH k IN {t_rel_level, t_acc_level, t_sec_level, t_tr_level}:
-    t_k := значение value_link узла k, ЕСЛИ ссылка существует И парсится как число
-           ИНАЧЕ 0.0                      // молча, не ошибка
+    t_k := value of value_link of node k, IF the link exists AND parses as a number
+           ELSE 0.0                      // silently, not an error
 
   trust := λ_rel·t_rel + λ_acc·t_acc + λ_sec·t_sec + λ_tr·t_tr
 
-  IF  у trust_level (5-й аргумент) нет value_link
-  THEN  создать value_link (ConstNodeLink) + дугу trust_level -> value_link
+  IF  trust_level (5th argument) has no value_link
+  THEN  create value_link (ConstNodeLink) + arc trust_level -> value_link
 
-  записать trust в value_link
+  write trust to value_link
   action.FormResult(trust_level, value_link)
   → action.FinishSuccessfully()
 ```
 
 ```mermaid
 flowchart TD
-    A[action_initiated на action_aggregate_trust] --> B{все 5 аргументов —<br/>sc-элементы?}
-    B -- нет --> E1[FinishWithError]
-    B -- да --> C[прочитать t_rel, t_acc, t_sec, t_tr<br/>отсутствие/не-число → 0]
+    A[action_initiated on action_aggregate_trust] --> B{all 5 arguments are<br/>sc-elements?}
+    B -- no --> E1[FinishWithError]
+    B -- yes --> C[read t_rel, t_acc, t_sec, t_tr<br/>missing/non-number → 0]
     C --> D["trust = 0.40·t_rel + 0.25·t_acc<br/>+ 0.15·t_sec + 0.20·t_tr"]
-    D --> F{у trust_level есть<br/>value_link?}
-    F -- нет --> G[создать value_link<br/>+ дугу]
-    F -- да --> H[использовать существующий]
-    G --> I[записать trust]
+    D --> F{trust_level has<br/>value_link?}
+    F -- no --> G[create value_link<br/>+ arc]
+    F -- yes --> H[use existing]
+    G --> I[write trust]
     H --> I
     I --> J[FormResult]
     J --> K[FinishSuccessfully]
 ```
 
-**Обработка ошибок:** единственный путь к ошибке — отсутствие одного из
-пяти узлов-аргументов; всё остальное (в т.ч. «пустые»/некорректные
-значения компонент) обрабатывается тихой заменой на 0, без ошибки.
+**Error handling:** the only path to error is the absence of one of the five
+argument nodes; everything else (including “empty”/invalid component values)
+is handled by silently replacing it with 0, without error.
 
-**Таймауты:** как и у остальных четырёх — внутреннего таймаута нет,
-`DoProgram` синхронный; ожидание на стороне вызывающего кода
-(`InitiateAndWait`).
+**Timeouts:** as with the other four — no internal timeout, `DoProgram` is
+synchronous; waiting is on the calling side (`InitiateAndWait`).
 
-## Безопасность
+## Security
 
-- Привилегии — как у остальных агентов модуля: без ACL, полный доступ
-  к sc-памяти в рамках процесса `sc-server`.
-- **Специфичный риск:** поскольку отсутствие данных маскируется под
-  «ноль», а не под ошибку, `trust` можно непреднамеренно занизить
-  массово одним неверно настроенным вызовом (например, если
-  оркестратор забыл вызвать один из четырёх EMA-агентов перед
-  агрегацией) — и это не будет видно в статусе действия, только по
-  итоговому (заниженному) числу.
-- Как и у остальных — нет проверки, что аргументы 1–4 реально
-  `concept_trust_level`, и нет аутентификации инициатора действия.
-- `trust` — абстрактный скаляр, PII не содержит.
+- Privileges — same as the other agents in the module: no ACL, full access to
+  sc-memory within the `sc-server` process.
+- **Specific risk:** because missing data is masked as “zero” rather than an
+  error, `trust` can be unintentionally lowered across the board by a single
+  misconfigured call (for example, if the orchestrator forgot to invoke one of
+  the four EMA agents before aggregation) — and this will not be visible in the
+  action status, only in the final (lowered) number.
+- As with the others — there is no check that arguments 1–4 are actually
+  `concept_trust_level`, and no authentication of the action initiator.
+- `trust` is an abstract scalar, it does not contain PII.
 
-## Метрики
+## Metrics
 
-| Метрика | Значение / статус |
+| Metric | Value / status |
 |---|---|
-| Latency | Синхронно, без I/O: 4 итератора (чтение компонент) + 1 итератор + 0–2 генерации (запись результата). Немного дороже остальных четырёх агентов (5 узлов вместо 2), но по-прежнему на порядки быстрее сетевого round-trip. |
-| Accuracy | Не применимо к самой формуле (детерминированная сумма); корректность проверена тестами с ручным расчётом. Фактическая «полезность» `trust` целиком зависит от актуальности входных `t_rel/t_acc/t_sec/t_tr`, которую этот агент не контролирует. |
-| Cost | Пренебрежимо мал. |
-| Алерты | Не реализованы. Особенно ценны были бы: алерт на «подозрительно много нулевых компонент» (симптом несогласованного вызова, см. Limitations) и алерт на резкое падение итогового `trust`. |
+| Latency | Synchronous, no I/O: 4 iterators (reading components) + 1 iterator + 0–2 generations (writing the result). Slightly more expensive than the other four agents (5 nodes instead of 2), but still orders of magnitude faster than a network round-trip. |
+| Accuracy | Not applicable to the formula itself (deterministic sum); correctness is verified by tests with manual calculation. The actual “usefulness” of `trust` depends entirely on the freshness of input `t_rel/t_acc/t_sec/t_tr`, which this agent does not control. |
+| Cost | Negligible. |
+| Alerts | Not implemented. Especially valuable would be: an alert for “suspiciously many zero components” (symptom of an inconsistent call, see Limitations) and an alert for a sharp drop in final `trust`. |
 
-## Тесты
+## Tests
 
-Файл: `tests/test_agent_aggregate_trust.cpp` (3 теста, все проходят; сценарий 1 дополнительно проверен на живом sc-server — получено `0.823450`).
+File: `tests/test_agent_aggregate_trust.cpp` (3 tests, all pass; scenario 1
+additionally verified on a live sc-server — result `0.823450`).
 
 **1. `AggregatesFourComponentsWithDefaultWeights`**
-Вход: `t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730` (иллюстративный
-пример из `scenario_trust_assessment.scs`).
-Выход: `trust = 0.4·0.838+0.25·0.796+0.15·0.955+0.2·0.730 = 0.82345`
-(в сценарии округлено до «≈0.823»), `FinishedSuccessfully`.
+Input: `t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730` (illustrative
+example from `scenario_trust_assessment.scs`).
+Output: `trust = 0.4·0.838+0.25·0.796+0.15·0.955+0.2·0.730 = 0.82345`
+(rounded to “≈0.823” in the scenario), `FinishedSuccessfully`.
 
 **2. `TreatsMissingComponentValueAsZero`**
-Вход: `t_rel=1, t_sec=1, t_tr=1`, а у `t_acc_level` **нет** `value_link`.
-Выход: `trust = 0.4·1 + 0.25·0 + 0.15·1 + 0.2·1 = 0.75` — подтверждает
-Limitation «отсутствие компоненты = тихий 0», а не ошибку.
+Input: `t_rel=1, t_sec=1, t_tr=1`, and `t_acc_level` has **no** `value_link`.
+Output: `trust = 0.4·1 + 0.25·0 + 0.15·1 + 0.2·1 = 0.75` — confirms the
+Limitation “missing component = silent 0”, not an error.
 
 **3. `FinishesWithErrorOnMissingArguments`**
-Вход: действие без аргументов.
-Выход: `FinishedWithError`.
+Input: action with no arguments.
+Output: `FinishedWithError`.
