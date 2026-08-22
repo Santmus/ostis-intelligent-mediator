@@ -27,4 +27,30 @@ inline void LinkByRelation(
   ScAddr const arcAddr = context.GenerateConnector(ScType::ConstCommonArc, sourceAddr, targetAddr);
   context.GenerateConnector(ScType::ConstPermPosArc, relationAddr, arcAddr);
 }
+
+// Стирает существующую(ие) дугу(и) функционального отношения relationAddr
+// от sourceAddr и устанавливает новую цель newTargetAddr через
+// LinkByRelation -- для функциональных nrel_* (например,
+// nrel_subtask_status), у которых не может быть двух целей одновременно.
+inline void SetFunctionalRelationTarget(
+    ScAgentContext & context, ScAddr const & sourceAddr, ScAddr const & relationAddr, ScAddr const & newTargetAddr)
+{
+  ScIterator5Ptr const it5 = context.CreateIterator5(
+      sourceAddr, ScType::ConstCommonArc, ScType::Unknown, ScType::ConstPermPosArc, relationAddr);
+  while (it5->Next())
+    context.EraseElement(it5->Get(1));
+
+  LinkByRelation(context, sourceAddr, newTargetAddr, relationAddr);
+}
+
+// Присоединяет targetAddr к sourceAddr (например, коммуникативному акту)
+// в роли roleAddr -- стандартное для sc-machine представление ролевых
+// (rrel_*) отношений: sourceAddr -[ConstPermPosArc]-> targetAddr,
+// классифицированная roleAddr через ConstPermPosArc на саму дугу.
+inline void LinkByRole(
+    ScAgentContext & context, ScAddr const & sourceAddr, ScAddr const & targetAddr, ScAddr const & roleAddr)
+{
+  ScAddr const arcAddr = context.GenerateConnector(ScType::ConstPermPosArc, sourceAddr, targetAddr);
+  context.GenerateConnector(ScType::ConstPermPosArc, roleAddr, arcAddr);
+}
 }  // namespace trust_utils

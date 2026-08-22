@@ -9,7 +9,7 @@
 Платформа должна быть запущена (`./start.sh` в ostis-web-platform) --
 sc-server слушает ws://localhost:8090/ws_json.
 
-Без аргументов запускает демо-сценарии для всех 10 агентов по очереди.
+Без аргументов запускает демо-сценарии для всех 12 агентов по очереди.
 С аргументами -- только перечисленные (см. DEMOS в конце файла для
 списка имён, например: `run_agent.py aggregate_trust resolve_conflict`).
 
@@ -384,6 +384,72 @@ def demo_dispatch_ready_subtask() -> None:
             client.erase_elements(*created)
 
 
+def demo_register_partial_result() -> None:
+    created: list = []
+    try:
+        def is_classified(instance_addr, class_addr) -> bool:
+            tpl = ScTemplate()
+            tpl.triple(class_addr, sc_types.EDGE_ACCESS_VAR_POS_PERM, instance_addr)
+            return bool(client.search_by_template(tpl))
+
+        def has_link_by_relation(src, trg, relation_addr) -> bool:
+            tpl = ScTemplate()
+            tpl.quintuple(
+                src, sc_types.EDGE_D_COMMON_VAR, trg, sc_types.EDGE_ACCESS_VAR_POS_PERM, relation_addr
+            )
+            return bool(client.search_by_template(tpl))
+
+        system = new_node(created)
+        result = new_node(created)
+        subtask = new_node(created)
+        context = new_node(created)
+        link_by_relation(created, subtask, resolve("concept_subtask_status_in_progress"), resolve("nrel_subtask_status"))
+
+        status, _ = run_action("action_register_partial_result", [system, result, subtask, context], created)
+
+        partial_ok = is_classified(result, resolve("concept_partial_result"))
+        produces_ok = has_link_by_relation(system, result, resolve("nrel_produces"))
+        caused_ok = has_link_by_relation(result, subtask, resolve("nrel_caused_by_subtask"))
+        context_ok = has_link_by_relation(result, context, resolve("nrel_generated_in_context"))
+        completed_ok = has_link_by_relation(subtask, resolve("concept_subtask_status_completed"), resolve("nrel_subtask_status"))
+
+        ok = status == "successfully" and all([partial_ok, produces_ok, caused_ok, context_ok, completed_ok])
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_register_partial_result: status={status} "
+            f"partial_result={partial_ok} produces={produces_ok} caused_by_subtask={caused_ok} "
+            f"generated_in_context={context_ok} completed={completed_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_propagate_to_dependent() -> None:
+    created: list = []
+    try:
+        result = new_node(created)
+        subtask = new_node(created)
+        link_by_relation(created, subtask, resolve("concept_subtask_status_completed"), resolve("nrel_subtask_status"))
+
+        dependent = new_node(created)
+        link_by_relation(created, dependent, subtask, resolve("nrel_subtask_depends_on"))
+
+        result_level = new_node(created)
+        status, result_members = run_action(
+            "action_propagate_to_dependent", [result, subtask, result_level], created
+        )
+        report(
+            "action_propagate_to_dependent (1 зависимая подзадача, σ completed)",
+            status,
+            first_link_value(result_members),
+            1.0,
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
 DEMOS = {
     "update_trust_reliability": lambda: demo_trust_ema("action_update_trust_reliability", "alpha"),
     "update_trust_accuracy": lambda: demo_trust_ema("action_update_trust_accuracy", "beta"),
@@ -395,6 +461,8 @@ DEMOS = {
     "detect_anomalous_request_rate": demo_detect_anomalous_request_rate,
     "resolve_by_trust_weighted": demo_resolve_by_trust_weighted,
     "dispatch_ready_subtask": demo_dispatch_ready_subtask,
+    "register_partial_result": demo_register_partial_result,
+    "propagate_to_dependent": demo_propagate_to_dependent,
 }
 
 

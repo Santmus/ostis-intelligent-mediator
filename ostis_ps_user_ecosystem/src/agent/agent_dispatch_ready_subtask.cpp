@@ -6,32 +6,13 @@
 #include "common/relation_io.hpp"
 #include "keynodes/task_keynodes.hpp"
 
-using trust_utils::LinkByRelation;
+using trust_utils::LinkByRole;
+using trust_utils::SetFunctionalRelationTarget;
 using trust_utils::TargetOf;
 using trust_utils::WriteFloatLinkContent;
 
 namespace
 {
-void SetFunctionalStatus(ScAgentContext & context, ScAddr const & subtaskAddr, ScAddr const & newStatusAddr)
-{
-  ScIterator5Ptr const it5 = context.CreateIterator5(
-      subtaskAddr,
-      ScType::ConstCommonArc,
-      ScType::Unknown,
-      ScType::ConstPermPosArc,
-      TaskKeynodes::nrel_subtask_status);
-  while (it5->Next())
-    context.EraseElement(it5->Get(1));
-
-  LinkByRelation(context, subtaskAddr, newStatusAddr, TaskKeynodes::nrel_subtask_status);
-}
-
-void LinkByRole(ScAgentContext & context, ScAddr const & actAddr, ScAddr const & targetAddr, ScAddr const & roleAddr)
-{
-  ScAddr const arcAddr = context.GenerateConnector(ScType::ConstPermPosArc, actAddr, targetAddr);
-  context.GenerateConnector(ScType::ConstPermPosArc, roleAddr, arcAddr);
-}
-
 bool AllDependenciesCompleted(ScAgentContext & context, ScAddr const & subtaskAddr)
 {
   ScIterator5Ptr const depsIt = context.CreateIterator5(
@@ -74,7 +55,8 @@ ScResult AgentDispatchReadySubtask::DoProgram(ScAction & action)
 
   if (ready)
   {
-    SetFunctionalStatus(m_context, subtaskAddr, TaskKeynodes::concept_subtask_status_in_progress);
+    SetFunctionalRelationTarget(
+        m_context, subtaskAddr, TaskKeynodes::nrel_subtask_status, TaskKeynodes::concept_subtask_status_in_progress);
 
     ScAddr const actAddr = m_context.GenerateNode(ScType::ConstNode);
     m_context.GenerateConnector(ScType::ConstPermPosArc, TaskKeynodes::concept_knowledge_exchange_act, actAddr);

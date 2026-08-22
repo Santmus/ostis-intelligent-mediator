@@ -10,10 +10,13 @@
 #include "agent/agent_resolve_by_trust_weighted.hpp"
 #include "agent/agent_dispatch_ready_subtask.hpp"
 #include "agent/agent_validate_cardinality_constraint.hpp"
+#include "agent/agent_register_partial_result.hpp"
+#include "agent/agent_propagate_to_dependent.hpp"
 
 // AgentComputePiMetric (провенансные метрики), AgentDetectAnomalousRequestRate
 // (безопасность), AgentResolveByTrustWeighted (интеграция результатов),
-// AgentDispatchReadySubtask (кооперативное исполнение) и
+// AgentDispatchReadySubtask/AgentRegisterPartialResult/
+// AgentPropagateToDependent (кооперативное исполнение) и
 // AgentValidateCardinalityConstraint (валидация целостности) не о
 // доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
@@ -30,4 +33,6 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentDetectAnomalousRequestRate>()
     ->Agent<AgentResolveByTrustWeighted>()
     ->Agent<AgentDispatchReadySubtask>()
-    ->Agent<AgentValidateCardinalityConstraint>();
+    ->Agent<AgentValidateCardinalityConstraint>()
+    ->Agent<AgentRegisterPartialResult>()
+    ->Agent<AgentPropagateToDependent>();

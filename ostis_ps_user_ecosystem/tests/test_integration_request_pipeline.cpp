@@ -6,9 +6,13 @@
 #include "agent/agent_update_trust_reliability.hpp"
 #include "agent/agent_aggregate_trust.hpp"
 #include "agent/agent_resolve_by_trust_weighted.hpp"
+#include "agent/agent_dispatch_ready_subtask.hpp"
+#include "agent/agent_register_partial_result.hpp"
+#include "agent/agent_propagate_to_dependent.hpp"
 #include "keynodes/integrity_keynodes.hpp"
 #include "keynodes/trust_keynodes.hpp"
 #include "keynodes/integration_keynodes.hpp"
+#include "keynodes/task_keynodes.hpp"
 
 // Не отдельный агент, а сквозной тест, показывающий, что выход одного
 // уже реализованного агента корректно читается следующим -- без
@@ -150,4 +154,88 @@ TEST_F(IntegrationRequestPipelineTest, ValidatesUpdatesAggregatesAndResolvesConf
   m_ctx->UnsubscribeAgent<AgentUpdateTrustReliability>();
   m_ctx->UnsubscribeAgent<AgentAggregateTrust>();
   m_ctx->UnsubscribeAgent<AgentResolveByTrustWeighted>();
+}
+
+// Прогоняет полный жизненный цикл agent_cooperative_executor по цепочке
+// подзадач σ_dep (уже завершена) -> σ -> σ' из
+// scenario_request_processing.scs: σ назначена и готова к запуску,
+// поскольку её единственная зависимость σ_dep уже completed
+// (AgentDispatchReadySubtask); система присылает результат по σ, что
+// регистрирует его как concept_partial_result с провенансным триплетом
+// и переводит σ в completed (AgentRegisterPartialResult); наконец, σ',
+// зависящая от σ, получает этот результат как вход через inform-акт
+// (AgentPropagateToDependent). Три разных агента одного и того же
+// agent_cooperative_executor, связанные состоянием одной подзадачи σ, а
+// не оркестратором.
+TEST_F(IntegrationRequestPipelineTest, DispatchesRegistersAndPropagatesAlongSubtaskChain)
+{
+  m_ctx->SubscribeAgent<AgentDispatchReadySubtask>();
+  m_ctx->SubscribeAgent<AgentRegisterPartialResult>();
+  m_ctx->SubscribeAgent<AgentPropagateToDependent>();
+
+  // --- Шаг 1: σ назначена системе, статус proposed, единственная
+  // зависимость σ_dep уже completed -- готова к диспетчеризации. ---
+  ScAddr const systemAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const subtaskAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(*m_ctx, subtaskAddr, systemAddr, TaskKeynodes::nrel_assigned_to);
+  LinkByRelation(
+      *m_ctx, subtaskAddr, TaskKeynodes::concept_subtask_status_proposed, TaskKeynodes::nrel_subtask_status);
+
+  ScAddr const dependencyAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(
+      *m_ctx,
+      dependencyAddr,
+      TaskKeynodes::concept_subtask_status_completed,
+      TaskKeynodes::nrel_subtask_status);
+  LinkByRelation(*m_ctx, subtaskAddr, dependencyAddr, TaskKeynodes::nrel_subtask_depends_on);
+
+  ScAddr const dispatchLevelAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAction dispatchAction = m_ctx->GenerateAction(TaskKeynodes::action_dispatch_ready_subtask);
+  dispatchAction.SetArguments(subtaskAddr, dispatchLevelAddr);
+  ASSERT_TRUE(dispatchAction.InitiateAndWait(2000));
+  ASSERT_TRUE(dispatchAction.IsFinishedSuccessfully());
+  EXPECT_NEAR(ReadValueLinkContent(*m_ctx, dispatchLevelAddr), 1.0f, 0.0001f);
+
+  // --- Шаг 2: система присылает результат r по σ -- регистрируется
+  // провенанс, σ переходит в completed. ---
+  ScAddr const resultAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const contextAddr = m_ctx->GenerateNode(ScType::ConstNode);
+
+  ScAction registerAction = m_ctx->GenerateAction(TaskKeynodes::action_register_partial_result);
+  registerAction.SetArguments(systemAddr, resultAddr, subtaskAddr, contextAddr);
+  ASSERT_TRUE(registerAction.InitiateAndWait(2000));
+  ASSERT_TRUE(registerAction.IsFinishedSuccessfully());
+  EXPECT_TRUE(m_ctx->CreateIterator3(TaskKeynodes::concept_partial_result, ScType::ConstPermPosArc, resultAddr)
+                  ->Next());
+
+  ScIterator5Ptr const statusAfterRegisterIt = m_ctx->CreateIterator5(
+      subtaskAddr, ScType::ConstCommonArc, ScType::Unknown, ScType::ConstPermPosArc, TaskKeynodes::nrel_subtask_status);
+  ASSERT_TRUE(statusAfterRegisterIt->Next());
+  EXPECT_EQ(statusAfterRegisterIt->Get(2), TaskKeynodes::concept_subtask_status_completed);
+
+  // --- Шаг 3: σ' зависит от только что завершённой σ -- получает r как
+  // вход через inform-акт. ---
+  ScAddr const dependentSubtaskAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(*m_ctx, dependentSubtaskAddr, subtaskAddr, TaskKeynodes::nrel_subtask_depends_on);
+
+  ScAddr const propagateLevelAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAction propagateAction = m_ctx->GenerateAction(TaskKeynodes::action_propagate_to_dependent);
+  propagateAction.SetArguments(resultAddr, subtaskAddr, propagateLevelAddr);
+  ASSERT_TRUE(propagateAction.InitiateAndWait(2000));
+  ASSERT_TRUE(propagateAction.IsFinishedSuccessfully());
+  EXPECT_NEAR(ReadValueLinkContent(*m_ctx, propagateLevelAddr), 1.0f, 0.0001f);
+
+  ScIterator5Ptr const informIt = m_ctx->CreateIterator5(
+      ScType::ConstNode,
+      ScType::ConstPermPosArc,
+      dependentSubtaskAddr,
+      ScType::ConstPermPosArc,
+      TaskKeynodes::rrel_receiver);
+  ASSERT_TRUE(informIt->Next());
+  ScAddr const informActAddr = informIt->Get(0);
+  EXPECT_TRUE(m_ctx->CreateIterator3(informActAddr, ScType::ConstPermPosArc, resultAddr)->Next());
+
+  m_ctx->UnsubscribeAgent<AgentDispatchReadySubtask>();
+  m_ctx->UnsubscribeAgent<AgentRegisterPartialResult>();
+  m_ctx->UnsubscribeAgent<AgentPropagateToDependent>();
 }

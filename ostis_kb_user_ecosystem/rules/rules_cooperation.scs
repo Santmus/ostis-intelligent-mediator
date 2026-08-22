@@ -23,6 +23,28 @@ action_dispatch_ready_subtask
     [действие: запустить готовую подзадачу] (* <- lang_ru;; *);
     [action: dispatch ready subtask] (* <- lang_en;; *);;
 
+// ---------------------------------------------------------------------
+// action_register_partial_result -- sc-агент AgentRegisterPartialResult
+// (ostis_ps_user_ecosystem/src/agent/agent_register_partial_result.*).
+// ---------------------------------------------------------------------
+
+action_register_partial_result
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: зарегистрировать частичный результат] (* <- lang_ru;; *);
+    [action: register partial result] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// action_propagate_to_dependent -- sc-агент AgentPropagateToDependent
+// (ostis_ps_user_ecosystem/src/agent/agent_propagate_to_dependent.*).
+// ---------------------------------------------------------------------
+
+action_propagate_to_dependent
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: пропагировать результат зависимым подзадачам] (* <- lang_ru;; *);
+    [action: propagate result to dependent subtasks] (* <- lang_en;; *);;
+
 rule -> rule_dispatch_ready_subtask: ...
 (*
     <- concept_sc_rule;;
