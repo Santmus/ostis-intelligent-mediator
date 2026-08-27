@@ -24,6 +24,44 @@ nrel_assigned_to
 => nrel_first_domain: concept_subtask;
 => nrel_second_domain: concept_intelligent_system;;
 
+// Акт исполнения — овеществлённый факт выполнения подзадачи.
+// executes функционально и всюду определено: у каждого акта
+// исполнения ровно одна подзадача.
+nrel_executes
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [исполняет_подзадачу*] (* <- lang_ru;; *);
+    [executes*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_execution_act;
+=> nrel_second_domain: concept_subtask;;
+
+// aggregates — обратно к integrated_in; всюду определено:
+// интегрированный результат не может не агрегировать частичные.
+nrel_aggregates
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [агрегирует_результат*] (* <- lang_ru;; *);
+    [aggregates*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrated_result;
+=> nrel_second_domain: concept_processing_result;;
+
+// verifies — проверка интегрированного результата посредником;
+// обратное к validated_by (R_prov). Принадлежит также R_ctrl.
+nrel_verifies
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [верифицирует_результат*] (* <- lang_ru;; *);
+    [verifies*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_mediator;
+=> nrel_second_domain: concept_integrated_result;;
+
 nrel_produces
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -235,7 +273,8 @@ nrel_aggregated_by
 => nrel_second_domain: concept_decision_aggregation_strategy;;
 
 // ---------------------------------------------------------------------
-// Структурированный отказ ⊥ = <c, ρ, a>.
+// Структурированный отказ ⊥ = <c, ϱ, a>, где c — код причины,
+// ϱ — рекомендация по восстановлению, a — запись аудита.
 // ---------------------------------------------------------------------
 
 nrel_resulted_in_failure
@@ -269,6 +308,10 @@ nrel_recovery_recommendation
 => nrel_first_domain: concept_processing_failure;
 => nrel_second_domain: concept_recovery_action;;
 
+// Область значений — самостоятельный класс concept_audit_record,
+// а НЕ concept_provenance_record: запись аудита фиксирует совершённое
+// действие, провенансная запись — происхождение сущности. У самой
+// записи аудита есть провенансная запись (has_provenance).
 nrel_failure_audit_record
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -276,5 +319,6 @@ nrel_failure_audit_record
     [has_audit_record*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_processing_failure;
-=> nrel_second_domain: concept_provenance_record;;
+=> nrel_second_domain: concept_audit_record;;

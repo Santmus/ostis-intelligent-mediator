@@ -63,7 +63,20 @@ collective_decision_001 <- concept_collective_decision;;
 collective_decision_001 => nrel_main_idtf:
     [Коллективное решение: выбран маршрут r_1 как энергоэффективный
      и удовлетворяющий ограничениям безопасности] (* <- lang_ru;; *);;
-collective_decision_001 => nrel_resolves_conflict: conflict_001;;
+// Конфликт обнаружен и разрешён: акт разрешения фиксирует применённую
+// стратегию, статус конфликта переводится в resolved, а разрешающее
+// объяснение связывается с конфликтом отношением resolves_conflict.
+conflict_001 => nrel_conflict_status: concept_conflict_status_resolved;;
+conflict_001 => nrel_resolved_by: conflict_resolution_act_001;;
+
+conflict_resolution_act_001 <- concept_conflict_resolution_act;;
+conflict_resolution_act_001 <- concept_resolution_by_argumentation;;
+conflict_resolution_act_001 => nrel_main_idtf:
+    [Акт разрешения: аргументационный вывод в пользу маршрута r_1]
+    (* <- lang_ru;; *);;
+conflict_resolution_act_001 => nrel_has_provenance:
+    prov_record_resolution_001;;
+prov_record_resolution_001 <- concept_provenance_record;;
 argument_for_r1 => nrel_argues_for: collective_decision_001;;
 
 collective_decision_resolution_001
@@ -89,3 +102,4 @@ explanation_collective_001 => nrel_main_idtf:
 collective_decision_001 => nrel_supported_by_explanation:
     explanation_collective_001;;
 collective_decision_001 => nrel_explained_by: explanation_collective_001;;
+explanation_collective_001 => nrel_resolves_conflict: conflict_001;;

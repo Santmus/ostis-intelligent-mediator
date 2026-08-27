@@ -110,9 +110,9 @@ answer_t3 => nrel_main_idtf:
 
 test_formula_7_integrated_result <- concept_test_constraint_check;;
 test_formula_7_integrated_result => nrel_main_idtf:
-    [T4. Формула (7) на integrated_result_001: existence of
-     explanation ∧ absence of неразрешённых conflicts?]
-    (* <- lang_ru;; *);;
+    [T4. Условие публикации на integrated_result_001:
+     verified(r) ∧ ∃e. explained_by(r, e)
+     ∧ ¬has_unresolved_conflict(r)?] (* <- lang_ru;; *);;
 test_formula_7_integrated_result => nrel_test_against_constraint:
     constraint_integrated_result;;
 test_formula_7_integrated_result => nrel_test_outcome:
@@ -121,10 +121,232 @@ test_formula_7_integrated_result => nrel_expected_answer: answer_t4;;
 
 answer_t4 <- concept_expected_answer;;
 answer_t4 => nrel_main_idtf:
-    [Выполнено: explained_by(integrated_result_001, explanation_001)
-     и отсутствуют conflicts_with для integrated_result_001
-     (после применения rule_resolve_by_argumentation в сценарии
-     collective_decision).] (* <- lang_ru;; *);;
+    [Выполнено: verifies(mediator_001, integrated_result_001)
+     и validated_by(integrated_result_001, mediator_001);
+     explained_by(integrated_result_001, explanation_001);
+     has_unresolved_conflict для integrated_result_001 отсутствует.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T6: Разрешённый конфликт не препятствует публикации результата.
+// Положительный тест к новой семантике условия допустимости.
+// ---------------------------------------------------------------------
+
+test_resolved_conflict_allows_publication <- concept_test_constraint_check;;
+test_resolved_conflict_allows_publication => nrel_main_idtf:
+    [T6. Сценарий collective_decision: conflict_001 обнаружен
+     и разрешён. Допускается ли публикация результата?]
+    (* <- lang_ru;; *);;
+test_resolved_conflict_allows_publication => nrel_test_against_constraint:
+    constraint_integrated_result;;
+test_resolved_conflict_allows_publication => nrel_question_subject:
+    conflict_001;;
+test_resolved_conflict_allows_publication => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_resolved_conflict_allows_publication => nrel_expected_answer: answer_t6;;
+
+answer_t6 <- concept_expected_answer;;
+answer_t6 => nrel_main_idtf:
+    [Допускается: conflict_status(conflict_001, resolved),
+     resolved_by(conflict_001, conflict_resolution_act_001),
+     resolves_conflict(explanation_collective_001, conflict_001).
+     Запрещается только неразрешённый конфликт; сам конфликт
+     и способ его разрешения остаются в графе происхождения.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T7: Отрицательный тест — неразрешённый конфликт блокирует публикацию.
+// ---------------------------------------------------------------------
+
+test_unresolved_conflict_blocks <- concept_test_constraint_check;;
+test_unresolved_conflict_blocks => nrel_main_idtf:
+    [T7. Отрицательный тест: если conflict_status(γ, unresolved)
+     и has_unresolved_conflict(r, γ) — публикация r запрещена]
+    (* <- lang_ru;; *);;
+test_unresolved_conflict_blocks => nrel_test_against_constraint:
+    constraint_integrated_result;;
+test_unresolved_conflict_blocks => nrel_test_outcome:
+    concept_test_outcome_fail;;
+test_unresolved_conflict_blocks => nrel_expected_answer: answer_t7;;
+
+answer_t7 <- concept_expected_answer;;
+answer_t7 => nrel_main_idtf:
+    [Нарушено: результат не представляется как согласованный;
+     инициируется уточнение x_clar либо структурированный отказ ⊥
+     с кодом Unresolved_Conflict и переходом в x_refuse.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T8: Запись аудита не тождественна провенансной записи.
+// ---------------------------------------------------------------------
+
+test_audit_not_provenance <- concept_test_constraint_check;;
+test_audit_not_provenance => nrel_main_idtf:
+    [T8. На сценарии request_processing: audit_record_energy —
+     экземпляр AuditRecord, имеющий собственную провенансную запись
+     и не принадлежащий классу ProvenanceRecord?] (* <- lang_ru;; *);;
+test_audit_not_provenance => nrel_test_against_constraint:
+    constraint_audit_record_provenance;;
+test_audit_not_provenance => nrel_question_subject: audit_record_energy;;
+test_audit_not_provenance => nrel_test_outcome: concept_test_outcome_pass;;
+test_audit_not_provenance => nrel_expected_answer: answer_t8;;
+
+answer_t8 <- concept_expected_answer;;
+answer_t8 => nrel_main_idtf:
+    [Выполнено: recorded_in(execution_act_energy, audit_record_energy)
+     ∧ has_provenance(audit_record_energy, prov_record_audit_energy)
+     ∧ AuditRecord ⊓ ProvenanceRecord ⊑ ⊥.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T9: Отрицательный тест — акт исполнения без записи аудита.
+// ---------------------------------------------------------------------
+
+test_missing_audit_record <- concept_test_constraint_check;;
+test_missing_audit_record => nrel_main_idtf:
+    [T9. Отрицательный тест: акт исполнения без recorded_in —
+     должна быть зафиксирована concept_integrity_violation]
+    (* <- lang_ru;; *);;
+test_missing_audit_record => nrel_test_against_constraint:
+    constraint_execution_act_audit;;
+test_missing_audit_record => nrel_test_outcome: concept_test_outcome_fail;;
+test_missing_audit_record => nrel_expected_answer: answer_t9;;
+
+answer_t9 <- concept_expected_answer;;
+answer_t9 => nrel_main_idtf:
+    [Нарушено: агент валидации фиксирует нарушение обязательности
+     записи аудита; акт исполнения не может считаться совершённым,
+     результат не может быть признан порождённым.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T10: Отрицательный тест — результат без провенансной записи.
+// ---------------------------------------------------------------------
+
+test_missing_provenance <- concept_test_constraint_check;;
+test_missing_provenance => nrel_main_idtf:
+    [T10. Отрицательный тест: частичный результат без
+     generated_by и has_provenance] (* <- lang_ru;; *);;
+test_missing_provenance => nrel_test_against_constraint:
+    constraint_result_generated_by_act;;
+test_missing_provenance => nrel_test_outcome: concept_test_outcome_fail;;
+test_missing_provenance => nrel_expected_answer: answer_t10;;
+
+answer_t10 <- concept_expected_answer;;
+answer_t10 => nrel_main_idtf:
+    [Нарушено: результат не допускается к агрегации; нарушены
+     Req_15 (трассируемость) и условие происхождения результата.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T11: Раздельное убывание ресурсов на сценарии lifecycle_recovery.
+// ---------------------------------------------------------------------
+
+test_separate_resource_decrease <- concept_test_constraint_check;;
+test_separate_resource_decrease => nrel_main_idtf:
+    [T11. На сценарии lifecycle_recovery: расходуют ли переназначение
+     и перепланирование РАЗНЫЕ ресурсы?] (* <- lang_ru;; *);;
+test_separate_resource_decrease => nrel_test_against_constraint:
+    constraint_separate_resource_decrease;;
+test_separate_resource_decrease => nrel_question_subject:
+    transition_rec_reassign_1;;
+test_separate_resource_decrease => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_separate_resource_decrease => nrel_expected_answer: answer_t11;;
+
+answer_t11 <- concept_expected_answer;;
+answer_t11 => nrel_main_idtf:
+    [Выполнено: переназначения 1 и 2 уменьшают b_rem 2 → 1 → 0
+     при неизменных d_rem = 1 и версии плана plan_rec_v1;
+     перепланирование уменьшает d_rem 1 → 0 и порождает версию
+     plan_rec_v2 с replans(plan_rec_v2, plan_rec_v1).]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T12: Отрицательный тест — исчерпание обоих ресурсов ведёт
+// к терминальному состоянию, а не к зацикливанию.
+// ---------------------------------------------------------------------
+
+test_resource_exhaustion_terminal <- concept_test_constraint_check;;
+test_resource_exhaustion_terminal => nrel_main_idtf:
+    [T12. Отрицательный тест: при b_rem = 0 и d_rem = 0
+     и непустом множестве незавершённых подзадач обработка обязана
+     перейти в x_refuse либо x_clar] (* <- lang_ru;; *);;
+test_resource_exhaustion_terminal => nrel_test_against_constraint:
+    constraint_separate_resource_decrease;;
+test_resource_exhaustion_terminal => nrel_question_subject:
+    state_rec_refusal;;
+test_resource_exhaustion_terminal => nrel_test_outcome:
+    concept_test_outcome_fail;;
+test_resource_exhaustion_terminal => nrel_expected_answer: answer_t12;;
+
+answer_t12 <- concept_expected_answer;;
+answer_t12 => nrel_main_idtf:
+    [Ресурсы исчерпаны: Φ(x) = <0, 0>. Зафиксирован
+     структурированный отказ failure_rec_001 = <No_Competence,
+     recovery_rec_001, audit_rec_refusal> и выполнен переход
+     в терминальное состояние x_refuse.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T13: Отрицательный тест — переход из терминального состояния.
+// ---------------------------------------------------------------------
+
+test_terminal_state_closure <- concept_test_constraint_check;;
+test_terminal_state_closure => nrel_main_idtf:
+    [T13. Отрицательный тест: попытка перехода из x_refuse
+     в рабочее состояние того же экземпляра обработки]
+    (* <- lang_ru;; *);;
+test_terminal_state_closure => nrel_test_against_constraint:
+    constraint_terminal_state_closure;;
+test_terminal_state_closure => nrel_test_outcome: concept_test_outcome_fail;;
+test_terminal_state_closure => nrel_expected_answer: answer_t13;;
+
+answer_t13 <- concept_expected_answer;;
+answer_t13 => nrel_main_idtf:
+    [Нарушено: продолжение оформляется только как новый запрос —
+     request_rec_002 с continues_request(request_rec_002, request_rec_001)
+     и собственным начальным состоянием x_0.] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T14: Восстановимость перехода по провенансу.
+// ---------------------------------------------------------------------
+
+test_transition_traceability <- concept_test_constraint_check;;
+test_transition_traceability => nrel_main_idtf:
+    [T14. Восстановим ли переход transition_rec_replan по записи
+     аудита, провенансу и версии плана?] (* <- lang_ru;; *);;
+test_transition_traceability => nrel_test_against_constraint:
+    constraint_transition_provenance;;
+test_transition_traceability => nrel_question_subject: transition_rec_replan;;
+test_transition_traceability => nrel_test_outcome: concept_test_outcome_pass;;
+test_transition_traceability => nrel_expected_answer: answer_t14;;
+
+answer_t14 <- concept_expected_answer;;
+answer_t14 => nrel_main_idtf:
+    [Выполнено: from_state = x_assign, to_state = x_replan,
+     caused_by_event = budget_exhausted_rec,
+     uses_plan_version = plan_rec_v2,
+     transition_recorded_in = audit_rec_replan,
+     has_provenance(audit_rec_replan, prov_rec_replan).]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T15: Отрицательный тест — запрет доступа при передаче данных.
+// ---------------------------------------------------------------------
+
+test_access_denied <- concept_test_constraint_check;;
+test_access_denied => nrel_main_idtf:
+    [T15. Отрицательный тест: передача проекции контекста участнику,
+     не разрешённому политикой (permits отсутствует)]
+    (* <- lang_ru;; *);;
+test_access_denied => nrel_test_against_constraint:
+    constraint_user_consent_required;;
+test_access_denied => nrel_test_outcome: concept_test_outcome_fail;;
+test_access_denied => nrel_expected_answer: answer_t15;;
+
+answer_t15 <- concept_expected_answer;;
+answer_t15 => nrel_main_idtf:
+    [Нарушено: назначение недопустимо, фиксируется отказ ⊥ с кодом
+     Access_Denied, создаётся запись аудита доступа
+     (concept_audit_record_access).] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
 // T5: Отрицательный тест — нарушение F_constr.

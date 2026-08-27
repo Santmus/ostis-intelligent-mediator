@@ -406,6 +406,127 @@ concept_provenance_conflict
 => nrel_main_idtf: [провенансный конфликт] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
+// Статус конфликта. Публикация итогового результата запрещается
+// только при НЕРАЗРЕШЁННОМ конфликте: обнаруженный и разрешённый
+// конфликт остаётся связанным с результатом, поскольку отношения
+// происхождения обязаны фиксировать и сам конфликт, и способ его
+// разрешения.
+// ---------------------------------------------------------------------
+
+concept_conflict_status
+<- sc_node_class;
+=> nrel_main_idtf:
+    [статус конфликта результатов] (* <- lang_ru;; *);
+    [result conflict status] (* <- lang_en;; *);;
+
+concept_conflict_status <= nrel_inclusion: concept_entity_group_control;;
+
+concept_conflict_status <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение статусов конфликта] (* <- lang_ru;; *);;
+    -> concept_conflict_status_detected;
+       concept_conflict_status_resolved;
+       concept_conflict_status_unresolved;;
+*);;
+
+concept_conflict_status_detected
+<- sc_node_class;
+=> nrel_main_idtf: [статус конфликта: обнаружен] (* <- lang_ru;; *);
+=> nrel_main_idtf: [conflict status: detected] (* <- lang_en;; *);;
+
+concept_conflict_status_resolved
+<- sc_node_class;
+=> nrel_main_idtf: [статус конфликта: разрешён] (* <- lang_ru;; *);
+=> nrel_main_idtf: [conflict status: resolved] (* <- lang_en;; *);;
+
+concept_conflict_status_unresolved
+<- sc_node_class;
+=> nrel_main_idtf: [статус конфликта: неразрешён] (* <- lang_ru;; *);
+=> nrel_main_idtf: [conflict status: unresolved] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Акт разрешения конфликта — овеществлённая процедура, оставляющая
+// провенансный след: чем, кем и по какому правилу конфликт разрешён.
+// ---------------------------------------------------------------------
+
+concept_conflict_resolution_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт разрешения конфликта] (* <- lang_ru;; *);
+    [conflict resolution act] (* <- lang_en;; *);;
+
+concept_conflict_resolution_act <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_conflict_resolution_act: ...
+(*
+    -> rrel_key_sc_element: concept_conflict_resolution_act;;
+    => nrel_main_idtf:
+        [Опр.(акт разрешения конфликта)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт разрешения конфликта — овеществлённое применение
+            процедуры разрешения к обнаруженному конфликту: фиксирует
+            применённую стратегию (аргументационный вывод, взвешенное
+            по доверию голосование, эскалация пользователю либо
+            уточнение), участников, момент времени и полученный исход.
+            Обязательные связи: resolved_by(γ, act), объяснение,
+            запись аудита и провенансная запись. Без акта разрешения
+            конфликт сохраняет статус unresolved и блокирует
+            публикацию итогового результата.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_conflict_resolution_act <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение актов разрешения по применённой стратегии]
+       (* <- lang_ru;; *);;
+    -> concept_resolution_by_argumentation;
+       concept_resolution_by_trust_weighting;
+       concept_resolution_by_escalation;
+       concept_resolution_by_clarification;;
+*);;
+
+concept_resolution_by_argumentation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешение аргументационным выводом] (* <- lang_ru;; *);;
+concept_resolution_by_trust_weighting
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешение взвешенным по доверию голосованием] (* <- lang_ru;; *);;
+concept_resolution_by_escalation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешение эскалацией пользователю или эксперту] (* <- lang_ru;; *);;
+concept_resolution_by_clarification
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешение запросом уточнения] (* <- lang_ru;; *);;
+
+affirmation -> affirmation_conflict_type_resolution: ...
+(*
+    -> rrel_key_sc_element: concept_conflict_resolution_act;;
+    => nrel_main_idtf:
+        [Утв.(выбор процедуры по типу конфликта)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Фактический конфликт — противоречие значений, не допускающее
+            одновременной истинности, — разрешается верификацией
+            спорного утверждения, уточнением у пользователя либо
+            эскалацией; при неразрешимости фиксируется структурированный
+            отказ ⊥ с кодом Unresolved_Conflict и осуществляется переход
+            в x_refuse. Конфликт предпочтений — наличие нескольких
+            корректных, но различных результатов — разрешается
+            автоматически по явно заданному правилу согласования целей,
+            в котором доверие T(s, τ) может выступать одним из факторов
+            выбора. Независимо от типа и исхода сведения о конфликте
+            и способе его разрешения заносятся в R_prov.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
 // Условие конфликтности результатов (формула 14).
 // ---------------------------------------------------------------------
 
@@ -427,7 +548,7 @@ affirmation -> affirmation_conflict_condition: ...
 *);;
 
 // ---------------------------------------------------------------------
-// Структурированный отказ ⊥ = <c, ρ, a>. Один из трёх возможных
+// Структурированный отказ ⊥ = <c, ϱ, a>. Один из трёх возможных
 // исходов функции медиации M: Q × P_fin(S) × C → R ∪ Q_clar ∪ {⊥}
 // наряду с согласованным результатом и запросом на уточнение.
 // Обеспечивает: невозможность корректного решения никогда не
@@ -448,14 +569,17 @@ definition -> definition_processing_failure: ...
     => nrel_main_idtf: [Опр.(структурированный отказ)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [⊥ = <c, ρ, a> — информативный отказ обработки запроса,
+        -> [⊥ = <c, ϱ, a> — информативный отказ обработки запроса,
             где c ∈ C_fail — машинно-обрабатываемый код причины из
-            конечного множества; ρ — рекомендация по восстановлению
+            конечного множества; ϱ — рекомендация по восстановлению
             (запрос на уточнение из Q_clar либо описание
-            восстановительного действия); a — запись аудита,
-            включаемая в граф происхождения R_prov. Отказ является
-            терминальным управляемым состоянием обработки, а не
-            пустым или неопределённым ответом.] (* <- lang_ru;; *);;
+            восстановительного действия); a — запись аудита
+            (concept_audit_record), включаемая в граф происхождения
+            R_prov. Символ ϱ (греческий вариант «ро») выбран отличным
+            от символов прочих отображений модели, чтобы исключить
+            смысловую коллизию обозначений. Отказ соответствует терминальному
+            состоянию x_refuse автомата обработки, а не пустому
+            или неопределённому ответу.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -507,7 +631,7 @@ concept_recovery_action
 => nrel_main_idtf:
     [рекомендация по восстановлению] (* <- lang_ru;; *);
     [recovery recommendation] (* <- lang_en;; *);
-=> nrel_idtf: [ρ];;
+=> nrel_idtf: [ϱ];;
 
 concept_recovery_action <= nrel_subdividing: ...
 (*

@@ -1,0 +1,545 @@
+// =====================================================================
+// concepts/mediation_lifecycle.scs
+// Подраздел: автомат состояний обработки запроса посредником.
+//
+// Переходы описываются функцией δ: X × E × C → X × A, где X — множество
+// состояний обработки, E — множество событий, C — контекст,
+// A — множество действий посредника.
+//
+// Основная последовательность:
+//   x_0 → x_int → x_plan → x_assign → x_exec → x_aggregate
+//       → x_verify → x_present
+//
+// Из любого промежуточного состояния возможен переход в состояние
+// уточнения x_clar, повторного планирования x_replan либо отказа
+// x_refuse; при частично выполненной задаче — в x_partial.
+//
+// Циклические переходы с раздельными ресурсами:
+//   x_exec   ──reassign, b_q──> x_assign
+//   x_assign ──replan, d_max──> x_plan
+//
+// Процессы жизненного цикла π (concepts/lifecycle_processes.scs)
+// сохраняются: они становятся видами деятельности, инициируемой
+// в определённом состоянии либо при определённом переходе.
+// =====================================================================
+
+section_concept_mediation_lifecycle
+=> nrel_main_idtf:
+    [Подраздел. Автомат состояний обработки запроса] (* <- lang_ru;; *);
+    [Subsection. Request Processing State Machine] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_mediation_state;
+<- rrel_key_sc_element: concept_state_transition;
+<- rrel_key_sc_element: concept_transition_event;;
+
+// ---------------------------------------------------------------------
+// Корневой класс состояния обработки.
+// ---------------------------------------------------------------------
+
+concept_mediation_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние обработки запроса посредником] (* <- lang_ru;; *);
+    [mediation processing state] (* <- lang_en;; *);
+=> nrel_idtf: [x];;
+
+concept_mediation_state <= nrel_inclusion: concept_entity_group_process;;
+concept_mediation_state <= nrel_inclusion: concept_process_class_group;;
+
+definition -> definition_mediation_state: ...
+(*
+    -> rrel_key_sc_element: concept_mediation_state;;
+    => nrel_main_idtf:
+        [Опр.(состояние обработки запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Состояние обработки x ∈ X — элемент множества состояний
+            автомата посредника. Каждое состояние связано с обрабатываемым
+            запросом, действующей версией плана, контекстом взаимодействия
+            и остатками ресурсов восстановления b_rem и d_rem. Переход
+            между состояниями описывается функцией δ: X × E × C → X × A
+            и обязан быть зафиксирован записью аудита и провенансной
+            записью.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_mediation_state <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение состояний на рабочие и терминальные] (* <- lang_ru;; *);;
+    -> concept_working_state;
+       concept_terminal_state;;
+*);;
+
+concept_working_state
+<- sc_node_class;
+=> nrel_main_idtf: [рабочее (промежуточное) состояние] (* <- lang_ru;; *);
+=> nrel_main_idtf: [working state] (* <- lang_en;; *);;
+
+concept_terminal_state
+<- sc_node_class;
+=> nrel_main_idtf: [терминальное состояние] (* <- lang_ru;; *);
+=> nrel_main_idtf: [terminal state] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Рабочие состояния основной последовательности.
+// ---------------------------------------------------------------------
+
+concept_working_state <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение рабочих состояний] (* <- lang_ru;; *);;
+    -> concept_state_accepted;
+       concept_state_interpretation;
+       concept_state_planning;
+       concept_state_assignment;
+       concept_state_execution;
+       concept_state_aggregation;
+       concept_state_verification;
+       concept_state_replanning;;
+*);;
+
+concept_state_accepted
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: запрос принят] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: request accepted] (* <- lang_en;; *);
+=> nrel_idtf: [x_0];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_interpretation
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: интерпретация] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: interpretation] (* <- lang_en;; *);
+=> nrel_idtf: [x_int];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_planning
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: планирование] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: planning] (* <- lang_en;; *);
+=> nrel_idtf: [x_plan];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_assignment
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: назначение исполнителей] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: assignment] (* <- lang_en;; *);
+=> nrel_idtf: [x_assign];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_execution
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: исполнение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: execution] (* <- lang_en;; *);
+=> nrel_idtf: [x_exec];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_aggregation
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: агрегация] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: aggregation] (* <- lang_en;; *);
+=> nrel_idtf: [x_aggregate];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_verification
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: верификация] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: verification] (* <- lang_en;; *);
+=> nrel_idtf: [x_verify];
+<= nrel_inclusion: concept_working_state;;
+
+concept_state_replanning
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: повторное планирование] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: replanning] (* <- lang_en;; *);
+=> nrel_idtf: [x_replan];
+<= nrel_inclusion: concept_working_state;;
+
+// ---------------------------------------------------------------------
+// Терминальные состояния.
+// ---------------------------------------------------------------------
+
+concept_terminal_state <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение терминальных состояний] (* <- lang_ru;; *);;
+    -> concept_state_presentation;
+       concept_state_partial;
+       concept_state_clarification;
+       concept_state_refusal;
+       concept_state_cancelled;;
+*);;
+
+concept_state_presentation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние: представление итогового результата] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: presentation (success)] (* <- lang_en;; *);
+=> nrel_idtf: [x_present];
+<= nrel_inclusion: concept_terminal_state;;
+
+concept_state_partial
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: частичный результат] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: partial result] (* <- lang_en;; *);
+=> nrel_idtf: [x_partial];
+<= nrel_inclusion: concept_terminal_state;;
+
+concept_state_clarification
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: запрос уточнения] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: clarification] (* <- lang_en;; *);
+=> nrel_idtf: [x_clar];
+<= nrel_inclusion: concept_terminal_state;;
+
+concept_state_refusal
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: структурированный отказ] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: structured refusal] (* <- lang_en;; *);
+=> nrel_idtf: [x_refuse];
+<= nrel_inclusion: concept_terminal_state;;
+
+concept_state_cancelled
+<- sc_node_class;
+=> nrel_main_idtf: [состояние: обработка отменена] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state: cancelled] (* <- lang_en;; *);
+=> nrel_idtf: [x_cancel];
+<= nrel_inclusion: concept_terminal_state;;
+
+// ---------------------------------------------------------------------
+// События переходов E.
+// ---------------------------------------------------------------------
+
+concept_transition_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие перехода жизненного цикла] (* <- lang_ru;; *);
+    [lifecycle transition event] (* <- lang_en;; *);
+=> nrel_idtf: [E];;
+
+concept_transition_event <= nrel_inclusion: concept_entity_group_context;;
+
+concept_transition_event <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение событий переходов] (* <- lang_ru;; *);;
+    -> concept_event_request_received;
+       concept_event_intent_resolved;
+       concept_event_plan_built;
+       concept_event_assignment_completed;
+       concept_event_subtask_completed;
+       concept_event_subtask_failed;
+       concept_event_reassign;
+       concept_event_replan;
+       concept_event_aggregation_completed;
+       concept_event_verification_passed;
+       concept_event_verification_failed;
+       concept_event_clarification_needed;
+       concept_event_budget_exhausted;
+       concept_event_depth_exhausted;
+       concept_event_timeout;
+       concept_event_community_changed;
+       concept_event_user_confirmation;
+       concept_event_user_cancellation;;
+*);;
+
+concept_event_request_received
+<- sc_node_class;
+=> nrel_main_idtf: [событие: запрос поступил] (* <- lang_ru;; *);;
+concept_event_intent_resolved
+<- sc_node_class;
+=> nrel_main_idtf: [событие: намерение распознано] (* <- lang_ru;; *);;
+concept_event_plan_built
+<- sc_node_class;
+=> nrel_main_idtf: [событие: план построен] (* <- lang_ru;; *);;
+concept_event_assignment_completed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: назначение завершено] (* <- lang_ru;; *);;
+concept_event_subtask_completed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: подзадача завершена] (* <- lang_ru;; *);;
+concept_event_subtask_failed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: подзадача завершилась отказом] (* <- lang_ru;; *);;
+concept_event_reassign
+<- sc_node_class;
+=> nrel_main_idtf: [событие: переназначение исполнителя] (* <- lang_ru;; *);;
+concept_event_replan
+<- sc_node_class;
+=> nrel_main_idtf: [событие: перепланирование маршрута] (* <- lang_ru;; *);;
+concept_event_aggregation_completed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: агрегация завершена] (* <- lang_ru;; *);;
+concept_event_verification_passed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: верификация пройдена] (* <- lang_ru;; *);;
+concept_event_verification_failed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: верификация не пройдена] (* <- lang_ru;; *);;
+concept_event_clarification_needed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: требуется уточнение] (* <- lang_ru;; *);;
+concept_event_budget_exhausted
+<- sc_node_class;
+=> nrel_main_idtf: [событие: исчерпан бюджет переназначений] (* <- lang_ru;; *);;
+concept_event_depth_exhausted
+<- sc_node_class;
+=> nrel_main_idtf: [событие: исчерпана глубина перепланирования] (* <- lang_ru;; *);;
+concept_event_timeout
+<- sc_node_class;
+=> nrel_main_idtf: [событие: истечение времени] (* <- lang_ru;; *);;
+concept_event_community_changed
+<- sc_node_class;
+=> nrel_main_idtf: [событие: изменение состава сообщества] (* <- lang_ru;; *);;
+concept_event_user_confirmation
+<- sc_node_class;
+=> nrel_main_idtf: [событие: подтверждение пользователя] (* <- lang_ru;; *);;
+concept_event_user_cancellation
+<- sc_node_class;
+=> nrel_main_idtf: [событие: отмена пользователем] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Переход как овеществлённая сущность. Каждый переход обязан
+// фиксировать: запрос, исходное и новое состояние, событие, версию
+// плана, контекст, участника-инициатора, запись аудита и провенанс.
+// ---------------------------------------------------------------------
+
+concept_state_transition
+<- sc_node_class;
+=> nrel_main_idtf:
+    [переход жизненного цикла обработки] (* <- lang_ru;; *);
+    [lifecycle state transition] (* <- lang_en;; *);
+=> nrel_idtf: [δ];;
+
+concept_state_transition <= nrel_inclusion: concept_entity_group_process;;
+
+definition -> definition_state_transition: ...
+(*
+    -> rrel_key_sc_element: concept_state_transition;;
+    => nrel_main_idtf:
+        [Опр.(переход жизненного цикла)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Переход — овеществлённое применение функции δ: X × E × C
+            → X × A. Каждый переход фиксирует как минимум идентификатор
+            запроса, исходное и новое состояние (rrel_from_state,
+            rrel_to_state), событие-основание (rrel_transition_event),
+            версию плана (uses_plan_version), контекст (rrel_context)
+            и участника, породившего событие. Совокупность переходов
+            образует операционную часть графа происхождения и служит
+            для восстановления цепочки принятия решений; содержание
+            журнала ограничивается политикой минимизации данных.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// Ролевые отношения перехода.
+
+rrel_from_state
+<- sc_node_role_relation;
+=> nrel_main_idtf: [исходное_состояние'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [from_state'] (* <- lang_en;; *);;
+
+rrel_to_state
+<- sc_node_role_relation;
+=> nrel_main_idtf: [новое_состояние'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [to_state'] (* <- lang_en;; *);;
+
+rrel_transition_event
+<- sc_node_role_relation;
+=> nrel_main_idtf: [событие_перехода'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [transition_event'] (* <- lang_en;; *);;
+
+rrel_transition_actor
+<- sc_node_role_relation;
+=> nrel_main_idtf: [инициатор_перехода'] (* <- lang_ru;; *);
+=> nrel_main_idtf: [transition_actor'] (* <- lang_en;; *);;
+
+// Бинарные отношения автомата.
+
+nrel_transitions_to
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [допускает_переход_в*] (* <- lang_ru;; *);
+    [transitions_to*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_mediation_state;
+=> nrel_second_domain: concept_mediation_state;;
+
+nrel_has_state
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [находится_в_состоянии*] (* <- lang_ru;; *);
+    [has_processing_state*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_mediation_state;;
+
+nrel_caused_by_event
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [вызван_событием*] (* <- lang_ru;; *);
+    [caused_by_event*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_state_transition;
+=> nrel_second_domain: concept_transition_event;;
+
+nrel_transition_recorded_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [переход_зафиксирован_в*] (* <- lang_ru;; *);
+    [transition_recorded_in*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_state_transition;
+=> nrel_second_domain: concept_audit_record;;
+
+// Продолжение обработки после терминального состояния оформляется
+// как новый запрос. Отдельное отношение вводится потому, что
+// derived_from типизировано над результатами (Result → Result)
+// и не применимо к запросам.
+nrel_continues_request
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [продолжает_запрос*] (* <- lang_ru;; *);
+    [continues_request*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_user_request;;
+
+nrel_activates_process
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [активирует_процесс*] (* <- lang_ru;; *);
+    [activates_process*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_mediation_state;
+=> nrel_second_domain: concept_lifecycle_process;;
+
+// ---------------------------------------------------------------------
+// Граф допустимых переходов автомата.
+// ---------------------------------------------------------------------
+
+// Основная последовательность.
+concept_state_accepted       => nrel_transitions_to: concept_state_interpretation;;
+concept_state_interpretation => nrel_transitions_to: concept_state_planning;;
+concept_state_planning       => nrel_transitions_to: concept_state_assignment;;
+concept_state_assignment     => nrel_transitions_to: concept_state_execution;;
+concept_state_execution      => nrel_transitions_to: concept_state_aggregation;;
+concept_state_aggregation    => nrel_transitions_to: concept_state_verification;;
+concept_state_verification   => nrel_transitions_to: concept_state_presentation;;
+
+// Циклический переход переназначения: расходует b_q, структура T(q)
+// не меняется.
+concept_state_execution      => nrel_transitions_to: concept_state_assignment;;
+
+// Циклический переход перепланирования: расходует d_max, порождает
+// новую версию плана.
+concept_state_assignment     => nrel_transitions_to: concept_state_replanning;;
+concept_state_execution      => nrel_transitions_to: concept_state_replanning;;
+concept_state_verification   => nrel_transitions_to: concept_state_replanning;;
+concept_state_replanning     => nrel_transitions_to: concept_state_planning;;
+
+// Переход в уточнение допустим из любого рабочего состояния.
+concept_state_interpretation => nrel_transitions_to: concept_state_clarification;;
+concept_state_planning       => nrel_transitions_to: concept_state_clarification;;
+concept_state_assignment     => nrel_transitions_to: concept_state_clarification;;
+concept_state_execution      => nrel_transitions_to: concept_state_clarification;;
+concept_state_aggregation    => nrel_transitions_to: concept_state_clarification;;
+concept_state_verification   => nrel_transitions_to: concept_state_clarification;;
+
+// Переход в отказ допустим из любого рабочего состояния (в том числе
+// по тайм-ауту, независимо от значения Φ).
+concept_state_accepted       => nrel_transitions_to: concept_state_refusal;;
+concept_state_interpretation => nrel_transitions_to: concept_state_refusal;;
+concept_state_planning       => nrel_transitions_to: concept_state_refusal;;
+concept_state_assignment     => nrel_transitions_to: concept_state_refusal;;
+concept_state_execution      => nrel_transitions_to: concept_state_refusal;;
+concept_state_aggregation    => nrel_transitions_to: concept_state_refusal;;
+concept_state_verification   => nrel_transitions_to: concept_state_refusal;;
+concept_state_replanning     => nrel_transitions_to: concept_state_refusal;;
+
+// Частичный результат — при допускающей пользовательской политике.
+concept_state_aggregation    => nrel_transitions_to: concept_state_partial;;
+concept_state_verification   => nrel_transitions_to: concept_state_partial;;
+
+// Отмена пользователем.
+concept_state_interpretation => nrel_transitions_to: concept_state_cancelled;;
+concept_state_planning       => nrel_transitions_to: concept_state_cancelled;;
+concept_state_assignment     => nrel_transitions_to: concept_state_cancelled;;
+concept_state_execution      => nrel_transitions_to: concept_state_cancelled;;
+
+// ---------------------------------------------------------------------
+// Привязка состояний к процессам жизненного цикла π. Прежние восемь
+// процессов сохраняются как виды деятельности, инициируемой
+// в определённом состоянии.
+// ---------------------------------------------------------------------
+
+concept_state_interpretation => nrel_activates_process: concept_process_interpretation;;
+concept_state_planning       => nrel_activates_process: concept_process_decomposition;;
+concept_state_assignment     => nrel_activates_process: concept_process_allocation;;
+concept_state_execution      => nrel_activates_process: concept_process_cooperative_processing;;
+concept_state_aggregation    => nrel_activates_process: concept_process_integration;;
+concept_state_verification   => nrel_activates_process: concept_process_explanation;;
+concept_state_verification   => nrel_activates_process: concept_process_trust_assessment;;
+concept_state_replanning     => nrel_activates_process: concept_process_coalition_reconfiguration;;
+
+// ---------------------------------------------------------------------
+// Утверждения об автомате.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_terminal_state_closure: ...
+(*
+    -> rrel_key_sc_element: concept_terminal_state;;
+    => nrel_main_idtf:
+        [Утв.(замкнутость терминального состояния)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀x ∈ TerminalState. ¬∃x'. transitions_to(x, x').
+            Из терминального состояния переход не допускается.
+            Продолжение взаимодействия после уточнения x_clar либо
+            отказа x_refuse оформляется как открытие НОВОГО запроса
+            со своим состоянием x_0, связанного с исходным отношением
+            continues_request; переиспользование того же экземпляра
+            обработки запрещено.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_terminal_reachability: ...
+(*
+    -> rrel_key_sc_element: concept_mediation_state;;
+    => nrel_main_idtf:
+        [Утв.(достижимость терминального состояния)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀x ∈ WorkingState. ∃ путь в графе transitions_to из x
+            в некоторое x_t ∈ TerminalState. Проверка достижимости
+            выполняется обходом графа допустимых переходов и является
+            машиноисполнимым критерием корректности автомата:
+            состояние, из которого не достижим ни один терминальный
+            исход, есть дефект спецификации.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_transition_traceability: ...
+(*
+    -> rrel_key_sc_element: concept_state_transition;;
+    => nrel_main_idtf:
+        [Утв.(восстановимость перехода по провенансу)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀t ∈ StateTransition. ∃υ ∈ AuditRecord.
+            transition_recorded_in(t, υ) ∧ ∃ζ ∈ ProvenanceRecord.
+            has_provenance(υ, ζ) ∧ ∃pv ∈ PlanVersion.
+            uses_plan_version(t, pv).
+            Любой существенный переход маршрута может быть восстановлен
+            по записи аудита, провенансной записи и версии плана,
+            действовавшей в момент перехода.] (* <- lang_ru;; *);;
+    *);;
+*);;

@@ -13,6 +13,7 @@ section_scenario_request_processing
 <- rrel_key_sc_element: request_001;
 <- rrel_key_sc_element: interaction_context_001;
 <- rrel_key_sc_element: community_route_planning;
+<- rrel_key_sc_element: plan_001;
 <- rrel_key_sc_element: integrated_result_001;;
 
 // ---------------------------------------------------------------------
@@ -66,8 +67,76 @@ situation_alice_mobile_ru => nrel_main_idtf:
     (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// Шаг 3. Декомпозиция запроса в подзадачи.
+// Шаг 3. План обработки, его первая версия и начальные состояния
+// автомата: x_0 → x_int → x_plan.
 // ---------------------------------------------------------------------
+
+mediator_001 <- concept_intelligent_mediator;;
+mediator_001 => nrel_main_idtf:
+    [Посредник, обслуживающий запрос request_001] (* <- lang_ru;; *);;
+
+plan_001 <- concept_processing_plan;;
+plan_001 => nrel_main_idtf:
+    [План обработки запроса request_001] (* <- lang_ru;; *);;
+request_001 => nrel_has_plan: plan_001;;
+
+plan_version_001_v1 <- concept_plan_version;;
+plan_version_001_v1 => nrel_main_idtf:
+    [Версия плана v1: три подзадачи, три исполнителя]
+    (* <- lang_ru;; *);;
+plan_001 => nrel_has_plan_version: plan_version_001_v1;;
+
+// Начальные ресурсы восстановления маршрута.
+state_001_accepted <- concept_state_accepted;;
+state_001_accepted => nrel_remaining_reassignment_budget: [3];;
+state_001_accepted => nrel_remaining_replanning_depth: [2];;
+
+state_001_interpretation <- concept_state_interpretation;;
+state_001_planning       <- concept_state_planning;;
+state_001_assignment     <- concept_state_assignment;;
+state_001_execution      <- concept_state_execution;;
+state_001_aggregation    <- concept_state_aggregation;;
+state_001_verification   <- concept_state_verification;;
+state_001_presentation   <- concept_state_presentation;;
+
+transition_001_int
+<- concept_state_transition;
+-> rrel_from_state: state_001_accepted;
+-> rrel_to_state: state_001_interpretation;
+-> rrel_transition_event: event_001_received;
+-> rrel_transition_actor: mediator_001;
+-> rrel_context: interaction_context_001;;
+transition_001_int => nrel_caused_by_event: event_001_received;;
+transition_001_int => nrel_uses_plan_version: plan_version_001_v1;;
+transition_001_int => nrel_transition_recorded_in: audit_001_int;;
+
+event_001_received <- concept_event_request_received;;
+audit_001_int <- concept_audit_record_transition;;
+audit_001_int <- concept_audit_record;;
+audit_001_int => nrel_has_provenance: prov_record_transition_int;;
+prov_record_transition_int <- concept_provenance_record;;
+prov_record_transition_int => nrel_recorded_by_sc_agent:
+    agent_provenance_registrar;;
+
+transition_001_plan
+<- concept_state_transition;
+-> rrel_from_state: state_001_interpretation;
+-> rrel_to_state: state_001_planning;
+-> rrel_transition_event: event_001_intent_resolved;
+-> rrel_transition_actor: mediator_001;
+-> rrel_context: interaction_context_001;;
+transition_001_plan => nrel_caused_by_event: event_001_intent_resolved;;
+transition_001_plan => nrel_uses_plan_version: plan_version_001_v1;;
+
+event_001_intent_resolved <- concept_event_intent_resolved;;
+
+// ---------------------------------------------------------------------
+// Шаг 4. Декомпозиция запроса в подзадачи.
+// ---------------------------------------------------------------------
+
+plan_001 => nrel_decomposes_into_subtask: subtask_route_candidates;;
+plan_001 => nrel_decomposes_into_subtask: subtask_energy_estimation;;
+plan_001 => nrel_decomposes_into_subtask: subtask_ranking;;
 
 request_001 => nrel_decomposed_into: subtask_route_candidates;;
 request_001 => nrel_decomposed_into: subtask_energy_estimation;;
@@ -95,7 +164,7 @@ subtask_ranking => nrel_main_idtf:
 subtask_ranking => nrel_subtask_depends_on: subtask_energy_estimation;;
 
 // ---------------------------------------------------------------------
-// Шаг 4. Формирование коалиции и распределение подзадач.
+// Шаг 5. Формирование коалиции и распределение подзадач (x_assign).
 // ---------------------------------------------------------------------
 
 community_route_planning <- concept_community_of_intelligent_systems;;
@@ -132,7 +201,8 @@ assignment_act_001
 -> rrel_priority: [high];;
 
 // ---------------------------------------------------------------------
-// Шаг 5. Кооперативная обработка — частичные результаты.
+// Шаг 6. Кооперативная обработка (x_exec): акты исполнения, записи
+// аудита и частичные результаты.
 // ---------------------------------------------------------------------
 
 result_routes      <- concept_processing_result;;
@@ -158,13 +228,55 @@ result_routes  => nrel_generated_in_context: interaction_context_001;;
 result_energy  => nrel_generated_in_context: interaction_context_001;;
 result_ranking => nrel_generated_in_context: interaction_context_001;;
 
-// Провенансные записи.
+// Акты исполнения: executes(a, σ), recorded_in(a, υ), generated_by(z, a).
+execution_act_routes <- concept_execution_act;;
+execution_act_routes <- concept_execution_act_successful;;
+execution_act_routes => nrel_executes: subtask_route_candidates;;
+execution_act_routes => nrel_recorded_in: audit_record_routes;;
+result_routes => nrel_generated_by: execution_act_routes;;
+
+execution_act_energy <- concept_execution_act;;
+execution_act_energy <- concept_execution_act_successful;;
+execution_act_energy => nrel_executes: subtask_energy_estimation;;
+execution_act_energy => nrel_recorded_in: audit_record_energy;;
+result_energy => nrel_generated_by: execution_act_energy;;
+
+execution_act_ranking <- concept_execution_act;;
+execution_act_ranking <- concept_execution_act_successful;;
+execution_act_ranking => nrel_executes: subtask_ranking;;
+execution_act_ranking => nrel_recorded_in: audit_record_ranking;;
+result_ranking => nrel_generated_by: execution_act_ranking;;
+
+// Записи аудита — самостоятельные сущности, каждая со своим провенансом.
+audit_record_routes  <- concept_audit_record;;
+audit_record_routes  <- concept_audit_record_execution;;
+audit_record_energy  <- concept_audit_record;;
+audit_record_energy  <- concept_audit_record_execution;;
+audit_record_ranking <- concept_audit_record;;
+audit_record_ranking <- concept_audit_record_execution;;
+
+audit_record_routes  => nrel_has_provenance: prov_record_audit_routes;;
+audit_record_energy  => nrel_has_provenance: prov_record_audit_energy;;
+audit_record_ranking => nrel_has_provenance: prov_record_audit_ranking;;
+
+prov_record_audit_routes  <- concept_provenance_record;;
+prov_record_audit_energy  <- concept_provenance_record;;
+prov_record_audit_ranking <- concept_provenance_record;;
+
+// Провенансные записи результатов.
 prov_record_result_routes <- concept_provenance_record;;
 result_routes => nrel_has_provenance: prov_record_result_routes;;
 prov_record_result_routes => nrel_recorded_by_sc_agent: agent_provenance_registrar;;
 
+prov_record_result_energy <- concept_provenance_record;;
+result_energy => nrel_has_provenance: prov_record_result_energy;;
+
+prov_record_result_ranking <- concept_provenance_record;;
+result_ranking => nrel_has_provenance: prov_record_result_ranking;;
+
 // ---------------------------------------------------------------------
-// Шаг 6-7. Интеграция результатов и объяснение.
+// Шаг 7-8. Интеграция (x_aggregate), верификация (x_verify)
+// и представление результата (x_present).
 // ---------------------------------------------------------------------
 
 integrated_result_001 <- concept_integrated_result;;
@@ -183,11 +295,47 @@ explanation_001 => nrel_main_idtf:
 integrated_result_001 => nrel_explained_by: explanation_001;;
 integrated_result_001 => nrel_supported_by_explanation: explanation_001;;
 
+// Агрегация: aggregates ≡ integrated_in⁻¹.
+integrated_result_001 => nrel_aggregates: result_routes;;
+integrated_result_001 => nrel_aggregates: result_energy;;
+integrated_result_001 => nrel_aggregates: result_ranking;;
+integrated_result_001 => nrel_has_provenance: prov_record_integrated_001;;
+prov_record_integrated_001 <- concept_provenance_record;;
+
+// Верификация посредником: verifies ≡ validated_by⁻¹.
+mediator_001 => nrel_verifies: integrated_result_001;;
+integrated_result_001 => nrel_validated_by: mediator_001;;
+integrated_result_001 => nrel_verified: verification_outcome_001;;
+verification_outcome_001 <- concept_verification_passed;;
+verification_outcome_001 <- concept_verification_outcome;;
+
+// Условие публикации выполнено: результат верифицирован, снабжён
+// объяснением и не имеет неразрешённых конфликтов.
 integrated_result_001 => nrel_delivered_to: user_alice;;
 integrated_result_001 => nrel_satisfies: goal_optimal_route;;
 
+// Терминальное состояние маршрута — успех.
+transition_001_present
+<- concept_state_transition;
+-> rrel_from_state: state_001_verification;
+-> rrel_to_state: state_001_presentation;
+-> rrel_transition_event: event_001_verification_passed;
+-> rrel_transition_actor: mediator_001;
+-> rrel_context: interaction_context_001;;
+transition_001_present => nrel_caused_by_event: event_001_verification_passed;;
+transition_001_present => nrel_uses_plan_version: plan_version_001_v1;;
+transition_001_present => nrel_transition_recorded_in: audit_001_present;;
+
+event_001_verification_passed <- concept_event_verification_passed;;
+audit_001_present <- concept_audit_record;;
+audit_001_present <- concept_audit_record_transition;;
+audit_001_present => nrel_has_provenance: prov_record_transition_present;;
+prov_record_transition_present <- concept_provenance_record;;
+
+request_001 => nrel_has_state: state_001_presentation;;
+
 // ---------------------------------------------------------------------
-// Шаг 8. Постоценка: обратная связь и обновление доверия.
+// Шаг 9. Постоценка: обратная связь и обновление доверия.
 // ---------------------------------------------------------------------
 
 feedback_alice_001 <- concept_feedback_explicit_rating;;

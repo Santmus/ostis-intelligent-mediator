@@ -56,6 +56,55 @@ axiom -> axiom_integrated_disjoint_from_conflict: ...
     *);;
 *);;
 
+axiom -> axiom_audit_disjoint_from_provenance: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(запись аудита и запись происхождения дизъюнктны)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [AuditRecord ⊓ ProvenanceRecord ⊑ ⊥.
+            Запись аудита фиксирует совершённое действие — акт
+            исполнения, отказ, переход состояния либо доступ к данным;
+            провенансная запись фиксирует происхождение сущности
+            в терминах PROV-O. Один и тот же экземпляр не может
+            принадлежать обоим классам; связь между ними направлена:
+            AuditRecord ⊑ ∃has_provenance.ProvenanceRecord.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_working_disjoint_from_terminal: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(рабочие и терминальные состояния дизъюнктны)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [WorkingState ⊓ TerminalState ⊑ ⊥ и
+            WorkingState ⊔ TerminalState ≡ MediationState.
+            Разбиение состояний обработки на рабочие и терминальные
+            является полным и непересекающимся.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+axiom -> axiom_execution_act_existential: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(экзистенциальные обязательства акта исполнения)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [ExecutionAct ⊑ ∃executes.Subtask ⊓ ∃recorded_in.AuditRecord;
+            ProcessingResult ⊑ ∃generated_by.ExecutionAct;
+            IntegratedResult ⊑ ∃aggregates.ProcessingResult.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
 axiom -> axiom_request_has_goal: ...
 (*
     <- concept_sc_axiom;;

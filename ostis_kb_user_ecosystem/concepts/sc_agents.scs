@@ -131,7 +131,7 @@ agent_result_integrator
 => nrel_main_idtf:
     [агент интеграции результатов] (* <- lang_ru;; *);
 => nrel_implements_process: concept_process_integration;
-=> nrel_realizes_mapping: [ρ : 2^Y × C → Y_int];
+=> nrel_realizes_mapping: [integrate : 2^Y × C → Y_int];
 => nrel_primary_condition:
     [появление набора частичных результатов одной подзадачи];
 => nrel_agent_input: [частичные результаты];

@@ -42,6 +42,9 @@ section_user_intelligent_ecosystem_interaction
     section_concept_capabilities;
     section_concept_contexts;
     section_concept_tasks;
+    section_concept_processing_plan;
+    section_concept_execution_acts;
+    section_concept_mediation_lifecycle;
     section_concept_interactions;
     section_concept_knowledge_exchange;
     section_concept_lifecycle_processes;
@@ -65,6 +68,7 @@ section_user_intelligent_ecosystem_interaction
     section_relations_task;
     section_relations_execution;
     section_relations_provenance;
+    section_relations_control;
     section_relations_trust;
     section_role_relations;
 
@@ -106,6 +110,7 @@ section_user_intelligent_ecosystem_interaction
     section_scenario_collective_decision;
     section_scenario_context_processing;
     section_scenario_coalition_reconfiguration;
+    section_scenario_lifecycle_recovery;
     section_scenario_trust_assessment;
     section_scenario_explanation_construction;
     section_scenario_medical_diagnostics;
@@ -161,6 +166,12 @@ section_user_intelligent_ecosystem_interaction
 <- rrel_key_sc_element: concept_interaction_context;
 <- rrel_key_sc_element: concept_user_request;
 <- rrel_key_sc_element: concept_subtask;
+<- rrel_key_sc_element: concept_processing_plan;
+<- rrel_key_sc_element: concept_plan_version;
+<- rrel_key_sc_element: concept_execution_act;
+<- rrel_key_sc_element: concept_audit_record;
+<- rrel_key_sc_element: concept_mediation_state;
+<- rrel_key_sc_element: concept_state_transition;
 <- rrel_key_sc_element: concept_processing_result;
 <- rrel_key_sc_element: concept_integrated_result;
 <- rrel_key_sc_element: concept_lifecycle_process;
@@ -189,7 +200,7 @@ section_user_intelligent_ecosystem_interaction
 section_user_intelligent_ecosystem_interaction
 => nrel_section_base_ontology: ontology_OSTIS_meta_system;
 => nrel_section_compliance: [SC-machine 0.10.x, OSTIS Technology, OWL 2 SROIQ, PROV-O, SHACL, FIPA-ACL];
-=> nrel_section_version: [1.1.0-extended-security-tests];
+=> nrel_section_version: [1.2.0-mediation-lifecycle];
 => nrel_section_authors: [Радченко (на основе финальной онтологической модели);
                           сообщество OSTIS-research; источники из библиографии];;
 

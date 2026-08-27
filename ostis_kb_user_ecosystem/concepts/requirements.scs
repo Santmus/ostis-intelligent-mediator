@@ -247,6 +247,11 @@ requirement_Req_7
 concept_lifecycle_process => nrel_satisfies_requirement: requirement_Req_7;;
 concept_process_coalition_reconfiguration => nrel_satisfies_requirement: requirement_Req_7;;
 concept_processing_failure => nrel_satisfies_requirement: requirement_Req_7;;
+concept_mediation_state => nrel_satisfies_requirement: requirement_Req_7;;
+concept_terminal_state => nrel_satisfies_requirement: requirement_Req_7;;
+concept_reassignment_budget => nrel_satisfies_requirement: requirement_Req_7;;
+concept_replanning_depth => nrel_satisfies_requirement: requirement_Req_7;;
+concept_termination_potential => nrel_satisfies_requirement: requirement_Req_7;;
 
 // =======================================================================
 // Класс III. Семантические требования (Req_8-Req_11).
@@ -310,6 +315,13 @@ requirement_Req_11
 
 concept_axiom_set => nrel_satisfies_requirement: requirement_Req_11;;
 concept_constraint_set => nrel_satisfies_requirement: requirement_Req_11;;
+// Выполнимость подтверждается предъявлением конечной непустой
+// конфигурации: сценарий request_processing содержит полную цепочку
+// «пользователь — запрос — намерение — план — подзадача — исполнитель
+// — акт исполнения — результат — объяснение» и удовлетворяет
+// условиям допустимости 1-5.
+section_scenario_request_processing => nrel_satisfies_requirement:
+    requirement_Req_11;;
 
 // =======================================================================
 // Класс IV. Требования адаптивности и персонализации (Req_12-Req_14).
@@ -374,6 +386,10 @@ requirement_Req_15
     (* <- lang_ru;; *);;
 
 concept_provenance_record => nrel_satisfies_requirement: requirement_Req_15;;
+concept_audit_record => nrel_satisfies_requirement: requirement_Req_15;;
+concept_execution_act => nrel_satisfies_requirement: requirement_Req_15;;
+concept_state_transition => nrel_satisfies_requirement: requirement_Req_15;;
+concept_plan_version => nrel_satisfies_requirement: requirement_Req_15;;
 
 requirement_Req_16
 <- concept_requirement_transparency_trust;
@@ -420,6 +436,8 @@ requirement_Req_18
     (* <- lang_ru;; *);;
 
 concept_participant_role => nrel_satisfies_requirement: requirement_Req_18;;
+concept_audit_record => nrel_satisfies_requirement: requirement_Req_18;;
+concept_conflict_resolution_act => nrel_satisfies_requirement: requirement_Req_18;;
 
 // =======================================================================
 // Класс VI. Требования безопасности и приватности (Req_19-Req_20).
@@ -451,4 +469,5 @@ requirement_Req_20
     [Приватность и безопасность] (* <- lang_ru;; *);;
 
 concept_route_escalation => nrel_satisfies_requirement: requirement_Req_20;;
+concept_state_clarification => nrel_satisfies_requirement: requirement_Req_20;;
 concept_human_in_the_loop_component => nrel_satisfies_requirement: requirement_Req_20;;

@@ -131,7 +131,7 @@ concept_process_integration
 => nrel_main_idtf:
     [процесс интеграции результатов] (* <- lang_ru;; *);
     [ResultIntegration] (* <- lang_en;; *);
-=> nrel_realizes_mapping: [ρ : 2^Y × C → Y_int];
+=> nrel_realizes_mapping: [integrate : 2^Y × C → Y_int];
 => nrel_process_description:
     [Формирование семантически согласованного объединения частичных
      решений с применением правил агрегации, разрешения конфликтов

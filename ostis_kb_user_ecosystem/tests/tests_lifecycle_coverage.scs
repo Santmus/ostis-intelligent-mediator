@@ -117,6 +117,73 @@ test_coverage_reconfiguration => nrel_test_outcome:
     concept_test_outcome_pass;;
 
 // ---------------------------------------------------------------------
+// Покрытие автомата состояний: для каждого рабочего состояния
+// проверяется (a) наличие активируемого процесса π,
+// (b) достижимость терминального состояния по transitions_to.
+// ---------------------------------------------------------------------
+
+test_coverage_state_machine <- concept_test_coverage;;
+test_coverage_state_machine => nrel_main_idtf:
+    [Покрытие автомата: каждое рабочее состояние x_int, x_plan,
+     x_assign, x_exec, x_aggregate, x_verify, x_replan активирует
+     процесс π и имеет путь в терминальное состояние]
+    (* <- lang_ru;; *);;
+test_coverage_state_machine => nrel_question_subject: concept_mediation_state;;
+test_coverage_state_machine => nrel_test_outcome: concept_test_outcome_pass;;
+test_coverage_state_machine => nrel_expected_answer:
+    answer_coverage_state_machine;;
+
+answer_coverage_state_machine <- concept_expected_answer;;
+answer_coverage_state_machine => nrel_main_idtf:
+    [x_int → π_int; x_plan → π_dec; x_assign → π_all;
+     x_exec → π_coop; x_aggregate → π_intg;
+     x_verify → π_exp и π_tr; x_replan → π_rec.
+     Из каждого рабочего состояния достижимо x_refuse, а по основной
+     последовательности — x_present. Прежние восемь процессов π
+     сохранены и переосмыслены как виды деятельности, инициируемой
+     в состоянии либо при переходе.] (* <- lang_ru;; *);;
+
+test_coverage_terminal_states <- concept_test_coverage;;
+test_coverage_terminal_states => nrel_main_idtf:
+    [Покрытие терминальных исходов: x_present, x_partial, x_clar,
+     x_refuse, x_cancel] (* <- lang_ru;; *);;
+test_coverage_terminal_states => nrel_question_subject:
+    concept_terminal_state;;
+test_coverage_terminal_states => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_coverage_terminal_states => nrel_expected_answer:
+    answer_coverage_terminal_states;;
+
+answer_coverage_terminal_states <- concept_expected_answer;;
+answer_coverage_terminal_states => nrel_main_idtf:
+    [Сценарное покрытие терминальных исходов:
+     x_present — scenario_request_processing (state_001_presentation);
+     x_refuse — scenario_lifecycle_recovery (state_rec_refusal);
+     x_clar, x_partial, x_cancel — объявлены в автомате
+     и достижимы по графу transitions_to.] (* <- lang_ru;; *);;
+
+test_coverage_recovery_resources <- concept_test_coverage;;
+test_coverage_recovery_resources => nrel_main_idtf:
+    [Покрытие маршрутов восстановления: переназначение (b_q)
+     и перепланирование (d_max) представлены раздельными переходами,
+     событиями и сценарными фрагментами] (* <- lang_ru;; *);;
+test_coverage_recovery_resources => nrel_question_subject:
+    concept_routing_event;;
+test_coverage_recovery_resources => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_coverage_recovery_resources => nrel_expected_answer:
+    answer_coverage_recovery_resources;;
+
+answer_coverage_recovery_resources <- concept_expected_answer;;
+answer_coverage_recovery_resources => nrel_main_idtf:
+    [Переназначение: concept_reassignment_event, переход
+     x_exec → x_assign, отношение reassigns, ресурс b_q.
+     Перепланирование: concept_replanning_event, переход
+     x_* → x_replan → x_plan, отношение replans, ресурс d_max.
+     Оба маршрута представлены в scenario_lifecycle_recovery.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
 // Сводный тест покрытия Π-set.
 // ---------------------------------------------------------------------
 

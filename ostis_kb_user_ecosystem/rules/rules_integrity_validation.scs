@@ -150,17 +150,24 @@ rule -> rule_validate_integrated_result_shape: ...
     (*
         -> [targetClass concept_integrated_result;
             property nrel_explained_by — minCount 1;
-            qualifiedValueShape: ¬ ∃c. conflicts_with(target, c).
-            При наличии неразрешённого конфликта → откат
-            к agent_conflict_detector → агрегация по
-            rule_resolve_by_*.] (* <- lang_ru;; *);;
+            property nrel_validated_by — minCount 1;
+            property nrel_has_unresolved_conflict — maxCount 0.
+            Запрещается только НЕРАЗРЕШЁННЫЙ конфликт: разрешённый
+            остаётся связанным с результатом отношениями
+            conflict_status = resolved и resolved_by. При наличии
+            неразрешённого конфликта → откат к agent_conflict_detector
+            → агрегация по rule_resolve_by_*.] (* <- lang_ru;; *);;
     *);;
 *);;
-// Частично реализовано: только property nrel_explained_by, вызовом
-// action_validate_cardinality_constraint (outgoing_non_role, min=1).
-// qualifiedValueShape (отсутствие неразрешённого конфликта) не
-// формализовано -- это не подсчёт дуг, а требует отдельной проверки
-// concept_result_conflict, не реализованной ни одним из 10 агентов.
+// Реализуемо тремя вызовами action_validate_cardinality_constraint
+// (mode=concept_cardinality_check_outgoing_non_role): nrel_explained_by
+// min=1, nrel_validated_by min=1 и nrel_has_unresolved_conflict
+// с max=0. Прежняя формулировка (¬∃c. conflicts_with) подсчётом дуг
+// не выражалась, поскольку запрещала любой конфликт и требовала
+// отдельного анализа concept_result_conflict; овеществление статуса
+// конфликта отношением nrel_has_unresolved_conflict сводит проверку
+// к подсчёту дуг, доступному существующему агенту.
+// На момент правки в C++ вызывается только проверка nrel_explained_by.
 
 // ---------------------------------------------------------------------
 // Shape: каждая ИС имеет capability_profile.
@@ -245,3 +252,140 @@ rule -> rule_validate_provenance_chain: ...
             agent_provenance_registrar.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Shape: акт исполнения — подзадача и запись аудита.
+// ---------------------------------------------------------------------
+
+shape_execution_act_obligations <- concept_shacl_node_shape;;
+shape_execution_act_obligations => nrel_main_idtf:
+    [SHACL NodeShape: акт исполнения — подзадача и аудит]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_execution_act_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_execution_act_obligations)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_execution_act;
+            property nrel_executes — minCount 1; maxCount 1;
+            property nrel_recorded_in — minCount 1; maxCount 1.
+            Нарушение → concept_cardinality_constraint_violation:
+            акт исполнения не считается совершённым, порождённый им
+            результат не допускается к агрегации.] (* <- lang_ru;; *);;
+    *);;
+*);;
+// Реализуемо двумя вызовами action_validate_cardinality_constraint
+// (mode=concept_cardinality_check_outgoing_non_role, min=1, max=1):
+// по nrel_executes и nrel_recorded_in отдельно.
+
+// ---------------------------------------------------------------------
+// Shape: запись аудита имеет собственную провенансную запись.
+// ---------------------------------------------------------------------
+
+shape_audit_record_provenance <- concept_shacl_node_shape;;
+shape_audit_record_provenance => nrel_main_idtf:
+    [SHACL NodeShape: запись аудита — провенанс] (* <- lang_ru;; *);;
+
+rule -> rule_validate_audit_record_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_audit_record_provenance)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_audit_record;
+            property nrel_has_provenance — minCount 1; maxCount 1.
+            Дополнительно проверяется дизъюнктность классов:
+            экземпляр concept_audit_record не должен принадлежать
+            classу concept_provenance_record.] (* <- lang_ru;; *);;
+    *);;
+*);;
+// minCount/maxCount-часть реализуема существующим вызовом
+// action_validate_cardinality_constraint (outgoing_non_role, 1, 1).
+// Проверка дизъюнктности классов подсчётом дуг не выражается
+// и требует отдельного действия, пока не реализованного.
+
+// ---------------------------------------------------------------------
+// Shape: частичный результат порождён актом исполнения.
+// ---------------------------------------------------------------------
+
+shape_result_generated_by_act <- concept_shacl_node_shape;;
+shape_result_generated_by_act => nrel_main_idtf:
+    [SHACL NodeShape: результат — акт исполнения] (* <- lang_ru;; *);;
+
+rule -> rule_validate_result_generated_by_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_result_generated_by_act)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_processing_result;
+            property nrel_generated_by — minCount 1; maxCount 1.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+// Реализуемо одним вызовом action_validate_cardinality_constraint
+// (outgoing_non_role, min=1, max=1).
+
+// ---------------------------------------------------------------------
+// Shape: полнота фиксации перехода жизненного цикла.
+// ---------------------------------------------------------------------
+
+shape_state_transition_completeness <- concept_shacl_node_shape;;
+shape_state_transition_completeness => nrel_main_idtf:
+    [SHACL NodeShape: полнота перехода жизненного цикла]
+    (* <- lang_ru;; *);;
+
+rule -> rule_validate_state_transition_shape: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_state_transition_completeness)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_state_transition;
+            property rrel_from_state — minCount 1; maxCount 1;
+            property rrel_to_state — minCount 1; maxCount 1;
+            property nrel_caused_by_event — minCount 1; maxCount 1;
+            property nrel_uses_plan_version — minCount 1; maxCount 1.
+            Нарушение означает невосстановимость маршрута обработки
+            по журналу переходов (нарушение Req_15).] (* <- lang_ru;; *);;
+    *);;
+*);;
+// Реализуемо четырьмя вызовами action_validate_cardinality_constraint:
+// rrel_from_state и rrel_to_state — mode=concept_cardinality_check_outgoing_role;
+// nrel_caused_by_event и nrel_uses_plan_version —
+// mode=concept_cardinality_check_outgoing_non_role; для всех min=1, max=1.
+
+// ---------------------------------------------------------------------
+// Shape: линейность цепи версий плана.
+// ---------------------------------------------------------------------
+
+shape_plan_version_lineage <- concept_shacl_node_shape;;
+shape_plan_version_lineage => nrel_main_idtf:
+    [SHACL NodeShape: преемственность версий плана] (* <- lang_ru;; *);;
+
+rule -> rule_validate_plan_version_lineage: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(валидация shape_plan_version_lineage)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [targetClass concept_plan_version;
+            property nrel_replans — maxCount 1.
+            У версии плана не более одного непосредственного
+            предшественника; ацикличность цепи replans проверяется
+            отдельно обходом графа, как и для nrel_derived_from.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+// maxCount-часть реализуема вызовом action_validate_cardinality_constraint
+// (outgoing_non_role, min=0, max=1). Ацикличность подсчётом дуг
+// не выражается -- требует обхода, как shape_provenance_chain_complete.

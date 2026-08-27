@@ -40,12 +40,16 @@ definition -> definition_ontological_interaction_model: ...
             с сообществом интеллектуальных систем формально задаётся
             кортежем M_int = <E, R, A, F>, где:
             E — множество классов сущностей предметной области,
-                объединяющее интенциональные, запросные, агентные,
-                контекстные, процессные, результирующие, мета-результирующие
-                и ролевые классы;
+                разбитое на семь групп:
+                E = E_subj ∪ E_goal ∪ E_part ∪ E_proc ∪ E_ctx
+                    ∪ E_result ∪ E_ctrl;
             R — множество семантических отношений (бинарных и n-арных)
-                над классами E:
-                R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust;
+                над классами E, разбитое на семь подмножеств:
+                R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec
+                    ∪ R_ctrl ∪ R_prov,
+                где R_ctrl объединяет управляющие отношения — доверие,
+                согласованность, конфликты, доступ, человеческий надзор
+                и проверку результата (R_trust ⊑ R_ctrl);
             A — множество атрибутов сущностей и отношений, реализуемых
                 в sc-памяти как ролевые и параметрические компоненты
                 sc-узлов;
@@ -54,12 +58,13 @@ definition -> definition_ontological_interaction_model: ...
            (* <- lang_ru;; *);;
         -> [The ontological model of user interaction with a community
             of intelligent systems is formally defined as a tuple
-            M_int = <E, R, A, F> where E is the set of entity classes,
-            R is the set of semantic relations (R_str ∪ R_goal ∪ R_ctx
-            ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust), A is the set of
-            attributes, and F = F_ax ∪ F_rule ∪ F_constr ∪ F_prov
-            is the set of formal interpretation means.]
-           (* <- lang_en;; *);;
+            M_int = <E, R, A, F> where E is the set of entity classes
+            (E_subj ∪ E_goal ∪ E_part ∪ E_proc ∪ E_ctx ∪ E_result
+            ∪ E_ctrl), R is the set of semantic relations (R_str
+            ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_ctrl ∪ R_prov),
+            A is the set of attributes, and F = F_ax ∪ F_rule
+            ∪ F_constr ∪ F_prov is the set of formal interpretation
+            means.] (* <- lang_en;; *);;
     *);;
 *);;
 
@@ -82,6 +87,45 @@ affirmation -> affirmation_capability_match: ...
             сообщества и не ниже порога θ:
             assign(σ, s) ↔ match(σ, s) ≥ θ ∧ valid(C, L_s).]
            (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Определение: операционный контур посредника.
+// ---------------------------------------------------------------------
+
+definition -> definition_mediation_operational_loop: ...
+(*
+    -> rrel_key_sc_element: concept_mediation_state;;
+    -> rrel_key_sc_element: concept_state_transition;;
+    -> rrel_key_sc_element: concept_plan_version;;
+    => nrel_main_idtf:
+        [Опр.(операционный контур посредника)] (* <- lang_ru;; *);;
+    <= nrel_using_constants: ...
+    (*
+        -> concept_mediation_state;
+           concept_state_transition;
+           concept_processing_plan;
+           concept_plan_version;
+           concept_execution_act;
+           concept_audit_record;
+           concept_provenance_record;
+           concept_reassignment_budget;
+           concept_replanning_depth;;
+    *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Операционный контур посредника есть цепочка
+            «состояние — план — исполнение — аудит — провенанс —
+            верификация — терминальный исход». Переходы описываются
+            функцией δ: X × E × C → X × A; каждый переход указывает
+            событие-основание, действовавшую версию плана и запись
+            аудита. Восстановление маршрута обеспечивается двумя
+            независимыми ресурсами: бюджетом переназначений b_q,
+            меняющим исполнителя при неизменной структуре задачи,
+            и глубиной перепланирования d_max, меняющей саму структуру
+            графа подзадач. Терминальные исходы: x_present, x_partial,
+            x_clar, x_refuse и x_cancel.] (* <- lang_ru;; *);;
     *);;
 *);;
 

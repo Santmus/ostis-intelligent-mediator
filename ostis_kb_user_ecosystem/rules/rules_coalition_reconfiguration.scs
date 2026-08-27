@@ -11,6 +11,93 @@ section_rules_coalition_reconfiguration
     [Subsection. Coalition Reconfiguration Rules (π_rec)] (* <- lang_en;; *);
 <- atomic_section;;
 
+// ---------------------------------------------------------------------
+// Правила раздельного расхода ресурсов восстановления. Переназначение
+// и перепланирование — разные операции с разными ресурсами: смешение
+// расхода нарушает лексикографическое убывание потенциала Φ.
+// ---------------------------------------------------------------------
+
+rule -> rule_reassign_on_executor_failure: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(переназначение при отказе исполнителя, расход b_q)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: has_processing_state(q, x) ∧ x ∈ WorkingState
+                ∧ caused_by_event(t, ev) ∧ ev ∈ FailureEvent
+                ∧ assigned_to(σ, s) ∧ remaining_reassignment_budget(x, b)
+                ∧ b > 0,
+            Then: создать concept_reassignment_event ev_r
+                  с reassigns(ev_r, σ); выбрать резервного исполнителя
+                  s' по match(σ, s' | C) ≥ θ; выполнить переход
+                  x_exec → x_assign с uses_plan_version(t, pv),
+                  где pv — ДЕЙСТВУЮЩАЯ версия плана (структура T(q)
+                  не меняется); установить b := b − 1;
+                  subtask_status(σ, reassigned);
+                  создать запись аудита перехода и её провенанс.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_replan_on_budget_exhaustion: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(перепланирование при исчерпании b_q, расход d_max)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: remaining_reassignment_budget(x, 0)
+                ∧ remaining_replanning_depth(x, d) ∧ d > 0
+                ∧ ∃σ. ¬terminal_status(σ),
+            Then: создать concept_replanning_event; породить НОВУЮ
+                  версию плана pv' с replans(pv', pv); выполнить
+                  переход x_* → x_replan → x_plan
+                  с uses_plan_version(t, pv'); установить d := d − 1;
+                  бюджет b НЕ расходуется и может быть переустановлен
+                  для новой структуры T(q);
+                  создать запись аудита перехода и её провенанс.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_refuse_on_resource_exhaustion: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(терминальный отказ при исчерпании обоих ресурсов)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: remaining_reassignment_budget(x, 0)
+                ∧ remaining_replanning_depth(x, 0)
+                ∧ ∃σ. ¬terminal_status(σ),
+            Then: Φ(x) = <0, 0>. Сформировать структурированный отказ
+                  ⊥ = <c, ϱ, a> с кодом c = No_Competence либо
+                  Constraint_Violation, рекомендацией по восстановлению ϱ
+                  и записью аудита a ∈ AuditRecord; выполнить переход
+                  в x_refuse либо, если уточнение способно снять
+                  причину, в x_clar. Оставаться в нетерминальном
+                  состоянии запрещено.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+rule -> rule_refuse_on_timeout: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(терминальный отказ по тайм-ауту)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: истёк внешний временной ресурс обработки запроса q,
+            Then: выполнить переход в x_refuse с кодом c = Timeout
+                  независимо от значения Φ(x) и остатков b_q и d_max.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
 rule -> rule_on_system_failure: ...
 (*
     <- concept_sc_rule;;

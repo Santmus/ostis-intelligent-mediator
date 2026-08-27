@@ -1,0 +1,302 @@
+// =====================================================================
+// scenarios/scenario_lifecycle_recovery.scs
+// Сценарий: восстановление маршрута обработки и терминальный отказ.
+//
+// Демонстрирует раздельный расход двух ресурсов:
+//   b_q   — переназначение исполнителя при неизменной структуре T(q):
+//           x_exec → x_assign, b_rem: 2 → 1 → 0;
+//   d_max — перепланирование, порождающее новую версию плана:
+//           x_exec → x_replan → x_plan, d_rem: 1 → 0.
+// При одновременном исчерпании обоих ресурсов обработка переходит
+// в терминальное состояние x_refuse со структурированным отказом
+// ⊥ = <c, ϱ, a>.
+//
+// Является отрицательным сценарием к constraint_separate_resource_decrease
+// и constraint_terminal_state_closure.
+// =====================================================================
+
+section_scenario_lifecycle_recovery
+=> nrel_main_idtf:
+    [Сценарий. Переназначение, перепланирование и терминальный отказ]
+    (* <- lang_ru;; *);
+    [Scenario. Reassignment, Replanning and Terminal Refusal]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: request_rec_001;
+<- rrel_key_sc_element: plan_rec_001;
+<- rrel_key_sc_element: failure_rec_001;;
+
+// ---------------------------------------------------------------------
+// Исходная конфигурация: запрос, план, первая версия плана,
+// начальные ресурсы b_q = 2, d_max = 1.
+// ---------------------------------------------------------------------
+
+user_boris <- concept_end_user;;
+user_boris => nrel_main_idtf: [Борис] (* <- lang_ru;; *);;
+
+request_rec_001 <- concept_user_request;;
+request_rec_001 => nrel_main_idtf:
+    [Запрос: рассчитать сводный прогноз спроса по трём складам]
+    (* <- lang_ru;; *);;
+user_boris => nrel_formulates: request_rec_001;;
+request_rec_001 => nrel_has_context: context_rec_001;;
+context_rec_001 <- concept_interaction_context;;
+
+mediator_rec <- concept_intelligent_mediator;;
+mediator_rec => nrel_main_idtf:
+    [Посредник, обслуживающий запрос request_rec_001] (* <- lang_ru;; *);;
+
+plan_rec_001 <- concept_processing_plan;;
+plan_rec_001 => nrel_main_idtf:
+    [План обработки запроса request_rec_001] (* <- lang_ru;; *);;
+request_rec_001 => nrel_has_plan: plan_rec_001;;
+
+plan_rec_v1 <- concept_plan_version;;
+plan_rec_v1 => nrel_main_idtf:
+    [Версия плана v1: одна подзадача прогнозирования] (* <- lang_ru;; *);;
+plan_rec_001 => nrel_has_plan_version: plan_rec_v1;;
+
+subtask_forecast <- concept_subtask;;
+subtask_forecast => nrel_main_idtf:
+    [Подзадача: прогноз спроса] (* <- lang_ru;; *);;
+plan_rec_001 => nrel_decomposes_into_subtask: subtask_forecast;;
+
+system_forecaster_a <- concept_intelligent_system;;
+system_forecaster_b <- concept_intelligent_system;;
+system_forecaster_c <- concept_intelligent_system;;
+system_forecaster_a => nrel_main_idtf: [Прогнозист A] (* <- lang_ru;; *);;
+system_forecaster_b => nrel_main_idtf: [Прогнозист B] (* <- lang_ru;; *);;
+system_forecaster_c => nrel_main_idtf: [Прогнозист C] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Такт 1. Первое исполнение и отказ исполнителя A.
+// b_rem = 2, d_rem = 1.
+// ---------------------------------------------------------------------
+
+state_rec_exec_1 <- concept_state_execution;;
+state_rec_exec_1 => nrel_remaining_reassignment_budget: [2];;
+state_rec_exec_1 => nrel_remaining_replanning_depth: [1];;
+
+subtask_forecast => nrel_assigned_to: system_forecaster_a;;
+
+execution_act_rec_a <- concept_execution_act;;
+execution_act_rec_a <- concept_execution_act_failed;;
+execution_act_rec_a => nrel_executes: subtask_forecast;;
+execution_act_rec_a => nrel_recorded_in: audit_rec_a;;
+
+audit_rec_a <- concept_audit_record;;
+audit_rec_a <- concept_audit_record_execution;;
+audit_rec_a => nrel_main_idtf:
+    [Аудит: исполнитель A не вернул результат в отведённое время]
+    (* <- lang_ru;; *);;
+audit_rec_a => nrel_has_provenance: prov_rec_audit_a;;
+prov_rec_audit_a <- concept_provenance_record;;
+
+failure_event_a <- concept_failure_event;;
+failure_event_a => nrel_main_idtf:
+    [Событие: отказ исполнителя A] (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// Такт 2. Переназначение на B: x_exec → x_assign. Расходуется b_q,
+// структура T(q) и версия плана НЕ меняются. b_rem: 2 → 1.
+// ---------------------------------------------------------------------
+
+state_rec_assign_2 <- concept_state_assignment;;
+state_rec_assign_2 => nrel_remaining_reassignment_budget: [1];;
+state_rec_assign_2 => nrel_remaining_replanning_depth: [1];;
+
+reassignment_rec_1 <- concept_reassignment_event;;
+reassignment_rec_1 => nrel_main_idtf:
+    [Переназначение 1: подзадача прогноза передана исполнителю B]
+    (* <- lang_ru;; *);;
+reassignment_rec_1 => nrel_reassigns: subtask_forecast;;
+
+transition_rec_reassign_1
+<- concept_state_transition;
+-> rrel_from_state: state_rec_exec_1;
+-> rrel_to_state: state_rec_assign_2;
+-> rrel_transition_event: reassignment_rec_1;
+-> rrel_transition_actor: mediator_rec;
+-> rrel_context: context_rec_001;;
+transition_rec_reassign_1 => nrel_caused_by_event: failure_event_a;;
+// Версия плана не изменилась — переназначение не перестраивает T(q).
+transition_rec_reassign_1 => nrel_uses_plan_version: plan_rec_v1;;
+transition_rec_reassign_1 => nrel_transition_recorded_in: audit_rec_reassign_1;;
+
+audit_rec_reassign_1 <- concept_audit_record;;
+audit_rec_reassign_1 <- concept_audit_record_transition;;
+audit_rec_reassign_1 => nrel_has_provenance: prov_rec_reassign_1;;
+prov_rec_reassign_1 <- concept_provenance_record;;
+
+subtask_forecast => nrel_assigned_to: system_forecaster_b;;
+subtask_forecast => nrel_subtask_status: concept_subtask_status_reassigned;;
+
+// ---------------------------------------------------------------------
+// Такт 3. Отказ B и второе переназначение на C. b_rem: 1 → 0.
+// ---------------------------------------------------------------------
+
+execution_act_rec_b <- concept_execution_act;;
+execution_act_rec_b <- concept_execution_act_failed;;
+execution_act_rec_b => nrel_executes: subtask_forecast;;
+execution_act_rec_b => nrel_recorded_in: audit_rec_b;;
+
+audit_rec_b <- concept_audit_record;;
+audit_rec_b <- concept_audit_record_execution;;
+audit_rec_b => nrel_has_provenance: prov_rec_audit_b;;
+prov_rec_audit_b <- concept_provenance_record;;
+
+failure_event_b <- concept_failure_event;;
+failure_event_b => nrel_main_idtf:
+    [Событие: отказ исполнителя B] (* <- lang_ru;; *);;
+
+state_rec_assign_3 <- concept_state_assignment;;
+state_rec_assign_3 => nrel_remaining_reassignment_budget: [0];;
+state_rec_assign_3 => nrel_remaining_replanning_depth: [1];;
+
+reassignment_rec_2 <- concept_reassignment_event;;
+reassignment_rec_2 => nrel_main_idtf:
+    [Переназначение 2: подзадача прогноза передана исполнителю C;
+     бюджет переназначений исчерпан] (* <- lang_ru;; *);;
+reassignment_rec_2 => nrel_reassigns: subtask_forecast;;
+
+transition_rec_reassign_2
+<- concept_state_transition;
+-> rrel_from_state: state_rec_assign_2;
+-> rrel_to_state: state_rec_assign_3;
+-> rrel_transition_event: reassignment_rec_2;
+-> rrel_transition_actor: mediator_rec;
+-> rrel_context: context_rec_001;;
+transition_rec_reassign_2 => nrel_caused_by_event: failure_event_b;;
+transition_rec_reassign_2 => nrel_uses_plan_version: plan_rec_v1;;
+
+subtask_forecast => nrel_assigned_to: system_forecaster_c;;
+
+// ---------------------------------------------------------------------
+// Такт 4. Отказ C при b_rem = 0. Переназначение более недопустимо,
+// поэтому расходуется второй ресурс: перепланирование
+// x_exec → x_replan → x_plan порождает версию v2. d_rem: 1 → 0.
+// ---------------------------------------------------------------------
+
+execution_act_rec_c <- concept_execution_act;;
+execution_act_rec_c <- concept_execution_act_failed;;
+execution_act_rec_c => nrel_executes: subtask_forecast;;
+execution_act_rec_c => nrel_recorded_in: audit_rec_c;;
+
+audit_rec_c <- concept_audit_record;;
+audit_rec_c <- concept_audit_record_execution;;
+audit_rec_c => nrel_has_provenance: prov_rec_audit_c;;
+prov_rec_audit_c <- concept_provenance_record;;
+
+budget_exhausted_rec <- concept_event_budget_exhausted;;
+budget_exhausted_rec => nrel_main_idtf:
+    [Событие: b_rem = 0, переназначение недопустимо] (* <- lang_ru;; *);;
+
+state_rec_replan <- concept_state_replanning;;
+state_rec_replan => nrel_remaining_reassignment_budget: [0];;
+state_rec_replan => nrel_remaining_replanning_depth: [0];;
+
+replanning_rec_1 <- concept_replanning_event;;
+replanning_rec_1 => nrel_main_idtf:
+    [Перепланирование 1: подзадача прогноза разложена на три
+     подзадачи по складам; глубина перепланирования исчерпана]
+    (* <- lang_ru;; *);;
+
+// Новая версия плана: структура T(q) изменилась.
+plan_rec_v2 <- concept_plan_version;;
+plan_rec_v2 => nrel_main_idtf:
+    [Версия плана v2: три подзадачи по складам] (* <- lang_ru;; *);;
+plan_rec_001 => nrel_has_plan_version: plan_rec_v2;;
+plan_rec_v2 => nrel_replans: plan_rec_v1;;
+
+transition_rec_replan
+<- concept_state_transition;
+-> rrel_from_state: state_rec_assign_3;
+-> rrel_to_state: state_rec_replan;
+-> rrel_transition_event: replanning_rec_1;
+-> rrel_transition_actor: mediator_rec;
+-> rrel_context: context_rec_001;;
+transition_rec_replan => nrel_caused_by_event: budget_exhausted_rec;;
+transition_rec_replan => nrel_uses_plan_version: plan_rec_v2;;
+transition_rec_replan => nrel_transition_recorded_in: audit_rec_replan;;
+
+audit_rec_replan <- concept_audit_record;;
+audit_rec_replan <- concept_audit_record_transition;;
+audit_rec_replan => nrel_has_provenance: prov_rec_replan;;
+prov_rec_replan <- concept_provenance_record;;
+
+// ---------------------------------------------------------------------
+// Такт 5. Оба ресурса исчерпаны (Φ(x) = <0, 0> при непустом множестве
+// незавершённых подзадач) → терминальный отказ x_refuse.
+// ---------------------------------------------------------------------
+
+depth_exhausted_rec <- concept_event_depth_exhausted;;
+depth_exhausted_rec => nrel_main_idtf:
+    [Событие: d_rem = 0, перепланирование недопустимо] (* <- lang_ru;; *);;
+
+state_rec_refusal <- concept_state_refusal;;
+state_rec_refusal => nrel_remaining_reassignment_budget: [0];;
+state_rec_refusal => nrel_remaining_replanning_depth: [0];;
+
+transition_rec_refuse
+<- concept_state_transition;
+-> rrel_from_state: state_rec_replan;
+-> rrel_to_state: state_rec_refusal;
+-> rrel_transition_event: depth_exhausted_rec;
+-> rrel_transition_actor: mediator_rec;
+-> rrel_context: context_rec_001;;
+transition_rec_refuse => nrel_caused_by_event: depth_exhausted_rec;;
+transition_rec_refuse => nrel_uses_plan_version: plan_rec_v2;;
+transition_rec_refuse => nrel_transition_recorded_in: audit_rec_refusal;;
+
+audit_rec_refusal <- concept_audit_record;;
+audit_rec_refusal <- concept_audit_record_failure;;
+audit_rec_refusal => nrel_main_idtf:
+    [Аудит отказа: исчерпаны b_q и d_max при незавершённой
+     подзадаче прогноза] (* <- lang_ru;; *);;
+audit_rec_refusal => nrel_has_provenance: prov_rec_refusal;;
+prov_rec_refusal <- concept_provenance_record;;
+
+request_rec_001 => nrel_has_state: state_rec_refusal;;
+
+// ---------------------------------------------------------------------
+// Структурированный отказ ⊥ = <c, ϱ, a>.
+// ---------------------------------------------------------------------
+
+failure_rec_001 <- concept_processing_failure;;
+failure_rec_001 => nrel_main_idtf:
+    [Отказ: сводный прогноз не построен] (* <- lang_ru;; *);;
+request_rec_001 => nrel_resulted_in_failure: failure_rec_001;;
+
+// c — машинно-обрабатываемый код причины.
+failure_rec_001 => nrel_failure_cause: cause_rec_no_competence;;
+cause_rec_no_competence <- concept_cause_no_competence;;
+cause_rec_no_competence <- concept_failure_cause;;
+
+// ϱ — рекомендация по восстановлению.
+failure_rec_001 => nrel_recovery_recommendation: recovery_rec_001;;
+recovery_rec_001 <- concept_recovery_clarification_request;;
+recovery_rec_001 <- concept_recovery_action;;
+recovery_rec_001 => nrel_main_idtf:
+    [Рекомендация: сузить горизонт прогноза до одного склада
+     либо разрешить обращение к внешнему поставщику данных]
+    (* <- lang_ru;; *);;
+
+// a — запись аудита (не провенансная запись).
+failure_rec_001 => nrel_failure_audit_record: audit_rec_refusal;;
+
+// ---------------------------------------------------------------------
+// Продолжение после терминального состояния оформляется как НОВЫЙ
+// запрос: переиспользование того же экземпляра обработки запрещено
+// ограничением constraint_terminal_state_closure.
+// ---------------------------------------------------------------------
+
+request_rec_002 <- concept_user_request;;
+request_rec_002 => nrel_main_idtf:
+    [Повторный запрос: прогноз спроса по одному складу]
+    (* <- lang_ru;; *);;
+user_boris => nrel_formulates: request_rec_002;;
+request_rec_002 => nrel_continues_request: request_rec_001;;
+request_rec_002 => nrel_has_state: state_rec_002_accepted;;
+state_rec_002_accepted <- concept_state_accepted;;
+state_rec_002_accepted => nrel_remaining_reassignment_budget: [2];;
+state_rec_002_accepted => nrel_remaining_replanning_depth: [1];;

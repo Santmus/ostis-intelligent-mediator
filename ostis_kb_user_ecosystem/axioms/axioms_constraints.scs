@@ -68,16 +68,181 @@ constraint -> constraint_result_provenance: ...
     *);;
 *);;
 
+// Условие допустимости публикации итогового результата. Запрещается
+// НЕ конфликт как таковой, а наличие НЕРАЗРЕШЁННОГО конфликта:
+// обнаруженный и разрешённый конфликт обязан остаться в графе
+// происхождения вместе с объяснением и процедурой разрешения.
 constraint -> constraint_integrated_result: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 7): согласованность интегрированного результата]
+        [Огр.(допустимость публикации итогового результата)]
        (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [∀ir ∈ IntegratedResult. (∃e. explained_by(ir, e))
-            ∧ ¬∃c. conflicts_with(ir, c).]
+        -> [final(r) → verified(r) ∧ (∃e. explained_by(r, e))
+            ∧ ¬has_unresolved_conflict(r).
+            Результат не представляется пользователю как согласованный,
+            если он не прошёл верификацию посредником, не имеет
+            присоединённого объяснения либо содержит неразрешённый
+            конфликт. Разрешённый конфликт публикации не препятствует:
+            для него обязаны существовать conflict_status = resolved,
+            акт разрешения resolved_by и провенансный след процедуры.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_conflict_resolution_trace: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(провенансный след разрешения конфликта)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀γ ∈ ResultConflict. conflict_status(γ, resolved)
+            → ∃act ∈ ConflictResolutionAct. resolved_by(γ, act)
+            ∧ ∃e ∈ Explanation. resolves_conflict(e, γ)
+            ∧ ∃ζ ∈ ProvenanceRecord. has_provenance(act, ζ).
+            Объявить конфликт разрешённым без акта разрешения,
+            объяснения и провенансного следа недопустимо.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ограничения операционного контура посредника: акты исполнения,
+// записи аудита, состояния и ресурсы восстановления.
+// ---------------------------------------------------------------------
+
+constraint -> constraint_execution_act_audit: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(обязательность записи аудита акта исполнения)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀a ∈ ExecutionAct. ∃!σ ∈ Subtask. executes(a, σ)
+            ∧ ∃!υ ∈ AuditRecord. recorded_in(a, υ).
+            Ни один акт исполнения не может существовать без указания
+            выполняемой подзадачи и без записи аудита.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_audit_record_provenance: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(обязательность провенанса записи аудита)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀υ ∈ AuditRecord. ∃!ζ ∈ ProvenanceRecord.
+            has_provenance(υ, ζ) ∧ ¬(υ ∈ ProvenanceRecord).
+            У каждой записи аудита есть ровно одна провенансная запись;
+            классы AuditRecord и ProvenanceRecord дизъюнктны и не
+            подменяют друг друга.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_result_generated_by_act: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(результат порождён актом исполнения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀z ∈ ProcessingResult. ∃!a ∈ ExecutionAct.
+            generated_by(z, a).
+            Ни один частичный результат не может существовать без
+            указания породившего его акта исполнения; итоговый
+            результат дополнительно связан с процедурой агрегации
+            (aggregates) и проверки (verifies, validated_by).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_terminal_state_closure: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(запрет перехода из терминального состояния)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀x ∈ TerminalState. ¬∃x'. transitions_to(x, x').
+            Единственный допустимый способ продолжения после
+            терминального состояния — открытие нового запроса
+            со своим начальным состоянием x_0, связанного с исходным
+            отношением continues_request.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_terminal_reachability: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(достижимость терминального состояния)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀x ∈ WorkingState. ∃ путь по transitions_to из x
+            в некоторое x_t ∈ TerminalState.
+            Рабочее состояние, из которого не достижим ни один
+            терминальный исход, есть дефект спецификации автомата.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_transition_provenance: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(фиксация перехода жизненного цикла)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀t ∈ StateTransition. ∃x_from, x_to, ev, pv, υ.
+            from_state(t, x_from) ∧ to_state(t, x_to)
+            ∧ caused_by_event(t, ev) ∧ uses_plan_version(t, pv)
+            ∧ transition_recorded_in(t, υ).
+            Каждый переход фиксирует исходное и новое состояние,
+            событие-основание, действовавшую версию плана и запись
+            аудита; содержание журнала ограничивается политикой
+            минимизации данных.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_separate_resource_decrease: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(раздельное убывание b_q и d_max)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Переход переназначения (x_exec → x_assign) уменьшает
+            b_rem на единицу и не изменяет d_rem и структуру T(q).
+            Переход перепланирования (x_* → x_replan → x_plan)
+            уменьшает d_rem на единицу и порождает новую версию плана
+            replans(pv_new, pv_prev). Смешение ресурсов — расход d_max
+            при переназначении либо b_q при перепланировании —
+            нарушает лексикографическое убывание Φ и запрещено.
+            При b_rem = 0 переназначение недопустимо; при d_rem = 0
+            недопустимо перепланирование; при одновременном исчерпании
+            обоих ресурсов обязателен переход в x_refuse либо x_clar.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_plan_version_acyclic: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(ацикличность цепи версий плана)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [acyclic(replans) ∧ ∀pv. |{pv' : replans(pv, pv')}| ≤ 1.
+            Цепь преемственности версий плана ациклична, у каждой
+            версии не более одного непосредственного предшественника,
+            что обеспечивает восстановимость истории маршрута.]
            (* <- lang_ru;; *);;
     *);;
 *);;

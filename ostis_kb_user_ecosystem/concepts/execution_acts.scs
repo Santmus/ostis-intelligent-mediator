@@ -1,0 +1,193 @@
+// =====================================================================
+// concepts/execution_acts.scs
+// Подраздел: акт исполнения (ExecutionAct) и запись аудита
+// (AuditRecord) — овеществлённые сущности операционного контура
+// посредника.
+//
+// Ключевое различение финальной модели (гл. 2):
+//   AuditRecord      — запись аудита акта исполнения либо отказа
+//                      (что было сделано, кем, когда, с каким исходом);
+//   ProvenanceRecord — запись происхождения сущности, деятельности,
+//                      агента и версии плана (откуда взялся результат).
+// Запись аудита НЕ является синонимом записи происхождения: у самой
+// записи аудита есть собственная запись происхождения.
+//
+// Схема связей:
+//   ProcessingFailure ──has_audit_record──> AuditRecord
+//   ExecutionAct      ──recorded_in──────> AuditRecord
+//   AuditRecord       ──has_provenance───> ProvenanceRecord
+//   ProcessingResult  ──has_provenance───> ProvenanceRecord
+//   ProcessingResult  ──generated_by─────> ExecutionAct
+//   ExecutionAct      ──executes────────> Subtask
+// =====================================================================
+
+section_concept_execution_acts
+=> nrel_main_idtf:
+    [Подраздел. Акты исполнения и записи аудита] (* <- lang_ru;; *);
+    [Subsection. Execution Acts and Audit Records] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_execution_act;
+<- rrel_key_sc_element: concept_audit_record;;
+
+// ---------------------------------------------------------------------
+// Акт исполнения — овеществлённый факт выполнения подзадачи
+// участником: фиксирует исполнителя, время, входные данные
+// и полученный результат.
+// ---------------------------------------------------------------------
+
+concept_execution_act
+<- sc_node_class;
+=> nrel_main_idtf:
+    [акт исполнения] (* <- lang_ru;; *);
+    [execution act] (* <- lang_en;; *);
+=> nrel_idtf: [a];;
+
+concept_execution_act <= nrel_inclusion: concept_entity_group_process;;
+concept_execution_act <= nrel_inclusion: concept_process_class_group;;
+
+definition -> definition_execution_act: ...
+(*
+    -> rrel_key_sc_element: concept_execution_act;;
+    => nrel_main_idtf: [Опр.(акт исполнения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Акт исполнения a — овеществлённый факт выполнения подзадачи σ
+            интеллектуальной системой s. Каждый акт исполнения обязан
+            указывать ровно одну подзадачу (executes) и быть зафиксирован
+            ровно в одной записи аудита (recorded_in). Частичный результат
+            связан с породившим его актом отношением generated_by.
+            В отличие от процесса жизненного цикла π, который описывает
+            вид деятельности, акт исполнения описывает единичное
+            наблюдаемое событие исполнения.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_execution_act <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение актов исполнения по исходу]
+       (* <- lang_ru;; *);;
+    -> concept_execution_act_successful;
+       concept_execution_act_failed;
+       concept_execution_act_cancelled;;
+*);;
+
+concept_execution_act_successful
+<- sc_node_class;
+=> nrel_main_idtf: [акт исполнения: успешный] (* <- lang_ru;; *);
+=> nrel_main_idtf: [successful execution act] (* <- lang_en;; *);;
+
+concept_execution_act_failed
+<- sc_node_class;
+=> nrel_main_idtf: [акт исполнения: завершён отказом] (* <- lang_ru;; *);
+=> nrel_main_idtf: [failed execution act] (* <- lang_en;; *);;
+
+concept_execution_act_cancelled
+<- sc_node_class;
+=> nrel_main_idtf: [акт исполнения: отменён] (* <- lang_ru;; *);
+=> nrel_main_idtf: [cancelled execution act] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Запись аудита — самостоятельный класс управляющей группы E_ctrl.
+// ---------------------------------------------------------------------
+
+concept_audit_record
+<- sc_node_class;
+=> nrel_main_idtf:
+    [запись аудита] (* <- lang_ru;; *);
+    [audit record] (* <- lang_en;; *);
+=> nrel_idtf: [υ];;
+
+concept_audit_record <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_audit_record: ...
+(*
+    -> rrel_key_sc_element: concept_audit_record;;
+    => nrel_main_idtf: [Опр.(запись аудита)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Запись аудита υ — sc-структура, фиксирующая факт совершения
+            акта исполнения либо факт отказа: исполнителя, момент
+            времени, исходное и новое состояние обработки, событие,
+            версию плана и исход. Запись аудита не тождественна
+            провенансной записи: провенансная запись отвечает на вопрос
+            о происхождении сущности, тогда как запись аудита — на вопрос
+            о совершённом действии. Каждая запись аудита сама снабжается
+            провенансной записью (has_provenance), что позволяет
+            восстановить, каким агентом и в каком контексте она
+            была создана.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_audit_record <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение записей аудита по предмету]
+       (* <- lang_ru;; *);;
+    -> concept_audit_record_execution;
+       concept_audit_record_failure;
+       concept_audit_record_transition;
+       concept_audit_record_access;;
+*);;
+
+concept_audit_record_execution
+<- sc_node_class;
+=> nrel_main_idtf: [запись аудита акта исполнения] (* <- lang_ru;; *);
+=> nrel_main_idtf: [execution audit record] (* <- lang_en;; *);;
+
+concept_audit_record_failure
+<- sc_node_class;
+=> nrel_main_idtf: [запись аудита отказа] (* <- lang_ru;; *);
+=> nrel_main_idtf: [failure audit record] (* <- lang_en;; *);;
+
+concept_audit_record_transition
+<- sc_node_class;
+=> nrel_main_idtf: [запись аудита перехода состояния] (* <- lang_ru;; *);
+=> nrel_main_idtf: [state transition audit record] (* <- lang_en;; *);;
+
+concept_audit_record_access
+<- sc_node_class;
+=> nrel_main_idtf: [запись аудита доступа к данным] (* <- lang_ru;; *);
+=> nrel_main_idtf: [data access audit record] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Различение записи аудита и записи происхождения — явное утверждение,
+// закрывающее расхождение прежней версии базы знаний.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_audit_vs_provenance: ...
+(*
+    -> rrel_key_sc_element: concept_audit_record;;
+    -> rrel_key_sc_element: concept_provenance_record;;
+    => nrel_main_idtf:
+        [Утв.(различение записи аудита и записи происхождения)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [AuditRecord ⊓ ProvenanceRecord ⊑ ⊥.
+            Классы записи аудита и провенансной записи дизъюнктны.
+            Запись аудита фиксирует совершённое действие (акт исполнения,
+            отказ, переход состояния, доступ к данным); провенансная
+            запись фиксирует происхождение сущности в терминах PROV-O
+            (Entity, Activity, Agent). Связь между ними направлена:
+            has_provenance(υ, ζ) — у каждой записи аудита есть своя
+            провенансная запись, но не наоборот.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Обязательность записи аудита и провенанса.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_execution_act_obligations: ...
+(*
+    -> rrel_key_sc_element: concept_execution_act;;
+    => nrel_main_idtf:
+        [Утв.(обязательства акта исполнения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀a ∈ ExecutionAct. ∃!σ ∈ Subtask. executes(a, σ)
+            ∧ ∃!υ ∈ AuditRecord. recorded_in(a, υ).
+            Ни один акт исполнения не может существовать без указания
+            выполняемой подзадачи и без записи аудита; оба отношения
+            функциональны и всюду определены.] (* <- lang_ru;; *);;
+    *);;
+*);;

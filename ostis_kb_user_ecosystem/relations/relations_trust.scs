@@ -1,13 +1,18 @@
 // =====================================================================
 // relations/relations_trust.scs
-// Подмножество R_trust — отношения доверия и согласованности /
-// конфликтности результатов.
+// Подмножество R_trust — отношения доверия, согласованности
+// и конфликтности результатов.
+//
+// R_trust ⊑ R_ctrl: с приведением к финальной модели (гл. 2) отношения
+// этого файла входят в управляющее подмножество R_ctrl, состав
+// которого зафиксирован в relations/relations_control.scs. Прежний
+// идентификатор R_trust сохранён, чтобы не ломать навигацию и ссылки.
 // =====================================================================
 
 section_relations_trust
 => nrel_main_idtf:
-    [Подраздел. Отношения доверия R_trust] (* <- lang_ru;; *);
-    [Subsection. Trust Relations R_trust] (* <- lang_en;; *);
+    [Подраздел. Отношения доверия R_trust (часть R_ctrl)] (* <- lang_ru;; *);
+    [Subsection. Trust Relations R_trust (part of R_ctrl)] (* <- lang_en;; *);
 <- atomic_section;;
 
 nrel_has_trust_level
@@ -51,6 +56,19 @@ nrel_consistent_with
 => nrel_first_domain: concept_processing_result;
 => nrel_second_domain: concept_processing_result;;
 
+// Область определения — объяснение, а не интегрированный результат:
+// конфликт разрешается предъявляемой процедурой и её объяснением,
+// а не самим результатом. Коллективное решение как способ разрешения
+// связывается с конфликтом через акт разрешения (nrel_resolved_by).
+//
+// РАСХОЖДЕНИЕ С РЕАЛИЗАЦИЕЙ (снимается на этапе синхронизации агентов):
+// AgentResolveByTrustWeighted
+// (ostis_ps_user_ecosystem/src/agent/agent_resolve_by_trust_weighted.cpp)
+// создаёт resolves_conflict(integrated_result, conflict), то есть
+// с прежней областью определения. Порядок приведения: агент должен
+// создавать concept_conflict_resolution_act, связывать его с конфликтом
+// через nrel_resolved_by, устанавливать nrel_conflict_status = resolved
+// и относить resolves_conflict к порождённому объяснению.
 nrel_resolves_conflict
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -58,7 +76,7 @@ nrel_resolves_conflict
     [resolves_conflict*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_integrated_result;
+=> nrel_first_domain: concept_explanation;
 => nrel_second_domain: concept_result_conflict;;
 
 nrel_trust_updated_by_feedback

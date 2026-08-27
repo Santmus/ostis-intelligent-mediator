@@ -132,7 +132,10 @@ question_relation_subsets => nrel_question_subject: concept_relation_set;;
 
 answer_q4 <- concept_expected_answer;;
 answer_q4 => nrel_main_idtf:
-    [R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust]
+    [R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_ctrl ∪ R_prov,
+     где R_ctrl — управляющее подмножество (доверие, согласованность,
+     конфликты, доступ, надзор, верификация), а R_trust ⊑ R_ctrl
+     сохранено как его семантическая часть]
     (* <- lang_ru;; *);;
 question_relation_subsets => nrel_expected_answer: answer_q4;;
 
@@ -170,6 +173,137 @@ answer_q6 => nrel_main_idtf:
     [T(s, τ) = <t_rel, t_acc, t_sec, t_tr> — надёжность, достоверность,
      безопасность, прозрачность] (* <- lang_ru;; *);;
 question_trust_vector_composition => nrel_expected_answer: answer_q6;;
+
+// ---------------------------------------------------------------------
+// Q7: Семь групп множества сущностей E.
+// ---------------------------------------------------------------------
+
+question_entity_groups <- concept_test_question;;
+question_entity_groups => nrel_main_idtf:
+    [Q7. На какие семь групп разбито множество сущностей E
+     и как на них отображаются прежние классификации базы знаний?]
+    (* <- lang_ru;; *);;
+question_entity_groups => nrel_question_subject: concept_entity_class_set;;
+
+answer_q7 <- concept_expected_answer;;
+answer_q7 => nrel_main_idtf:
+    [E = E_subj ∪ E_goal ∪ E_part ∪ E_proc ∪ E_ctx ∪ E_result ∪ E_ctrl.
+     Карта прежних классификаций: интенциональная и запросная → E_goal;
+     агентная и ролевая → E_part; контекстная → E_ctx;
+     процессная → E_proc; результирующая и мета-результирующая
+     → E_result.] (* <- lang_ru;; *);;
+question_entity_groups => nrel_expected_answer: answer_q7;;
+
+// ---------------------------------------------------------------------
+// Q8: Состояния жизненного цикла обработки запроса.
+// ---------------------------------------------------------------------
+
+question_lifecycle_states <- concept_test_question;;
+question_lifecycle_states => nrel_main_idtf:
+    [Q8. Какова основная последовательность состояний обработки
+     запроса и какие состояния являются терминальными?]
+    (* <- lang_ru;; *);;
+question_lifecycle_states => nrel_question_subject: concept_mediation_state;;
+
+answer_q8 <- concept_expected_answer;;
+answer_q8 => nrel_main_idtf:
+    [x_0 → x_int → x_plan → x_assign → x_exec → x_aggregate
+     → x_verify → x_present.
+     Терминальные: x_present (успех), x_partial (частичный результат),
+     x_clar (уточнение), x_refuse (структурированный отказ),
+     x_cancel (отмена). Из терминального состояния переход
+     не допускается.] (* <- lang_ru;; *);;
+question_lifecycle_states => nrel_expected_answer: answer_q8;;
+
+// ---------------------------------------------------------------------
+// Q9: Циклические переходы и два ресурса восстановления.
+// ---------------------------------------------------------------------
+
+question_recovery_resources <- concept_test_question;;
+question_recovery_resources => nrel_main_idtf:
+    [Q9. Чем различаются бюджет переназначений b_q и предельная
+     глубина перепланирования d_max, и какие переходы их расходуют?]
+    (* <- lang_ru;; *);;
+question_recovery_resources => nrel_question_subject:
+    concept_reassignment_budget;;
+
+answer_q9 <- concept_expected_answer;;
+answer_q9 => nrel_main_idtf:
+    [b_q ограничивает перебор исполнителей ПРИ НЕИЗМЕННОЙ структуре
+     задачи и расходуется переходом x_exec → x_assign (переназначение);
+     d_max ограничивает перестроение самой структуры графа подзадач
+     и расходуется переходом x_* → x_replan → x_plan
+     (перепланирование, порождающее новую версию плана).
+     Потенциал Φ(x) = <d_rem, n_pend + b_rem> убывает
+     лексикографически при каждом нетерминальном переходе.]
+    (* <- lang_ru;; *);;
+question_recovery_resources => nrel_expected_answer: answer_q9;;
+
+// ---------------------------------------------------------------------
+// Q10: Различение записи аудита и записи происхождения.
+// ---------------------------------------------------------------------
+
+question_audit_vs_provenance <- concept_test_question;;
+question_audit_vs_provenance => nrel_main_idtf:
+    [Q10. Чем запись аудита отличается от провенансной записи
+     и как они связаны?] (* <- lang_ru;; *);;
+question_audit_vs_provenance => nrel_question_subject: concept_audit_record;;
+
+answer_q10 <- concept_expected_answer;;
+answer_q10 => nrel_main_idtf:
+    [AuditRecord ⊓ ProvenanceRecord ⊑ ⊥. Запись аудита фиксирует
+     совершённое действие (акт исполнения, отказ, переход, доступ);
+     провенансная запись фиксирует происхождение сущности в терминах
+     PROV-O. Схема: ProcessingFailure —has_audit_record→ AuditRecord;
+     ExecutionAct —recorded_in→ AuditRecord;
+     AuditRecord —has_provenance→ ProvenanceRecord;
+     ProcessingResult —has_provenance→ ProvenanceRecord.]
+    (* <- lang_ru;; *);;
+question_audit_vs_provenance => nrel_expected_answer: answer_q10;;
+
+// ---------------------------------------------------------------------
+// Q11: Структура отказа и условие публикации итогового результата.
+// ---------------------------------------------------------------------
+
+question_failure_structure <- concept_test_question;;
+question_failure_structure => nrel_main_idtf:
+    [Q11. Каков вид структурированного отказа и при каком условии
+     итоговый результат может быть представлен пользователю?]
+    (* <- lang_ru;; *);;
+question_failure_structure => nrel_question_subject:
+    concept_processing_failure;;
+
+answer_q11 <- concept_expected_answer;;
+answer_q11 => nrel_main_idtf:
+    [⊥ = <c, ϱ, a>: c ∈ C_fail — код причины, ϱ — рекомендация
+     по восстановлению, a — запись аудита.
+     Условие публикации: final(r) → verified(r) ∧ hasExplanation(r)
+     ∧ ¬hasUnresolvedConflict(r). Запрещается только НЕРАЗРЕШЁННЫЙ
+     конфликт; разрешённый остаётся в графе происхождения вместе
+     с актом разрешения и объяснением.] (* <- lang_ru;; *);;
+question_failure_structure => nrel_expected_answer: answer_q11;;
+
+// ---------------------------------------------------------------------
+// Q12: Отношения исполнения и происхождения демонстрационной
+// конфигурации X_0.
+// ---------------------------------------------------------------------
+
+question_execution_relations <- concept_test_question;;
+question_execution_relations => nrel_main_idtf:
+    [Q12. Какими отношениями описывается исполнение подзадачи
+     и получение итогового результата?] (* <- lang_ru;; *);;
+question_execution_relations => nrel_question_subject: concept_execution_act;;
+
+answer_q12 <- concept_expected_answer;;
+answer_q12 => nrel_main_idtf:
+    [executes(a, σ) — акт исполняет подзадачу;
+     recorded_in(a, υ) — акт зафиксирован записью аудита;
+     generated_by(z, a) — результат порождён актом;
+     aggregates(z*, z) — итоговый агрегирует частичные;
+     verifies(m, z*) — посредник верифицирует итоговый результат;
+     validated_by(z*, m) — обратная фиксация в графе происхождения.]
+    (* <- lang_ru;; *);;
+question_execution_relations => nrel_expected_answer: answer_q12;;
 
 // ---------------------------------------------------------------------
 // Спецификация поиска подраздела по концепту (для Q1-style вопросов).

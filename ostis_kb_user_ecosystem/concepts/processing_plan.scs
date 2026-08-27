@@ -1,0 +1,386 @@
+// =====================================================================
+// concepts/processing_plan.scs
+// Подраздел: план обработки запроса, версии плана и два независимых
+// ресурса восстановления маршрута.
+//
+// Финальная модель (гл. 2) строго различает:
+//   b_q   — бюджет переназначений: ограничивает перебор исполнителей
+//           ПРИ НЕИЗМЕННОЙ структуре задачи (меняется χ, не меняется T(q));
+//   d_max — предельная глубина перепланирования: ограничивает
+//           перестроение САМОЙ структуры графа подзадач T(q).
+// Ресурсы убывают раздельно: переназначение расходует b_q,
+// перепланирование расходует d_max. Это различение обеспечивает
+// лексикографическую функцию потенциала
+//   Φ(x) = <d_rem(x), n_pend(x) + b_rem(x)>
+// и, следовательно, завершаемость обработки (Req_7).
+// =====================================================================
+
+section_concept_processing_plan
+=> nrel_main_idtf:
+    [Подраздел. План обработки, версии плана и ресурсы восстановления]
+    (* <- lang_ru;; *);
+    [Subsection. Processing Plan, Plan Versions and Recovery Resources]
+    (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_processing_plan;
+<- rrel_key_sc_element: concept_plan_version;
+<- rrel_key_sc_element: concept_reassignment_budget;
+<- rrel_key_sc_element: concept_replanning_depth;
+<- rrel_key_sc_element: concept_reassignment_event;
+<- rrel_key_sc_element: concept_replanning_event;
+<- rrel_key_sc_element: concept_failure_event;;
+
+// ---------------------------------------------------------------------
+// План обработки запроса.
+// ---------------------------------------------------------------------
+
+concept_processing_plan
+<- sc_node_class;
+=> nrel_main_idtf:
+    [план обработки запроса] (* <- lang_ru;; *);
+    [processing plan] (* <- lang_en;; *);
+=> nrel_idtf: [p];;
+
+concept_processing_plan <= nrel_inclusion: concept_entity_group_process;;
+concept_processing_plan <= nrel_inclusion: concept_process_class_group;;
+
+definition -> definition_processing_plan: ...
+(*
+    -> rrel_key_sc_element: concept_processing_plan;;
+    => nrel_main_idtf: [Опр.(план обработки запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [План обработки p — сущность, связывающая запрос q с графом
+            подзадач T(q) и с назначением исполнителей χ. План является
+            областью определения отношения decomposes: decomposes(p, σ).
+            План не изменяется на месте: каждое изменение маршрута
+            порождает новую версию плана, связанную с предыдущей
+            отношением replans.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Версия плана — единица прослеживаемости изменений маршрута.
+// ---------------------------------------------------------------------
+
+concept_plan_version
+<- sc_node_class;
+=> nrel_main_idtf:
+    [версия плана обработки] (* <- lang_ru;; *);
+    [plan version] (* <- lang_en;; *);;
+
+concept_plan_version <= nrel_inclusion: concept_entity_group_process;;
+
+definition -> definition_plan_version: ...
+(*
+    -> rrel_key_sc_element: concept_plan_version;;
+    => nrel_main_idtf: [Опр.(версия плана обработки)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Версия плана — неизменяемый снимок структуры плана обработки
+            и назначения исполнителей в определённый момент времени.
+            Версии образуют ациклическую цепь преемственности:
+            replans(pv_new, pv_prev). Каждый переход жизненного цикла
+            указывает версию плана, действовавшую в момент перехода
+            (uses_plan_version), что позволяет восстановить маршрут
+            обработки по журналу переходов даже после перепланирования.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ресурс 1: бюджет переназначений b_q.
+// ---------------------------------------------------------------------
+
+concept_reassignment_budget
+<- sc_node_class;
+=> nrel_main_idtf:
+    [бюджет переназначений] (* <- lang_ru;; *);
+    [reassignment budget] (* <- lang_en;; *);
+=> nrel_idtf: [b_q];;
+
+concept_reassignment_budget <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_reassignment_budget: ...
+(*
+    -> rrel_key_sc_element: concept_reassignment_budget;;
+    => nrel_main_idtf: [Опр.(бюджет переназначений b_q)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [b_q ∈ ℕ — ресурс, ограничивающий число попыток передать
+            подзадачу другому исполнителю ПРИ НЕИЗМЕННОЙ структуре
+            задачи. Переназначение меняет функцию назначения χ,
+            но не меняет граф подзадач T(q). Каждое переназначение
+            уменьшает остаток b_rem на единицу. Исчерпание b_q
+            при непустом множестве незавершённых подзадач обязывает
+            контроллер посредника перейти к перепланированию,
+            уточнению x_clar либо отказу x_refuse.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ресурс 2: предельная глубина перепланирования d_max.
+// ---------------------------------------------------------------------
+
+concept_replanning_depth
+<- sc_node_class;
+=> nrel_main_idtf:
+    [предельная глубина перепланирования] (* <- lang_ru;; *);
+    [replanning depth limit] (* <- lang_en;; *);
+=> nrel_idtf: [d_max];;
+
+concept_replanning_depth <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_replanning_depth: ...
+(*
+    -> rrel_key_sc_element: concept_replanning_depth;;
+    => nrel_main_idtf:
+        [Опр.(предельная глубина перепланирования d_max)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [d_max ∈ ℕ — ресурс, ограничивающий число перестроений САМОЙ
+            структуры графа подзадач T(q). Перепланирование порождает
+            новую версию плана и может увеличить число незавершённых
+            подзадач n_pend, поэтому расходуется отдельно от бюджета
+            переназначений. Каждое перепланирование уменьшает остаток
+            d_rem на единицу.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// События, вызывающие изменение маршрута.
+// ---------------------------------------------------------------------
+
+concept_routing_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие изменения маршрута обработки] (* <- lang_ru;; *);
+    [routing event] (* <- lang_en;; *);;
+
+concept_routing_event <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение событий изменения маршрута]
+       (* <- lang_ru;; *);;
+    -> concept_reassignment_event;
+       concept_replanning_event;
+       concept_failure_event;;
+*);;
+
+concept_reassignment_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие переназначения подзадачи] (* <- lang_ru;; *);
+    [reassignment event] (* <- lang_en;; *);;
+
+definition -> definition_reassignment_event: ...
+(*
+    -> rrel_key_sc_element: concept_reassignment_event;;
+    => nrel_main_idtf: [Опр.(событие переназначения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Событие переназначения фиксирует передачу подзадачи σ
+            резервному исполнителю без изменения структуры T(q).
+            Обязательные связи: reassigns(ev, σ), caused_by_event
+            от соответствующего перехода, уменьшение остатка b_q
+            на единицу и запись аудита.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_replanning_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие перепланирования] (* <- lang_ru;; *);
+    [replanning event] (* <- lang_en;; *);;
+
+definition -> definition_replanning_event: ...
+(*
+    -> rrel_key_sc_element: concept_replanning_event;;
+    => nrel_main_idtf: [Опр.(событие перепланирования)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Событие перепланирования фиксирует перестроение фрагмента
+            графа подзадач и порождает новую версию плана:
+            replans(pv_new, pv_prev). Уменьшает остаток d_max
+            на единицу; младшая компонента потенциала при этом
+            может возрасти.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_failure_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие отказа исполнителя] (* <- lang_ru;; *);
+    [failure event] (* <- lang_en;; *);;
+
+definition -> definition_failure_event: ...
+(*
+    -> rrel_key_sc_element: concept_failure_event;;
+    => nrel_main_idtf: [Опр.(событие отказа исполнителя)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Событие отказа исполнителя — событие-основание, по которому
+            инициируется переназначение либо перепланирование. Является
+            значением отношения caused_by_event для соответствующего
+            перехода жизненного цикла; не следует смешивать со
+            структурированным отказом ⊥, который является терминальным
+            исходом обработки запроса в целом.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Отношения плана и версий.
+// ---------------------------------------------------------------------
+
+nrel_has_plan
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_план_обработки*] (* <- lang_ru;; *);
+    [has_plan*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_processing_plan;;
+
+nrel_has_plan_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_версию_плана*] (* <- lang_ru;; *);
+    [has_plan_version*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_plan;
+=> nrel_second_domain: concept_plan_version;;
+
+nrel_replans
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [перепланирует_версию*] (* <- lang_ru;; *);
+    [replans*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_plan_version;
+=> nrel_second_domain: concept_plan_version;;
+
+nrel_reassigns
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [переназначает_подзадачу*] (* <- lang_ru;; *);
+    [reassigns*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_reassignment_event;
+=> nrel_second_domain: concept_subtask;;
+
+nrel_uses_plan_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [использует_версию_плана*] (* <- lang_ru;; *);
+    [uses_plan_version*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_state_transition;
+=> nrel_second_domain: concept_plan_version;;
+
+nrel_decomposes_into_subtask
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [раскладывается_на_подзадачу*] (* <- lang_ru;; *);
+    [decomposes*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_plan;
+=> nrel_second_domain: concept_subtask;;
+
+// ---------------------------------------------------------------------
+// Остатки ресурсов как измеримые характеристики состояния обработки.
+// ---------------------------------------------------------------------
+
+nrel_remaining_reassignment_budget
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [остаток_бюджета_переназначений*] (* <- lang_ru;; *);
+    [remaining_reassignment_budget*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_mediation_state;;
+
+nrel_remaining_replanning_depth
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [остаток_глубины_перепланирования*] (* <- lang_ru;; *);
+    [remaining_replanning_depth*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_mediation_state;;
+
+// ---------------------------------------------------------------------
+// Функция потенциала и раздельное убывание ресурсов.
+// ---------------------------------------------------------------------
+
+concept_termination_potential
+<- sc_node_class;
+=> nrel_main_idtf:
+    [функция потенциала состояния обработки] (* <- lang_ru;; *);
+    [termination potential function] (* <- lang_en;; *);
+=> nrel_idtf: [Φ];;
+
+definition -> definition_termination_potential: ...
+(*
+    -> rrel_key_sc_element: concept_termination_potential;;
+    => nrel_main_idtf: [Опр.(функция потенциала Φ)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Φ(x) = <d_rem(x), n_pend(x) + b_rem(x)> ∈ ℕ₀ × ℕ₀
+            с лексикографическим порядком: <d, m> <_lex <d', m'>
+            тогда и только тогда, когда d < d' либо d = d' и m < m'.
+            Скалярная сумма мерой убывания служить не может: повторная
+            декомпозиция заменяет одну подзадачу несколькими, увеличивая
+            n_pend на коэффициент ветвления и уменьшая бюджет лишь
+            на единицу.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_separate_resource_decrease: ...
+(*
+    -> rrel_key_sc_element: concept_reassignment_budget;;
+    -> rrel_key_sc_element: concept_replanning_depth;;
+    => nrel_main_idtf:
+        [Утв.(раздельное убывание ресурсов восстановления)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Переназначение уменьшает b_rem на единицу и не изменяет
+            d_rem и n_pend — убывает младшая компонента Φ.
+            Перепланирование уменьшает d_rem на единицу — убывает
+            старшая компонента Φ, при этом младшая может возрасти.
+            Завершение либо исключение подзадачи уменьшает n_pend
+            на единицу при неизменном d_rem. Следовательно, при каждом
+            нетерминальном переходе Φ(x_{t+1}) <_lex Φ(x_t), а вполне
+            упорядоченность ℕ₀ × ℕ₀ по <_lex исключает бесконечные
+            строго убывающие цепочки.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_termination: ...
+(*
+    -> rrel_key_sc_element: concept_termination_potential;;
+    => nrel_main_idtf:
+        [Утв.(завершаемость обработки запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для любого корректного запроса q с конечным графом подзадач
+            T(q), положительным бюджетом переназначений b_q ∈ ℕ,
+            ограниченной глубиной перепланирования d_max ∈ ℕ и конечным
+            ветвлением декомпозиции жизненный цикл обработки достигает
+            терминального состояния (x_present, x_partial, x_clar
+            либо x_refuse) за конечное число переходов. При истечении
+            внешнего временного ресурса достижение терминального
+            состояния обеспечивается отдельным переходом в x_refuse,
+            не зависящим от значения Φ.] (* <- lang_ru;; *);;
+    *);;
+*);;

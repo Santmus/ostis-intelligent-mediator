@@ -186,7 +186,21 @@ collective_traffic_decision => nrel_main_idtf:
     [Решение: альтернативный план B (сохранение пешеходной фазы,
      оптимизация фазы поворота на ул. Сурганова, объезд для 12%
      потока → экономия 3.8 мин)] (* <- lang_ru;; *);;
-collective_traffic_decision => nrel_resolves_conflict: conflict_safety_vs_speed;;
+// Конфликт предпочтений разрешён по явному правилу согласования целей;
+// сведения о конфликте и способе разрешения остаются в графе
+// происхождения и не препятствуют публикации результата.
+conflict_safety_vs_speed => nrel_conflict_status:
+    concept_conflict_status_resolved;;
+conflict_safety_vs_speed => nrel_resolved_by: conflict_resolution_act_traffic;;
+
+conflict_resolution_act_traffic <- concept_conflict_resolution_act;;
+conflict_resolution_act_traffic <- concept_resolution_by_argumentation;;
+conflict_resolution_act_traffic => nrel_main_idtf:
+    [Акт разрешения: приоритет безопасности, выбран план B]
+    (* <- lang_ru;; *);;
+conflict_resolution_act_traffic => nrel_has_provenance:
+    prov_record_resolution_traffic;;
+prov_record_resolution_traffic <- concept_provenance_record;;
 
 resolution_traffic
 <- concept_strategy_argumentation_based;
@@ -203,4 +217,5 @@ explanation_traffic => nrel_main_idtf:
      на 41%, но сохранение нормативной пешеходной фазы 24с
      у зоны школы №12] (* <- lang_ru;; *);;
 collective_traffic_decision => nrel_supported_by_explanation: explanation_traffic;;
+explanation_traffic => nrel_resolves_conflict: conflict_safety_vs_speed;;
 collective_traffic_decision => nrel_delivered_to: user_traffic_operator;;

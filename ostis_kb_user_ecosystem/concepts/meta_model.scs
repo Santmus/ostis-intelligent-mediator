@@ -20,6 +20,7 @@ section_concept_meta_model
 <- rrel_key_sc_element: concept_ontological_interaction_model;
 <- rrel_key_sc_element: concept_entity_class_set;
 <- rrel_key_sc_element: concept_relation_set;
+<- rrel_key_sc_element: concept_relation_subset_control;
 <- rrel_key_sc_element: concept_attribute_set;
 <- rrel_key_sc_element: concept_formal_means_set;
 <- rrel_key_sc_element: concept_axiom_set;
@@ -118,14 +119,108 @@ concept_provenance_template_set
 => nrel_idtf: [F_prov];;
 
 // ---------------------------------------------------------------------
-// Семантические группы классов E (декларативные / интенциональные /
-// агентные / контекстные / процессные / результирующие / ролевые).
+// Разбиение множества сущностей E на семь групп финальной модели:
+//   E = E_subj ∪ E_goal ∪ E_part ∪ E_proc ∪ E_ctx ∪ E_result ∪ E_ctrl.
+// Разбиение согласовано с разбиением классов онтологии C: каждому
+// подмножеству сущностей отвечает одноимённая группа классов.
 // ---------------------------------------------------------------------
 
 concept_entity_class_set <= nrel_subdividing: ...
 (*
-    => nrel_main_idtf: [Разбиение множества E по семантическим группам]
+    => nrel_main_idtf:
+        [Разбиение множества E по семи группам финальной модели]
        (* <- lang_ru;; *);;
+    -> concept_entity_group_subject;
+       concept_entity_group_goal;
+       concept_entity_group_participant;
+       concept_entity_group_process;
+       concept_entity_group_context;
+       concept_entity_group_result;
+       concept_entity_group_control;;
+*);;
+
+concept_entity_group_subject
+<- sc_node_class;
+=> nrel_main_idtf: [субъектная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [subject class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_subj];;
+
+concept_entity_group_goal
+<- sc_node_class;
+=> nrel_main_idtf: [целевая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [goal class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_goal];;
+
+concept_entity_group_participant
+<- sc_node_class;
+=> nrel_main_idtf: [группа классов участников] (* <- lang_ru;; *);
+=> nrel_main_idtf: [participant class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_part];;
+
+concept_entity_group_process
+<- sc_node_class;
+=> nrel_main_idtf: [процессная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [process class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_proc];;
+
+concept_entity_group_context
+<- sc_node_class;
+=> nrel_main_idtf: [контекстная группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [context class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_ctx];;
+
+concept_entity_group_result
+<- sc_node_class;
+=> nrel_main_idtf: [результирующая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [result class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_result];;
+
+concept_entity_group_control
+<- sc_node_class;
+=> nrel_main_idtf: [управляющая группа классов] (* <- lang_ru;; *);
+=> nrel_main_idtf: [control class group] (* <- lang_en;; *);
+=> nrel_idtf: [E_ctrl];;
+
+definition -> definition_entity_groups: ...
+(*
+    -> rrel_key_sc_element: concept_entity_class_set;;
+    => nrel_main_idtf:
+        [Опр.(семь групп множества сущностей E)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [E_subj содержит пользователя, посредника и иные субъекты
+            взаимодействия; E_goal — цели, запросы и намерения;
+            E_part — интеллектуальные системы, агентов, интеллектуальные
+            сервисы, профили возможностей и сообщества; E_proc —
+            план, версии плана, подзадачи, акты исполнения, состояния
+            и переходы жизненного цикла; E_ctx — контекст, ограничения,
+            политики и состояния ресурсов; E_result — частичные,
+            интегрированные и итоговые результаты, объяснения,
+            конфликты и структурированный отказ; E_ctrl — политики
+            доступа, записи аудита, записи происхождения, профили
+            доверия и ресурсы восстановления маршрута.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Технические классификации второго уровня. Прежние восемь групп
+// сохранены как вспомогательные классификации и отображены на семь
+// групп финальной модели; существующие связи nrel_inclusion
+// концептуальных файлов остаются в силе.
+// ---------------------------------------------------------------------
+
+concept_auxiliary_class_group
+<- sc_node_class;
+=> nrel_main_idtf:
+    [вспомогательная классификация классов второго уровня]
+   (* <- lang_ru;; *);
+    [auxiliary second-level class group] (* <- lang_en;; *);;
+
+concept_auxiliary_class_group <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf:
+        [Разбиение вспомогательных классификаций] (* <- lang_ru;; *);;
     -> concept_intentional_class_group;
        concept_request_class_group;
        concept_agent_class_group;
@@ -176,9 +271,47 @@ concept_role_class_group
 => nrel_main_idtf: [ролевая группа классов] (* <- lang_ru;; *);
 => nrel_main_idtf: [role class group] (* <- lang_en;; *);;
 
+// Карта соответствия вспомогательных классификаций семи группам E.
+concept_intentional_class_group  <= nrel_inclusion: concept_entity_group_goal;;
+concept_request_class_group      <= nrel_inclusion: concept_entity_group_goal;;
+concept_agent_class_group        <= nrel_inclusion: concept_entity_group_participant;;
+concept_context_class_group      <= nrel_inclusion: concept_entity_group_context;;
+concept_process_class_group      <= nrel_inclusion: concept_entity_group_process;;
+concept_result_class_group       <= nrel_inclusion: concept_entity_group_result;;
+concept_meta_result_class_group  <= nrel_inclusion: concept_entity_group_result;;
+concept_role_class_group         <= nrel_inclusion: concept_entity_group_participant;;
+
+affirmation -> affirmation_entity_group_mapping: ...
+(*
+    -> rrel_key_sc_element: concept_auxiliary_class_group;;
+    => nrel_main_idtf:
+        [Утв.(карта вспомогательных классификаций на группы E)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Прежние восемь групп базы знаний не заменяются, а
+            отображаются на семь групп финальной модели:
+            интенциональная и запросная → E_goal;
+            агентная и ролевая → E_part;
+            контекстная → E_ctx; процессная → E_proc;
+            результирующая и мета-результирующая → E_result.
+            Группы E_subj и E_ctrl наполняются напрямую: пользователь
+            и посредник как субъекты; записи аудита, записи
+            происхождения, политики доступа, профили доверия
+            и ресурсы восстановления как управляющие сущности.
+            Мета-результирующая и ролевая классификации сохраняются
+            как технические классификации второго уровня и не
+            заменяют групп финальной модели.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
 // ---------------------------------------------------------------------
-// Семантические подмножества R (формула 3 финальной модели):
-// R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_prov ∪ R_trust.
+// Семантические подмножества R финальной модели:
+// R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_ctrl ∪ R_prov.
+// R_ctrl объединяет управляющие отношения — доверие, согласованность,
+// конфликты, доступ, человеческий надзор и проверку результата.
+// Прежнее подмножество R_trust сохранено как семантическая часть
+// R_ctrl, чтобы не ломать существующие идентификаторы и навигацию.
 // ---------------------------------------------------------------------
 
 concept_relation_set <= nrel_subdividing: ...
@@ -191,8 +324,8 @@ concept_relation_set <= nrel_subdividing: ...
        concept_relation_subset_context;
        concept_relation_subset_task;
        concept_relation_subset_execution;
-       concept_relation_subset_provenance;
-       concept_relation_subset_trust;;
+       concept_relation_subset_control;
+       concept_relation_subset_provenance;;
 *);;
 
 concept_relation_subset_structural
@@ -231,11 +364,38 @@ concept_relation_subset_provenance
     [провенансные отношения R_prov] (* <- lang_ru;; *);
 => nrel_idtf: [R_prov];;
 
+concept_relation_subset_control
+<- sc_node_class;
+=> nrel_main_idtf:
+    [управляющие отношения R_ctrl] (* <- lang_ru;; *);
+    [control relations R_ctrl] (* <- lang_en;; *);
+=> nrel_idtf: [R_ctrl];;
+
+definition -> definition_relation_subset_control: ...
+(*
+    -> rrel_key_sc_element: concept_relation_subset_control;;
+    => nrel_main_idtf:
+        [Опр.(управляющее подмножество отношений R_ctrl)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [R_ctrl — подмножество отношений, управляющих допустимостью
+            и достоверностью обработки: доверие к участнику,
+            согласованность и конфликтность результатов, разрешение
+            конфликтов, политики доступа и разрешения, человеческий
+            надзор и проверка итогового результата. Состав R_ctrl
+            перечислен в relations/relations_control.scs.
+            R_trust ⊑ R_ctrl.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
 concept_relation_subset_trust
 <- sc_node_class;
 => nrel_main_idtf:
     [отношения доверия R_trust] (* <- lang_ru;; *);
 => nrel_idtf: [R_trust];;
+
+concept_relation_subset_trust <= nrel_inclusion: concept_relation_subset_control;;
 
 // ---------------------------------------------------------------------
 // Принцип единого семантического представления.

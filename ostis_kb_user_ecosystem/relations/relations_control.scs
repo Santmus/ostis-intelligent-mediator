@@ -1,0 +1,191 @@
+// =====================================================================
+// relations/relations_control.scs
+// Подмножество R_ctrl — управляющие отношения модели.
+//
+// Согласно финальной формализации (гл. 2), R_ctrl объединяет доверие,
+// согласованность, конфликты, доступ, человеческий надзор и проверку
+// результата:
+//   R = R_str ∪ R_goal ∪ R_ctx ∪ R_task ∪ R_exec ∪ R_ctrl ∪ R_prov.
+//
+// Прежнее подмножество R_trust сохранено как семантическое
+// подмножество R_ctrl (см. concepts/meta_model.scs), чтобы не ломать
+// существующие идентификаторы и навигацию. Сами отношения доверия,
+// согласованности и конфликтности определены в relations_trust.scs;
+// здесь фиксируется их принадлежность к R_ctrl и вводятся
+// недостающие управляющие отношения.
+// =====================================================================
+
+section_relations_control
+=> nrel_main_idtf:
+    [Подраздел. Управляющие отношения R_ctrl] (* <- lang_ru;; *);
+    [Subsection. Control Relations R_ctrl] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: concept_relation_subset_control;;
+
+// ---------------------------------------------------------------------
+// Недостающие управляющие отношения.
+// ---------------------------------------------------------------------
+
+nrel_permits
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [разрешает_участнику*] (* <- lang_ru;; *);
+    [permits*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_access_control_policy;
+=> nrel_second_domain: concept_intelligent_system;;
+
+nrel_requires_approval
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [требует_подтверждения_ролью*] (* <- lang_ru;; *);
+    [requires_approval*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_subtask;
+=> nrel_second_domain: concept_participant_role;;
+
+nrel_supervised_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [находится_под_надзором*] (* <- lang_ru;; *);
+    [supervised_by*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_state_transition;
+=> nrel_second_domain: concept_human_in_the_loop_component;;
+
+// ---------------------------------------------------------------------
+// Статус конфликта и его разрешение. Публикация итогового результата
+// запрещается только при НЕРАЗРЕШЁННОМ конфликте; обнаруженный
+// и разрешённый конфликт остаётся связанным с результатом.
+// ---------------------------------------------------------------------
+
+nrel_conflict_status
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_статус_конфликта*] (* <- lang_ru;; *);
+    [has_conflict_status*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_result_conflict;
+=> nrel_second_domain: concept_conflict_status;;
+
+nrel_resolved_by
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [разрешён_процедурой*] (* <- lang_ru;; *);
+    [resolved_by*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_result_conflict;
+=> nrel_second_domain: concept_conflict_resolution_act;;
+
+nrel_has_unresolved_conflict
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_неразрешённый_конфликт*] (* <- lang_ru;; *);
+    [has_unresolved_conflict*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrated_result;
+=> nrel_second_domain: concept_result_conflict;;
+
+nrel_verified
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [прошёл_верификацию*] (* <- lang_ru;; *);
+    [verified*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrated_result;
+=> nrel_second_domain: concept_verification_outcome;;
+
+concept_verification_outcome
+<- sc_node_class;
+=> nrel_main_idtf:
+    [исход верификации итогового результата] (* <- lang_ru;; *);
+    [verification outcome] (* <- lang_en;; *);;
+
+concept_verification_outcome <= nrel_inclusion: concept_entity_group_control;;
+
+concept_verification_outcome <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [Разбиение исходов верификации] (* <- lang_ru;; *);;
+    -> concept_verification_passed;
+       concept_verification_failed;;
+*);;
+
+concept_verification_passed
+<- sc_node_class;
+=> nrel_main_idtf: [верификация: пройдена] (* <- lang_ru;; *);
+=> nrel_main_idtf: [verification passed] (* <- lang_en;; *);;
+
+concept_verification_failed
+<- sc_node_class;
+=> nrel_main_idtf: [верификация: не пройдена] (* <- lang_ru;; *);
+=> nrel_main_idtf: [verification failed] (* <- lang_en;; *);;
+
+// ---------------------------------------------------------------------
+// Состав R_ctrl. Подмножество отношений трактуется как класс
+// отношений: принадлежность фиксируется дуговой связью включения
+// элемента в класс, что делает разбиение R машинопроверяемым.
+// ---------------------------------------------------------------------
+
+// Доверие (прежнее R_trust).
+concept_relation_subset_control -> nrel_has_trust_level;;
+concept_relation_subset_control -> nrel_trust_for_task;;
+concept_relation_subset_control -> nrel_trust_updated_by_feedback;;
+
+// Согласованность и конфликты.
+concept_relation_subset_control -> nrel_consistent_with;;
+concept_relation_subset_control -> nrel_conflicts_with;;
+concept_relation_subset_control -> nrel_resolves_conflict;;
+concept_relation_subset_control -> nrel_conflict_status;;
+concept_relation_subset_control -> nrel_resolved_by;;
+concept_relation_subset_control -> nrel_has_unresolved_conflict;;
+
+// Аргументация как средство разрешения конфликта.
+concept_relation_subset_control -> nrel_argues_for;;
+concept_relation_subset_control -> nrel_attacks;;
+
+// Доступ, разрешения и человеческий надзор.
+concept_relation_subset_control -> nrel_permits;;
+concept_relation_subset_control -> nrel_requires_approval;;
+concept_relation_subset_control -> nrel_supervised_by;;
+
+// Проверка результата.
+concept_relation_subset_control -> nrel_verifies;;
+concept_relation_subset_control -> nrel_verified;;
+
+// Подмножество доверия как часть R_ctrl.
+concept_relation_subset_trust -> nrel_has_trust_level;;
+concept_relation_subset_trust -> nrel_trust_for_task;;
+concept_relation_subset_trust -> nrel_trust_updated_by_feedback;;
+
+// ---------------------------------------------------------------------
+// Утверждение о полноте управляющей группы.
+// ---------------------------------------------------------------------
+
+affirmation -> affirmation_control_subset_coverage: ...
+(*
+    -> rrel_key_sc_element: concept_relation_subset_control;;
+    => nrel_main_idtf:
+        [Утв.(состав управляющего подмножества R_ctrl)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [R_ctrl объединяет управляющие отношения шести видов:
+            доверие (has_trust_level, trust_for_task,
+            trust_updated_by_feedback), согласованность
+            (consistent_with), конфликтность (conflicts_with,
+            resolves_conflict, conflict_status, resolved_by,
+            has_unresolved_conflict), аргументацию (argues_for,
+            attacks), доступ и надзор (permits, requires_approval,
+            supervised_by), проверку результата (verifies, verified).
+            R_trust ⊑ R_ctrl: подмножество доверия сохранено как
+            семантическая часть управляющего подмножества.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
