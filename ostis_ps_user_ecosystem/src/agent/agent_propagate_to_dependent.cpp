@@ -6,18 +6,30 @@
 #include "common/relation_io.hpp"
 #include "keynodes/task_keynodes.hpp"
 
+using trust_utils::LinkByRelation;
 using trust_utils::LinkByRole;
 using trust_utils::TargetOf;
 using trust_utils::WriteFloatLinkContent;
 
 namespace
 {
+// Делает результат входом зависимой подзадачи. Подзадача -- не
+// участник коммуникации (AGENTS_AUDIT.md п.6.10), поэтому семантическая
+// связь is_input_for устанавливается всегда, а коммуникативный
+// inform-акт создаётся только когда у подзадачи уже есть назначенный
+// исполнитель -- именно он получатель, а не сама подзадача.
 void NotifyDependent(ScAgentContext & context, ScAddr const & dependentAddr, ScAddr const & resultAddr)
 {
+  LinkByRelation(context, resultAddr, dependentAddr, TaskKeynodes::nrel_is_input_for);
+
+  ScAddr const assigneeAddr = TargetOf(context, dependentAddr, TaskKeynodes::nrel_assigned_to);
+  if (!context.IsElement(assigneeAddr))
+    return;
+
   ScAddr const actAddr = context.GenerateNode(ScType::ConstNode);
   context.GenerateConnector(ScType::ConstPermPosArc, TaskKeynodes::concept_knowledge_exchange_act, actAddr);
   LinkByRole(context, actAddr, TaskKeynodes::agent_cooperative_executor, TaskKeynodes::rrel_sender);
-  LinkByRole(context, actAddr, dependentAddr, TaskKeynodes::rrel_receiver);
+  LinkByRole(context, actAddr, assigneeAddr, TaskKeynodes::rrel_receiver);
   LinkByRole(context, actAddr, TaskKeynodes::concept_act_inform, TaskKeynodes::rrel_act_type);
   LinkByRole(context, actAddr, resultAddr, TaskKeynodes::rrel_payload);
 }

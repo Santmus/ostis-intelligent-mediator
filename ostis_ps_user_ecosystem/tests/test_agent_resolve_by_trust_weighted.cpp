@@ -61,6 +61,9 @@ TEST_F(AgentResolveByTrustWeightedTest, PicksResultFromHighestTrustSystem)
   EXPECT_FALSE(resultStruct.Has(resultLow));
   EXPECT_FALSE(resultStruct.Has(resultMid));
 
+  // resolves_conflict теперь ведёт от объяснения к конфликту, а не от
+  // интегрированного результата (см. relations/relations_trust.scs:
+  // область определения -- concept_explanation).
   ScIterator5Ptr const resolvesIt = m_ctx->CreateIterator5(
       ScType::ConstNode,
       ScType::ConstCommonArc,
@@ -68,17 +71,54 @@ TEST_F(AgentResolveByTrustWeightedTest, PicksResultFromHighestTrustSystem)
       ScType::ConstPermPosArc,
       IntegrationKeynodes::nrel_resolves_conflict);
   ASSERT_TRUE(resolvesIt->Next());
-  ScAddr const integratedResultAddr = resolvesIt->Get(0);
-  EXPECT_TRUE(m_ctx->CheckConnector(
-      IntegrationKeynodes::concept_integrated_result, integratedResultAddr, ScType::ConstPermPosArc));
+  ScAddr const explanationAddr = resolvesIt->Get(0);
+  EXPECT_TRUE(
+      m_ctx->CheckConnector(IntegrationKeynodes::concept_explanation, explanationAddr, ScType::ConstPermPosArc));
 
+  // Интегрированный результат находится через nrel_integrated_in от
+  // победившего кандидата, а не через resolves_conflict.
   ScIterator5Ptr const integratedInIt = m_ctx->CreateIterator5(
       resultBest,
       ScType::ConstCommonArc,
-      integratedResultAddr,
+      ScType::Unknown,
       ScType::ConstPermPosArc,
       IntegrationKeynodes::nrel_integrated_in);
-  EXPECT_TRUE(integratedInIt->Next());
+  ASSERT_TRUE(integratedInIt->Next());
+  ScAddr const integratedResultAddr = integratedInIt->Get(2);
+  EXPECT_TRUE(m_ctx->CheckConnector(
+      IntegrationKeynodes::concept_integrated_result, integratedResultAddr, ScType::ConstPermPosArc));
+  EXPECT_TRUE(resultStruct.Has(integratedResultAddr));
+  EXPECT_TRUE(resultStruct.Has(explanationAddr));
+
+  // Конфликт получает акт разрешения (выбор по доверию) и статус resolved.
+  ScIterator5Ptr const resolvedByIt = m_ctx->CreateIterator5(
+      conflictAddr,
+      ScType::ConstCommonArc,
+      ScType::Unknown,
+      ScType::ConstPermPosArc,
+      IntegrationKeynodes::nrel_resolved_by);
+  ASSERT_TRUE(resolvedByIt->Next());
+  ScAddr const resolutionActAddr = resolvedByIt->Get(2);
+  EXPECT_TRUE(m_ctx->CheckConnector(
+      IntegrationKeynodes::concept_resolution_by_trust_weighting, resolutionActAddr, ScType::ConstPermPosArc));
+  EXPECT_TRUE(resultStruct.Has(resolutionActAddr));
+
+  ScIterator5Ptr const statusIt = m_ctx->CreateIterator5(
+      conflictAddr,
+      ScType::ConstCommonArc,
+      ScType::Unknown,
+      ScType::ConstPermPosArc,
+      IntegrationKeynodes::nrel_conflict_status);
+  ASSERT_TRUE(statusIt->Next());
+  EXPECT_EQ(statusIt->Get(2), IntegrationKeynodes::concept_conflict_status_resolved);
+
+  ScIterator5Ptr const explainedByIt = m_ctx->CreateIterator5(
+      integratedResultAddr,
+      ScType::ConstCommonArc,
+      explanationAddr,
+      ScType::ConstPermPosArc,
+      IntegrationKeynodes::nrel_explained_by);
+  EXPECT_TRUE(explainedByIt->Next());
 
   m_ctx->UnsubscribeAgent<AgentResolveByTrustWeighted>();
 }

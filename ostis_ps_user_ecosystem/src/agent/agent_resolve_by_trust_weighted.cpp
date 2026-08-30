@@ -10,6 +10,7 @@
 
 using trust_utils::LinkByRelation;
 using trust_utils::ReadFloatLinkContent;
+using trust_utils::SetFunctionalRelationTarget;
 using trust_utils::TargetOf;
 
 namespace
@@ -76,9 +77,29 @@ ScResult AgentResolveByTrustWeighted::DoProgram(ScAction & action)
       ScType::ConstPermPosArc, IntegrationKeynodes::concept_integrated_result, integratedResultAddr);
 
   LinkByRelation(m_context, bestResultAddr, integratedResultAddr, IntegrationKeynodes::nrel_integrated_in);
-  LinkByRelation(m_context, integratedResultAddr, conflictAddr, IntegrationKeynodes::nrel_resolves_conflict);
 
-  action.FormResult(integratedResultAddr, bestResultAddr);
+  // Выбор по доверию -- одна из стратегий разрешения конфликта, а не
+  // прямое основание для nrel_resolves_conflict (см. РАСХОЖДЕНИЕ С
+  // РЕАЛИЗАЦИЕЙ в relations/relations_trust.scs): конфликт получает
+  // овеществлённый акт разрешения и статус, а resolves_conflict
+  // относится к порождённому объяснению, не к самому результату.
+  ScAddr const resolutionActAddr = m_context.GenerateNode(ScType::ConstNode);
+  m_context.GenerateConnector(
+      ScType::ConstPermPosArc, IntegrationKeynodes::concept_conflict_resolution_act, resolutionActAddr);
+  m_context.GenerateConnector(
+      ScType::ConstPermPosArc, IntegrationKeynodes::concept_resolution_by_trust_weighting, resolutionActAddr);
+
+  LinkByRelation(m_context, conflictAddr, resolutionActAddr, IntegrationKeynodes::nrel_resolved_by);
+  SetFunctionalRelationTarget(
+      m_context, conflictAddr, IntegrationKeynodes::nrel_conflict_status,
+      IntegrationKeynodes::concept_conflict_status_resolved);
+
+  ScAddr const explanationAddr = m_context.GenerateNode(ScType::ConstNode);
+  m_context.GenerateConnector(ScType::ConstPermPosArc, IntegrationKeynodes::concept_explanation, explanationAddr);
+  LinkByRelation(m_context, explanationAddr, conflictAddr, IntegrationKeynodes::nrel_resolves_conflict);
+  LinkByRelation(m_context, integratedResultAddr, explanationAddr, IntegrationKeynodes::nrel_explained_by);
+
+  action.FormResult(integratedResultAddr, bestResultAddr, resolutionActAddr, explanationAddr);
   m_logger.Debug("AgentResolveByTrustWeighted: winner has trust weight ", bestWeight);
 
   return action.FinishSuccessfully();

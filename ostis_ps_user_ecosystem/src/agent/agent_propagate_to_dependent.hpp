@@ -3,11 +3,15 @@
 #include <sc-memory/sc_agent.hpp>
 
 // Реализует правило rule_propagate_to_dependent
-// (ostis_kb_user_ecosystem/rules/rules_cooperation.scs):
+// (ostis_kb_user_ecosystem/rules/rules_cooperation.scs), исправленное
+// по AGENTS_AUDIT.md п.6.10 (подзадача сама выступала адресатом
+// коммуникативного акта, хотя подзадача не является участником
+// коммуникации):
 //   Для каждой подзадачи σ' такой, что depends_on(σ', σ) и
 //   subtask_status(σ, completed), сделать частичный результат r
-//   доступным как вход σ' через создание knowledge exchange act с
-//   rrel_payload(r).
+//   входом σ' через is_input_for(r, σ'); если σ' уже назначена
+//   исполнителю s', дополнительно уведомить s' knowledge exchange
+//   act'ом с rrel_payload(r).
 //
 // nrel_subtask_depends_on хранится как σ -[depends_on]-> σ'
 // (см. AllDependenciesCompleted в agent_dispatch_ready_subtask.cpp),
@@ -28,14 +32,16 @@
 //                      ещё не completed или зависимых σ' нет); если у
 //                      него ещё нет числовой sc-ссылки, она создаётся
 //
-// Для каждой найденной σ' создаётся concept_knowledge_exchange_act с
-// rrel_sender=agent_cooperative_executor, rrel_receiver=σ',
-// rrel_act_type=concept_act_inform, rrel_payload=result -- получателем
-// взята сама подзадача σ', а не назначенная ей система: на момент
-// пропагации σ' может быть ещё не назначена (nrel_assigned_to
-// отсутствует, task_allocator ещё не отработал), а правило требует
-// именно "сделать результат входом σ'", то есть адресат по смыслу --
-// сама подзадача.
+// Для каждой найденной σ' всегда устанавливается is_input_for(r, σ')
+// (relations_execution.scs) -- семантическая связь "результат -- вход
+// подзадачи", не зависящая от того, назначен ли уже исполнитель.
+// Коммуникативный concept_knowledge_exchange_act (rrel_sender=
+// agent_cooperative_executor, rrel_act_type=concept_act_inform,
+// rrel_payload=result) создаётся дополнительно и только когда у σ' уже
+// есть nrel_assigned_to -- получателем становится сама система-
+// исполнитель, а не подзадача: до назначения (task_allocator ещё не
+// отработал) участника коммуникации попросту нет, и связи is_input_for
+// достаточно, чтобы результат считался пропагированным.
 class AgentPropagateToDependent : public ScActionInitiatedAgent
 {
 public:

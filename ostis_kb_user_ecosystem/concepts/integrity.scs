@@ -108,6 +108,23 @@ concept_integrity_violation <= nrel_subdividing: ...
        concept_existence_constraint_violation;;
 *);;
 
+// nrel_concerns — типизированная связь нарушения с проверяемой
+// сущностью (AGENTS_AUDIT.md, п.6.8: "при создании нарушения
+// отсутствует типизированная связь с проверяемой сущностью"). Область
+// значений — sc_node: проверяемой сущностью может быть экземпляр любого
+// класса, к которому применён shape (concept_user_request,
+// concept_processing_result, concept_integrated_result и т. д.),
+// единого надкласса "любая сущность" в модели не формализовано.
+nrel_concerns
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [касается_сущности*] (* <- lang_ru;; *);
+    [concerns*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_integrity_violation;
+=> nrel_second_domain: sc_node;;
+
 // ---------------------------------------------------------------------
 // SHACL-совместимые шейпы.
 // ---------------------------------------------------------------------

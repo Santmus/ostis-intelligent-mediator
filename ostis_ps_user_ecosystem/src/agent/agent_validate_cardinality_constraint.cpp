@@ -5,8 +5,10 @@
 #include <sc-memory/sc_memory_headers.hpp>
 
 #include "common/float_link_io.hpp"
+#include "common/relation_io.hpp"
 #include "keynodes/integrity_keynodes.hpp"
 
+using trust_utils::LinkByRelation;
 using trust_utils::ReadFloatLinkContent;
 using trust_utils::WriteFloatLinkContent;
 
@@ -101,6 +103,7 @@ ScResult AgentValidateCardinalityConstraint::DoProgram(ScAction & action)
     ScAddr const violationAddr = m_context.GenerateNode(ScType::ConstNode);
     m_context.GenerateConnector(ScType::ConstPermPosArc, violationClassAddr, violationAddr);
     m_context.GenerateConnector(ScType::ConstPermPosArc, resultLevelAddr, violationAddr);
+    LinkByRelation(m_context, violationAddr, targetAddr, IntegrityKeynodes::nrel_concerns);
   }
 
   ScAddr valueLinkAddr;

@@ -28,6 +28,11 @@ public:
   static inline ScKeynode const nrel_caused_by_subtask{"nrel_caused_by_subtask", ScType::ConstNodeNonRole};
   static inline ScKeynode const nrel_generated_in_context{"nrel_generated_in_context", ScType::ConstNodeNonRole};
 
+  // Результат сделан входом зависимой подзадачи (relations_execution.scs,
+  // AGENTS_AUDIT.md п.6.10) -- подзадача как таковая не является
+  // участником коммуникации.
+  static inline ScKeynode const nrel_is_input_for{"nrel_is_input_for", ScType::ConstNodeNonRole};
+
   static inline ScKeynode const concept_subtask_status_proposed{
       "concept_subtask_status_proposed", ScType::NodeConstClass};
   static inline ScKeynode const concept_subtask_status_in_progress{
@@ -36,6 +41,24 @@ public:
       "concept_subtask_status_completed", ScType::NodeConstClass};
 
   static inline ScKeynode const concept_partial_result{"concept_partial_result", ScType::NodeConstClass};
+  static inline ScKeynode const concept_processing_result{"concept_processing_result", ScType::NodeConstClass};
+
+  // Акт исполнения и запись аудита (concepts/execution_acts.scs) --
+  // овеществление факта регистрации частичного результата, требуемое
+  // финальной моделью (AGENTS_AUDIT.md, п.6.2): результат не считается
+  // зарегистрированным без обоих.
+  static inline ScKeynode const concept_execution_act{"concept_execution_act", ScType::NodeConstClass};
+  static inline ScKeynode const concept_execution_act_successful{
+      "concept_execution_act_successful", ScType::NodeConstClass};
+  static inline ScKeynode const nrel_executes{"nrel_executes", ScType::ConstNodeNonRole};
+  static inline ScKeynode const concept_audit_record{"concept_audit_record", ScType::NodeConstClass};
+  static inline ScKeynode const concept_audit_record_execution{
+      "concept_audit_record_execution", ScType::NodeConstClass};
+  static inline ScKeynode const nrel_recorded_in{"nrel_recorded_in", ScType::ConstNodeNonRole};
+  static inline ScKeynode const concept_provenance_record{"concept_provenance_record", ScType::NodeConstClass};
+  static inline ScKeynode const nrel_has_provenance{"nrel_has_provenance", ScType::ConstNodeNonRole};
+  static inline ScKeynode const nrel_generated_by{"nrel_generated_by", ScType::ConstNodeNonRole};
+  static inline ScKeynode const nrel_recorded_by_sc_agent{"nrel_recorded_by_sc_agent", ScType::ConstNodeNonRole};
 
   static inline ScKeynode const concept_knowledge_exchange_act{
       "concept_knowledge_exchange_act", ScType::NodeConstClass};

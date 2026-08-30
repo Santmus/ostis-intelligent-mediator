@@ -92,6 +92,22 @@ nrel_caused_by_subtask
 => nrel_first_domain: concept_processing_result;
 => nrel_second_domain: concept_subtask;;
 
+// is_input_for — результат сделан доступным как вход зависимой
+// подзадачи (AGENTS_AUDIT.md, п.6.10: прежде зависимая подзадача сама
+// выступала адресатом коммуникативного акта, хотя подзадача не
+// является участником коммуникации). В отличие от caused_by_subtask
+// (результат порождён подзадачей), здесь подзадача — потребитель,
+// а не источник результата.
+nrel_is_input_for
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [является_входом_для*] (* <- lang_ru;; *);
+    [is_input_for*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_processing_result;
+=> nrel_second_domain: concept_subtask;;
+
 nrel_obtained_from
 <- sc_node_non_role_relation;
 => nrel_main_idtf:

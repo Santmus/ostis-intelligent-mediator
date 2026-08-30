@@ -26,6 +26,12 @@ public:
   static inline ScKeynode const concept_cardinality_check_outgoing_role{
       "concept_cardinality_check_outgoing_role", ScType::NodeConstClass};
 
+  // concerns(violation, target) -- типизированная связь нарушения
+  // с проверяемой сущностью (concepts/integrity.scs, AGENTS_AUDIT.md
+  // п.6.8: прежде нарушение оставалось анонимным узлом без указания,
+  // что именно оно нарушает).
+  static inline ScKeynode const nrel_concerns{"nrel_concerns", ScType::ConstNodeNonRole};
+
   static inline ScKeynode const action_validate_cardinality_constraint{
       "action_validate_cardinality_constraint", ScType::NodeConstClass};
 };

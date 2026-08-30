@@ -160,6 +160,9 @@ concept_relation_subset_control -> nrel_supervised_by;;
 concept_relation_subset_control -> nrel_verifies;;
 concept_relation_subset_control -> nrel_verified;;
 
+// Нарушения целостности (concepts/integrity.scs).
+concept_relation_subset_control -> nrel_concerns;;
+
 // Подмножество доверия как часть R_ctrl.
 concept_relation_subset_trust -> nrel_has_trust_level;;
 concept_relation_subset_trust -> nrel_trust_for_task;;
@@ -176,16 +179,17 @@ affirmation -> affirmation_control_subset_coverage: ...
         [Утв.(состав управляющего подмножества R_ctrl)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [R_ctrl объединяет управляющие отношения шести видов:
+        -> [R_ctrl объединяет управляющие отношения семи видов:
             доверие (has_trust_level, trust_for_task,
             trust_updated_by_feedback), согласованность
             (consistent_with), конфликтность (conflicts_with,
             resolves_conflict, conflict_status, resolved_by,
             has_unresolved_conflict), аргументацию (argues_for,
             attacks), доступ и надзор (permits, requires_approval,
-            supervised_by), проверку результата (verifies, verified).
-            R_trust ⊑ R_ctrl: подмножество доверия сохранено как
-            семантическая часть управляющего подмножества.]
+            supervised_by), проверку результата (verifies, verified),
+            нарушения целостности (concerns). R_trust ⊑ R_ctrl:
+            подмножество доверия сохранено как семантическая часть
+            управляющего подмножества.]
            (* <- lang_ru;; *);;
     *);;
 *);;

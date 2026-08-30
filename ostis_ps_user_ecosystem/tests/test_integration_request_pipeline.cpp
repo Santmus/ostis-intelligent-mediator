@@ -213,10 +213,14 @@ TEST_F(IntegrationRequestPipelineTest, DispatchesRegistersAndPropagatesAlongSubt
   ASSERT_TRUE(statusAfterRegisterIt->Next());
   EXPECT_EQ(statusAfterRegisterIt->Get(2), TaskKeynodes::concept_subtask_status_completed);
 
-  // --- Шаг 3: σ' зависит от только что завершённой σ -- получает r как
-  // вход через inform-акт. ---
+  // --- Шаг 3: σ' зависит от только что завершённой σ и уже назначена
+  // исполнителю -- получает r как вход (is_input_for) и через inform-акт,
+  // адресованный исполнителю, а не самой подзадаче (AGENTS_AUDIT.md
+  // п.6.10). ---
   ScAddr const dependentSubtaskAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const dependentExecutorAddr = m_ctx->GenerateNode(ScType::ConstNode);
   LinkByRelation(*m_ctx, dependentSubtaskAddr, subtaskAddr, TaskKeynodes::nrel_subtask_depends_on);
+  LinkByRelation(*m_ctx, dependentSubtaskAddr, dependentExecutorAddr, TaskKeynodes::nrel_assigned_to);
 
   ScAddr const propagateLevelAddr = m_ctx->GenerateNode(ScType::ConstNode);
   ScAction propagateAction = m_ctx->GenerateAction(TaskKeynodes::action_propagate_to_dependent);
@@ -225,10 +229,18 @@ TEST_F(IntegrationRequestPipelineTest, DispatchesRegistersAndPropagatesAlongSubt
   ASSERT_TRUE(propagateAction.IsFinishedSuccessfully());
   EXPECT_NEAR(ReadValueLinkContent(*m_ctx, propagateLevelAddr), 1.0f, 0.0001f);
 
+  ScIterator5Ptr const isInputForIt = m_ctx->CreateIterator5(
+      resultAddr,
+      ScType::ConstCommonArc,
+      dependentSubtaskAddr,
+      ScType::ConstPermPosArc,
+      TaskKeynodes::nrel_is_input_for);
+  EXPECT_TRUE(isInputForIt->Next());
+
   ScIterator5Ptr const informIt = m_ctx->CreateIterator5(
       ScType::ConstNode,
       ScType::ConstPermPosArc,
-      dependentSubtaskAddr,
+      dependentExecutorAddr,
       ScType::ConstPermPosArc,
       TaskKeynodes::rrel_receiver);
   ASSERT_TRUE(informIt->Next());

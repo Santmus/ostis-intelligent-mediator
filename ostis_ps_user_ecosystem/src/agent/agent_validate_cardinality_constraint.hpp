@@ -36,10 +36,15 @@
 //
 // При нарушении (count вне [min_count, max_count]) создаётся экземпляр
 // violation_class, подвешенный под result_level (тот же приём, что и
-// у AgentDetectAnomalousRequestRate для concept_security_incident) --
-// формальной связи с самим target не создаётся, т.к. проектная
-// онтология не определяет отношение "нарушение относится к элементу",
-// а текст правил ограничивается прозой "ссылка на ABox-фрагмент".
+// у AgentDetectAnomalousRequestRate для concept_security_incident)
+// и связанный с проверяемым target типизированным отношением
+// concerns (concepts/integrity.scs, AGENTS_AUDIT.md п.6.8: прежде
+// такой связи не было -- нарушение оставалось анонимным узлом).
+// violatesConstraint (связь с самим ограничением, а не с целью
+// проверки) и detectedIn (состояние жизненного цикла, в котором
+// обнаружено нарушение) из того же пункта аудита не реализованы --
+// это отдельные аргументы действия, которых сейчас нет ни у агента,
+// ни у вызовов в rules_integrity_validation.scs.
 class AgentValidateCardinalityConstraint : public ScActionInitiatedAgent
 {
 public:
