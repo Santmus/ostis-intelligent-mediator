@@ -22,16 +22,17 @@ trust_vector_energy_model_initial => nrel_main_idtf:
     [T_initial(energy_model) = <t_rel=0.82, t_acc=0.78, t_sec=0.95, t_tr=0.70>]
     (* <- lang_ru;; *);;
 
-// Скалярная агрегация trust = Σ λ_k t_k при λ = (0.4, 0.25, 0.15, 0.2).
+// Скалярная агрегация trust = Σ λ_k t_k при равных весах λ_k = 1/4
+// (значение по умолчанию пересмотренной главы 2).
 trust_scalar_initial <- concept_trust_level;;
 trust_scalar_initial => nrel_main_idtf:
-    [trust_initial = 0.4·0.82 + 0.25·0.78 + 0.15·0.95 + 0.2·0.70 ≈ 0.806]
+    [trust_initial = (0.82 + 0.78 + 0.95 + 0.70) / 4 = 0.8125]
     (* <- lang_ru;; *);;
 
 intelligent_system_energy_model => nrel_has_trust_level: trust_scalar_initial;;
 
 // После успешного взаимодействия: ν_rel=1, q_res=0.94, ν_sec=1, ν_tr=1
-// при коэффициентах сглаживания α=β=γ=δ=0.10.
+// при едином коэффициенте сглаживания η=0.10.
 trust_vector_energy_model_after <- concept_trust_vector;;
 trust_vector_energy_model_after => nrel_main_idtf:
     [T_after(energy_model) = <t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730>;
@@ -41,7 +42,7 @@ trust_vector_energy_model_after => nrel_main_idtf:
 
 trust_scalar_after <- concept_trust_level;;
 trust_scalar_after => nrel_main_idtf:
-    [trust_after = 0.4·0.838 + 0.25·0.796 + 0.15·0.955 + 0.2·0.730 ≈ 0.823]
+    [trust_after = (0.838 + 0.796 + 0.955 + 0.730) / 4 = 0.82975]
     (* <- lang_ru;; *);;
 
 // Акт обновления доверия.
@@ -60,9 +61,9 @@ trust_scalar_after => nrel_trust_updated_by_feedback: feedback_alice_001;;
 // (ν_sec=0) на следующем шаге снижает t_sec и, как следствие, trust.
 trust_vector_energy_model_drift <- concept_trust_vector;;
 trust_vector_energy_model_drift => nrel_main_idtf:
-    [Прогноз при инциденте безопасности (ν_sec=0, γ=0.10):
+    [Прогноз при инциденте безопасности (ν_sec=0, η=0.10):
      t_sec снизится с 0.955 до 0.9·0.955 ≈ 0.860 →
-     trust ≈ 0.4·0.838+0.25·0.796+0.15·0.860+0.2·0.730 ≈ 0.809;
+     trust = (0.838 + 0.796 + 0.860 + 0.730) / 4 = 0.806;
      модель самонастраивается, уменьшая вероятность назначения
      системе s через функцию match(σ, s)]
     (* <- lang_ru;; *);;

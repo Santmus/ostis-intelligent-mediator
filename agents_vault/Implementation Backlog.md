@@ -22,12 +22,12 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > (core of six SHACL shapes in `rules_integrity_validation.scs`).
 > The remaining items in this document are still survey only, implementation not started.
 
-> [!warning] Update 2026-08-25 — implemented agents now lag chapter 2
+> [!note] Update 2026-08-25, resolved 2026-08-30
 > Chapter 2 was revised on 2026-08-24, after the last agent commit. The already
-> implemented trust agents diverge from it on two points (default weights
-> `λ_k = 1/4`; α/β/γ/δ consolidated into `η`). This is not about the
-> unimplemented rules surveyed below — see [[Chapter 2 Alignment]] for the
-> file-by-file list. Nothing applied yet.
+> implemented trust agents diverged from it on two points (default weights
+> `λ_k = 1/4`; α/β/γ/δ consolidated into `η`). Both applied 2026-08-30.
+> The unimplemented
+> rules surveyed below are unaffected.
 
 > [!note] Update 2026-08-22
 > `rules_cooperation.scs` is fully covered: [[AgentRegisterPartialResult]]

@@ -99,7 +99,8 @@ TEST_F(IntegrationRequestPipelineTest, ValidatesUpdatesAggregatesAndResolvesConf
   updateAction.SetArguments(relLevelAddr, outcomeLinkAddr);
   ASSERT_TRUE(updateAction.InitiateAndWait(2000));
   ASSERT_TRUE(updateAction.IsFinishedSuccessfully());
-  // (1 - alpha) * 0 + alpha * 1.0, alpha = 0.10 (agent_update_trust_reliability.cpp).
+  // (1 - eta) * 0 + eta * 1.0, eta = 0.10 по умолчанию
+  // (agent_update_trust_reliability.cpp, аргумент eta_link не передан).
   EXPECT_NEAR(ReadValueLinkContent(*m_ctx, relLevelAddr), 0.10f, 0.0001f);
 
   // --- Шаг 3: агрегируем -- обновлена только t_rel, остальные три
@@ -114,8 +115,9 @@ TEST_F(IntegrationRequestPipelineTest, ValidatesUpdatesAggregatesAndResolvesConf
   aggregateAction.SetArguments(relLevelAddr, accLevelAddr, secLevelAddr, trLevelAddr, trustLevelAddr);
   ASSERT_TRUE(aggregateAction.InitiateAndWait(2000));
   ASSERT_TRUE(aggregateAction.IsFinishedSuccessfully());
-  // lambda_rel * 0.10, lambda_rel = 0.40 (agent_aggregate_trust.cpp).
-  EXPECT_NEAR(ReadValueLinkContent(*m_ctx, trustLevelAddr), 0.04f, 0.0001f);
+  // lambda_rel * 0.10, lambda_rel = 0.25 (равные веса, agent_aggregate_trust.cpp);
+  // 0.025 > 0.01 -- конфликт ниже по-прежнему разрешается в пользу системы.
+  EXPECT_NEAR(ReadValueLinkContent(*m_ctx, trustLevelAddr), 0.025f, 0.0001f);
 
   // Замыкаем цепочку, которую ожидает AgentResolveByTrustWeighted:
   // result -[nrel_produced_by]-> system -[nrel_has_trust_level]-> trust_level.

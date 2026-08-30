@@ -24,9 +24,9 @@ ScAddr MakeTrustLevel(ScAgentContext & ctx, float value)
 
 // Воспроизводит иллюстративный расчёт из scenario_trust_assessment.scs:
 // t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730,
-// lambda=(0.4, 0.25, 0.15, 0.2)
-// -> trust = 0.4*0.838 + 0.25*0.796 + 0.15*0.955 + 0.2*0.730 = 0.82345
-// (в scenario_trust_assessment.scs округлено до "≈ 0.823").
+// lambda=(1/4, 1/4, 1/4, 1/4) -- равные веса по умолчанию
+// -> trust = (0.838 + 0.796 + 0.955 + 0.730) / 4 = 0.82975
+// (в scenario_trust_assessment.scs записано как "= 0.82975").
 TEST_F(AgentAggregateTrustTest, AggregatesFourComponentsWithDefaultWeights)
 {
   m_ctx->SubscribeAgent<AgentAggregateTrust>();
@@ -50,7 +50,7 @@ TEST_F(AgentAggregateTrustTest, AggregatesFourComponentsWithDefaultWeights)
 
   std::string content;
   EXPECT_TRUE(m_ctx->GetLinkContent(it3->Get(2), content));
-  EXPECT_NEAR(std::stof(content), 0.82345f, 0.0001f);
+  EXPECT_NEAR(std::stof(content), 0.82975f, 0.0001f);
 
   m_ctx->UnsubscribeAgent<AgentAggregateTrust>();
 }
@@ -81,7 +81,8 @@ TEST_F(AgentAggregateTrustTest, TreatsMissingComponentValueAsZero)
 
   std::string content;
   EXPECT_TRUE(m_ctx->GetLinkContent(it3->Get(2), content));
-  // trust = 0.4*1 + 0.25*0 + 0.15*1 + 0.2*1 = 0.75
+  // trust = (1 + 0 + 1 + 1) / 4 = 0.75 (при равных весах совпадает со
+  // старым значением 0.4*1 + 0.25*0 + 0.15*1 + 0.2*1)
   EXPECT_NEAR(std::stof(content), 0.75f, 0.0001f);
 
   m_ctx->UnsubscribeAgent<AgentAggregateTrust>();

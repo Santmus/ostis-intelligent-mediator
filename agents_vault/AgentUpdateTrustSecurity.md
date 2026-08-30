@@ -10,17 +10,17 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of the [[Trust Model|t_sec]] · same pattern as [[AgentUpdateTrustReliability]]
 
-> [!warning] `ms_gamma` → `η` pending — see [[Chapter 2 Alignment]]
+> [!note] `ms_gamma` → `η` — applied 2026-08-30
 > Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
-> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
-> nothing computes differently; the rename is a naming fix, and `η` should also
-> become an action argument so it can be calibrated without recompiling.
-> Not yet applied — everything below describes the current code.
+> all four components instead of α/β/γ/δ. Applied: the constant is renamed
+> `ms_eta`, and `η` is now an optional third action argument (`eta_link`);
+> when it is not passed, the default `0.10` is used, so existing two-argument
+> calls compute exactly as before.
 >
 > This is the one component for which the chapter allows η to be split: a pair
 > `η⁻ > η⁺`, so that reaction to an incident outpaces recovery from it. It is to
-> be introduced "только при наличии предметного требования" — do **not**
-> implement it pre-emptively.
+> be introduced "только при наличии предметного требования" — **not**
+> implemented (no domain requirement stated).
 
 ## Identification
 
@@ -72,7 +72,8 @@ whose data are processed by `s`.
 
 **Limitations (per code):**
 - Same basic limitations as [[AgentUpdateTrustReliability]] (no `trust_level`
-  class check, no range check, no provenance, `γ = 0.10` is a constant);
+  class check, no range check, no provenance, η = `0.10` by default via
+  `ms_eta`, overridable through the optional `eta_link` argument);
 - **Key difference from a "smart" security agent:** this code **does not detect
   or classify incidents** itself — it only applies the formula to the already
   prepared indicator `ν_sec`, which an external mechanism must compute (e.g.,
@@ -91,6 +92,7 @@ whose data are processed by `s`.
 |---|---|---|---|---|
 | 1 | `trust_level` | `ScAddr` | required | `IsElement` only |
 | 2 | `incident_link` | `ScAddr` of an sc-link with `ν_sec` ∈ {0,1} | required | `IsElement` + parsed with `std::stof` |
+| 3 | `eta_link` | `ScAddr` sc-link with η ∈ (0,1) | optional (default `ms_eta = 0.10`) | if present: numeric in (0,1) |
 
 **Format:** `incident_link` is a textual sc-link, `"1.0"` (no incident) or
 `"0.0"` (incident registered).
@@ -119,8 +121,9 @@ ELSE IF  content of incident_link is not a number
 THEN  FinishWithError()
 
 ELSE
+  η := value of eta_link if present, ELSE ms_eta (0.10)
   currentTSec := value of value_link if present, ELSE 0 (+ create if absent)
-  newTSec := (1 - γ) * currentTSec + γ * ν_sec       // γ = 0.10
+  newTSec := (1 - η) * currentTSec + η * ν_sec       // η = 0.10 by default
   write newTSec, FormResult(...), FinishSuccessfully()
 ```
 

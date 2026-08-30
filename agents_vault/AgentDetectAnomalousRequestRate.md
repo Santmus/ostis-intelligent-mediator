@@ -11,8 +11,9 @@ status: implemented, covered by tests, verified on a live sc-server
 ← [[Agent Index]] · from [[Implementation Backlog]] (top-5, #2)
 
 > [!note] k_sigma is an argument, not a constant
-> Unlike α/β/γ/δ (all explicitly “typically 0.10” in the rule text of
-> [[AgentUpdateTrustReliability|trust agents]]), k_sigma has no default
+> Unlike the EMA agents' `η` (explicitly “typically 0.10” in the rule text
+> of [[AgentUpdateTrustReliability|trust agents]], hence an *optional*
+> argument there with default `0.10`), k_sigma has no default
 > textual value — only the “27×” observation in the illustrative scenario,
 > which describes a *specific incident*, not a threshold. Therefore, here
 > k_sigma is the third argument of the action; the calling side decides

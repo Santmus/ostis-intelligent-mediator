@@ -150,11 +150,11 @@ does not yet have (see above about [[AgentAggregateTrust]]).
 
 ## What's next
 
-[[Chapter 2 Alignment]] — the implementation was frozen 2026-08-22, chapter 2
-was revised 2026-08-24, and two of those revisions reach the code: the default
-trust weights become `λ_k = 1/4`, and the four smoothing coefficients α/β/γ/δ
-become a single `η` that also has to be calibratable at run time. Five agents
-affected, seven verified unaffected. Nothing applied yet.
+Chapter 2 alignment — applied 2026-08-30. The implementation was frozen 2026-08-22, chapter 2
+was revised 2026-08-24, and two of those revisions reached the code: the default
+trust weights became `λ_k = 1/4`, and the four smoothing coefficients α/β/γ/δ
+became a single `η`, calibratable at run time as an optional action argument.
+Five agents affected, seven verified unaffected.
 
 [[Implementation Backlog]] — an overview of the remaining six unimplemented
 agents from the catalog `concepts/sc_agents.scs`. `agent_trust_evaluator`

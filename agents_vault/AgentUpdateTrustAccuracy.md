@@ -10,12 +10,12 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of [[Trust Model|t_acc]] · same pattern as [[AgentUpdateTrustReliability]]
 
-> [!warning] `ms_beta` → `η` pending — see [[Chapter 2 Alignment]]
+> [!note] `ms_beta` → `η` — applied 2026-08-30
 > Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
-> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
-> nothing computes differently; the rename is a naming fix, and `η` should also
-> become an action argument so it can be calibrated without recompiling.
-> Not yet applied — everything below describes the current code.
+> all four components instead of α/β/γ/δ. Applied: the constant is renamed
+> `ms_eta`, and `η` is now an optional third action argument (`eta_link`);
+> when it is not passed, the default `0.10` is used, so existing two-argument
+> calls compute exactly as before.
 
 ## Identification
 
@@ -66,7 +66,8 @@ in [[ostis_kb_user_ecosystem]]).
 - does not check that `q_res` is actually ∈ [0,1] — accepts any number
   parseable by `std::stof`;
 - does not write provenance (which specific subtask produced this `q_res`);
-- β = 0.10 — a constant in code, not configurable by context/system;
+- η defaults to `0.10` (`ms_eta`), overridable per call via the optional
+  `eta_link` argument;
 - in addition to common limitations: **does not determine the method of
   measuring `q_res`** — accuracy calculation (against ground truth, by
   labeling, by an ensemble judge, etc.) is fully outside the agent’s
@@ -80,6 +81,7 @@ in [[ostis_kb_user_ecosystem]]).
 |---|---|---|---|---|
 | 1 | `trust_level` | `ScAddr` | required | only `IsElement` |
 | 2 | `quality_link` | `ScAddr` sc-link with `q_res` | required | `IsElement` + parseable by `std::stof` |
+| 3 | `eta_link` | `ScAddr` sc-link with η ∈ (0,1) | optional (default `ms_eta = 0.10`) | if present: numeric in (0,1) |
 
 **Format:** `quality_link` — a textual sc-link, e.g. `"0.9"`.
 
@@ -106,8 +108,9 @@ ELSE IF  quality_link content is not a number
 THEN  FinishWithError()
 
 ELSE
+  η := value of eta_link if present, ELSE ms_eta (0.10)
   currentTAcc := value of value_link if present, OTHERWISE 0 (+ create if missing)
-  newTAcc := (1 - β) * currentTAcc + β * q_res       // β = 0.10
+  newTAcc := (1 - η) * currentTAcc + η * q_res       // η = 0.10 by default
   write newTAcc, FormResult(...), FinishSuccessfully()
 ```
 

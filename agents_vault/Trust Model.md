@@ -12,12 +12,12 @@ T(s, τ) = ⟨t_rel(s,τ), t_acc(s,τ), t_sec(s,τ), t_tr(s,τ)⟩
 trust(s, τ, h) = λ_rel·t_rel + λ_acc·t_acc + λ_sec·t_sec + λ_tr·t_tr,  Σλ = 1
 ```
 
-> [!warning] Diverges from chapter 2 as revised 2026-08-24 — see [[Chapter 2 Alignment]]
-> Two pending changes, neither applied: the default weights are now
-> `λ_k = 1/4` (the code still carries `(0.40, 0.25, 0.15, 0.20)` from a
-> deleted illustration), and the four per-component smoothing coefficients
-> α/β/γ/δ are now a single `η`. The notes below describe the **current**
-> implementation, which is still the old one.
+> [!note] Aligned with chapter 2 as revised 2026-08-24 on 2026-08-30
+> Both changes applied: the default weights are `λ_k = 1/4` (the code
+> previously carried `(0.40, 0.25, 0.15, 0.20)` from a deleted
+> illustration), and the four per-component smoothing coefficients
+> α/β/γ/δ are a single `η`, passed to the EMA agents as an optional
+> action argument with default `0.10`.
 
 - `s` — an intelligent system in the community.
 - `τ` — context/type of the task.

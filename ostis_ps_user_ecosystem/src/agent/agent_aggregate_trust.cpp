@@ -22,10 +22,10 @@ float ReadTrustComponent(ScAgentContext & context, ScAddr const & trustLevelAddr
 }
 }  // namespace
 
-float const AgentAggregateTrust::ms_lambdaRel = 0.40f;
+float const AgentAggregateTrust::ms_lambdaRel = 0.25f;
 float const AgentAggregateTrust::ms_lambdaAcc = 0.25f;
-float const AgentAggregateTrust::ms_lambdaSec = 0.15f;
-float const AgentAggregateTrust::ms_lambdaTr = 0.20f;
+float const AgentAggregateTrust::ms_lambdaSec = 0.25f;
+float const AgentAggregateTrust::ms_lambdaTr = 0.25f;
 
 ScAddr AgentAggregateTrust::GetActionClass() const
 {

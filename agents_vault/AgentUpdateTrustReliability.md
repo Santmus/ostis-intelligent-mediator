@@ -10,12 +10,12 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of [[Trust Model|t_rel]]
 
-> [!warning] `ms_alpha` → `η` pending — see [[Chapter 2 Alignment]]
+> [!note] `ms_alpha` → `η` — applied 2026-08-30
 > Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
-> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
-> nothing computes differently; the rename is a naming fix, and `η` should also
-> become an action argument so it can be calibrated without recompiling.
-> Not yet applied — everything below describes the current code.
+> all four components instead of α/β/γ/δ. Applied: the constant is renamed
+> `ms_eta`, and `η` is now an optional third action argument (`eta_link`);
+> when it is not passed, the default `0.10` is used, so existing two-argument
+> calls compute exactly as before.
 
 ## Identification
 
@@ -76,9 +76,10 @@ manual trust calibration and sharp jumps from a single random failure.
   subtask that triggered the update — from sc-memory alone it is impossible
   to reconstruct «why `t_rel` changed at that exact moment» without an
   external log.
-- does not adapt the coefficient: α = 0.10 is a constant in the code,
-  uniform for all systems and contexts; it can only be changed by
-  rebuilding.
+- does not adapt the coefficient on its own: η defaults to `0.10`
+  (`ms_eta`) but can be overridden per call via the optional third
+  action argument `eta_link` (calibrated and frozen before the
+  evaluation run, per revised chapter 2);
 - does not perform any side effects other than writing the value (does
   not send notifications, does not write to the log except for
   `m_logger.Debug`).
@@ -91,12 +92,13 @@ manual trust calibration and sharp jumps from a single random failure.
 (`ConstPermPosArc`). The usual way is to call `ScAction::Initiate()` /
 `InitiateAndWait()` after `SetArguments(...)`.
 
-**Action parameters (both mandatory, no optional ones):**
+**Action parameters (1–2 mandatory, 3rd optional):**
 
 | # | Role | Type | Required | Validation |
 |---|---|---|---|---|
 | 1 | `trust_level` | `ScAddr` of any sc-element | required | only `IsElement` |
 | 2 | `outcome_link` | `ScAddr` of an sc-link | required | `IsElement` + `GetLinkContent` + `std::stof` does not throw |
+| 3 | `eta_link` | `ScAddr` of an sc-link with η ∈ (0,1) | optional (default `ms_eta = 0.10`) | if present: `IsElement` + numeric + in (0,1), else `FinishWithError` |
 
 **Format:** the indicator is an sc-link with **textual** numeric content,
 e.g. `"1.0"` or `"0"` (not raw float bytes).
@@ -144,22 +146,26 @@ THEN  log error → action.FinishWithError()  [STOP]
 ELSE IF  content of outcome_link does not parse as a number
 THEN  log error → action.FinishWithError()  [STOP]
 
+ELSE IF  eta_link is present but not a number in (0,1)
+THEN  log error → action.FinishWithError()  [STOP]
+
 ELSE
+  η := value of eta_link if present, ELSE ms_eta (0.10)
   currentTRel := value of value_link if it exists for trust_level, ELSE 0
   IF value_link did not exist
   THEN  create value_link (ConstNodeLink) + arc trust_level -> value_link
 
-  newTRel := (1 - α) * currentTRel + α * outcome     // α = 0.10
+  newTRel := (1 - η) * currentTRel + η * outcome     // η = 0.10 by default
   write newTRel into value_link (as text)
   action.FormResult(trust_level, value_link)
   → action.FinishSuccessfully()
 ```
 
 **Error handling:** both failures (missing arguments / not a number)
-produce the same `action.FinishWithError()` — from the outside (by action
+produce `action.FinishWithError()` — from the outside (by action
 status) they are indistinguishable; they can only be distinguished by the
 sc-server log (`AgentUpdateTrustReliability: action does not have both
-arguments.` vs `...outcome argument is not a numeric sc-link.`).
+required arguments.` vs `...outcome argument is not a numeric sc-link.`).
 
 **Timeouts:** the agent itself has no internal timeout — `DoProgram` is
 synchronous and completes in one pass without waits/loops. The timeout is

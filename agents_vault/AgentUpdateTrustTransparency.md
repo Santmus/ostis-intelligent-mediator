@@ -10,12 +10,12 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of [[Trust Model|t_tr]] · pattern same as [[AgentUpdateTrustReliability]]
 
-> [!warning] `ms_delta` → `η` pending — see [[Chapter 2 Alignment]]
+> [!note] `ms_delta` → `η` — applied 2026-08-30
 > Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
-> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
-> nothing computes differently; the rename is a naming fix, and `η` should also
-> become an action argument so it can be calibrated without recompiling.
-> Not yet applied — everything below describes the current code.
+> all four components instead of α/β/γ/δ. Applied: the constant is renamed
+> `ms_eta`, and `η` is now an optional third action argument (`eta_link`);
+> when it is not passed, the default `0.10` is used, so existing two-argument
+> calls compute exactly as before.
 >
 > The indicator `ν_tr ∈ {0, 1}` was checked against the revised chapter
 > (`part2.tex` line 262) and **matches** — no change needed there.
@@ -66,7 +66,8 @@ explainability is required.
 - does not check whether `trust_level` belongs to class `concept_trust_level`;
 - does not check the range of `ν_tr`;
 - does not write provenance (which specific justification request produced this indicator);
-- δ = 0.10 — constant in code;
+- η defaults to `0.10` (`ms_eta`), overridable per call via the optional
+  `eta_link` argument;
 - **does not assess the quality of the justification itself** — only the binary fact
   "provided / not provided"; a boilerplate dismissal and a substantive
   explanation are indistinguishable from this agent's perspective.
@@ -79,6 +80,7 @@ explainability is required.
 |---|---|---|---|---|
 | 1 | `trust_level` | `ScAddr` | required | only `IsElement` |
 | 2 | `justification_link` | `ScAddr` sc-link with `ν_tr` | required | `IsElement` + parsed by `std::stof` |
+| 3 | `eta_link` | `ScAddr` sc-link with η ∈ (0,1) | optional (default `ms_eta = 0.10`) | if present: numeric in (0,1) |
 
 **Format:** textual sc-link, `"1.0"` (justification provided) or `"0.0"`.
 
@@ -105,8 +107,9 @@ ELSE IF  justification_link content is not a number
 THEN  FinishWithError()
 
 ELSE
+  η := value of eta_link if present, ELSE ms_eta (0.10)
   currentTTr := value of value_link if exists, ELSE 0 (+ create if missing)
-  newTTr := (1 - δ) * currentTTr + δ * ν_tr          // δ = 0.10
+  newTTr := (1 - η) * currentTTr + η * ν_tr          // η = 0.10 by default
   write newTTr, FormResult(...), FinishSuccessfully()
 ```
 

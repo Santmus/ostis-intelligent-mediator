@@ -18,12 +18,12 @@ status: implemented, covered by tests, verified on a live sc-server
 > Each call **overwrites** `trust` from scratch, rather than blending it with the
 > old value.
 
-> [!warning] Weights pending change — see [[Chapter 2 Alignment]]
-> Chapter 2 as revised 2026-08-24 sets `λ_k = 1/4` as the default; the
-> `λ = (0.40, 0.25, 0.15, 0.20)` described throughout this note comes from an
-> illustrative calculation that has since been deleted from the chapter.
-> Not yet applied. The change also moves `test_agent_aggregate_trust.cpp`
-> from `0.82345` to `0.82975` and the integration test from `0.04` to `0.025`.
+> [!note] Weights updated 2026-08-30
+> Chapter 2 as revised 2026-08-24 sets `λ_k = 1/4` as the default; the old
+> `λ = (0.40, 0.25, 0.15, 0.20)` came from an illustrative calculation that
+> has since been deleted from the chapter. Applied: the four constants are
+> now `0.25f` each, `test_agent_aggregate_trust.cpp` expects `0.82975`, and
+> the integration test expects `0.025`.
 
 ## Identification
 
@@ -62,8 +62,8 @@ architects who set the weights `λ`; auditors who need an explainable (not
 **Capabilities:**
 - read the current value of each of the four components (via each component’s
   `trust_level` node — find its `value_link` and parse the number);
-- compute the weighted sum with fixed weights
-  `λ = (0.40, 0.25, 0.15, 0.20)`, Σλ = 1;
+- compute the weighted sum with fixed equal weights
+  `λ_k = 1/4` (the default of revised chapter 2), Σλ = 1;
 - write the result into the `value_link` of the fifth (“output”) node,
   creating it on first access (as in the other agents);
 - return `trust_level`/`value_link` in the action result.
@@ -153,7 +153,7 @@ flowchart TD
     A[action_initiated on action_aggregate_trust] --> B{all 5 arguments are<br/>sc-elements?}
     B -- no --> E1[FinishWithError]
     B -- yes --> C[read t_rel, t_acc, t_sec, t_tr<br/>missing/non-number → 0]
-    C --> D["trust = 0.40·t_rel + 0.25·t_acc<br/>+ 0.15·t_sec + 0.20·t_tr"]
+    C --> D["trust = (t_rel + t_acc<br/>+ t_sec + t_tr) / 4"]
     D --> F{trust_level has<br/>value_link?}
     F -- no --> G[create value_link<br/>+ arc]
     F -- yes --> H[use existing]
@@ -195,17 +195,18 @@ synchronous; waiting is on the calling side (`InitiateAndWait`).
 ## Tests
 
 File: `tests/test_agent_aggregate_trust.cpp` (3 tests, all pass; scenario 1
-additionally verified on a live sc-server — result `0.823450`).
+additionally verified on a live sc-server — old result `0.823450`, now
+`0.829750` with equal weights).
 
 **1. `AggregatesFourComponentsWithDefaultWeights`**
 Input: `t_rel=0.838, t_acc=0.796, t_sec=0.955, t_tr=0.730` (illustrative
 example from `scenario_trust_assessment.scs`).
-Output: `trust = 0.4·0.838+0.25·0.796+0.15·0.955+0.2·0.730 = 0.82345`
-(rounded to “≈0.823” in the scenario), `FinishedSuccessfully`.
+Output: `trust = (0.838+0.796+0.955+0.730) / 4 = 0.82975`,
+`FinishedSuccessfully`.
 
 **2. `TreatsMissingComponentValueAsZero`**
 Input: `t_rel=1, t_sec=1, t_tr=1`, and `t_acc_level` has **no** `value_link`.
-Output: `trust = 0.4·1 + 0.25·0 + 0.15·1 + 0.2·1 = 0.75` — confirms the
+Output: `trust = (1 + 0 + 1 + 1) / 4 = 0.75` — confirms the
 Limitation “missing component = silent 0”, not an error.
 
 **3. `FinishesWithErrorOnMissingArguments`**

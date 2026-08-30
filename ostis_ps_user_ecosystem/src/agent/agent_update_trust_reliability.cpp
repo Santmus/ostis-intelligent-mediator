@@ -9,7 +9,12 @@ using trust_utils::IsUnitInterval;
 using trust_utils::ReadFloatLinkContent;
 using trust_utils::WriteFloatLinkContent;
 
-float const AgentUpdateTrustReliability::ms_alpha = 0.10f;
+// Коэффициент сглаживания eta (единый для всех четырёх EMA-агентов по
+// пересмотренной главе 2, part2.tex): значение по умолчанию 0.10;
+// передаётся необязательным 3-м аргументом действия (как k_sigma в
+// AgentDetectAnomalousRequestRate), т.к. eta -- калибруемый параметр
+// модели, замораживаемый перед оценочным прогоном.
+float const AgentUpdateTrustReliability::ms_eta = 0.10f;
 
 ScAddr AgentUpdateTrustReliability::GetActionClass() const
 {
@@ -18,10 +23,10 @@ ScAddr AgentUpdateTrustReliability::GetActionClass() const
 
 ScResult AgentUpdateTrustReliability::DoProgram(ScAction & action)
 {
-  auto const & [trustLevelAddr, outcomeLinkAddr] = action.GetArguments<2>();
+  auto const & [trustLevelAddr, outcomeLinkAddr, etaLinkAddr] = action.GetArguments<3>();
   if (!m_context.IsElement(trustLevelAddr) || !m_context.IsElement(outcomeLinkAddr))
   {
-    m_logger.Error("AgentUpdateTrustReliability: action does not have both arguments.");
+    m_logger.Error("AgentUpdateTrustReliability: action does not have both required arguments.");
     return action.FinishWithError();
   }
 
@@ -36,6 +41,16 @@ ScResult AgentUpdateTrustReliability::DoProgram(ScAction & action)
   {
     m_logger.Error("AgentUpdateTrustReliability: outcome argument is out of range [0, 1].");
     return action.FinishWithError();
+  }
+
+  float eta = ms_eta;
+  if (m_context.IsElement(etaLinkAddr))
+  {
+    if (!ReadFloatLinkContent(m_context, etaLinkAddr, eta) || eta <= 0.0f || eta >= 1.0f)
+    {
+      m_logger.Error("AgentUpdateTrustReliability: eta argument is not a numeric sc-link in (0, 1).");
+      return action.FinishWithError();
+    }
   }
 
   ScAddr valueLinkAddr;
@@ -55,7 +70,7 @@ ScResult AgentUpdateTrustReliability::DoProgram(ScAction & action)
     m_context.GenerateConnector(ScType::ConstPermPosArc, trustLevelAddr, valueLinkAddr);
   }
 
-  float const newTRel = (1.0f - ms_alpha) * currentTRel + ms_alpha * outcome;
+  float const newTRel = (1.0f - eta) * currentTRel + eta * outcome;
   WriteFloatLinkContent(m_context, valueLinkAddr, newTRel);
 
   action.FormResult(trustLevelAddr, valueLinkAddr);
