@@ -10,6 +10,18 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of the [[Trust Model|t_sec]] · same pattern as [[AgentUpdateTrustReliability]]
 
+> [!warning] `ms_gamma` → `η` pending — see [[Chapter 2 Alignment]]
+> Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
+> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
+> nothing computes differently; the rename is a naming fix, and `η` should also
+> become an action argument so it can be calibrated without recompiling.
+> Not yet applied — everything below describes the current code.
+>
+> This is the one component for which the chapter allows η to be split: a pair
+> `η⁻ > η⁺`, so that reaction to an incident outpaces recovery from it. It is to
+> be introduced "только при наличии предметного требования" — do **not**
+> implement it pre-emptively.
+
 ## Identification
 
 | Field | Value |

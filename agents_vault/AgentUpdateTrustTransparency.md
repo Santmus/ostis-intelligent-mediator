@@ -10,6 +10,16 @@ status: implemented, covered by tests, verified on a live sc-server
 
 ← [[Agent Index]] · component of [[Trust Model|t_tr]] · pattern same as [[AgentUpdateTrustReliability]]
 
+> [!warning] `ms_delta` → `η` pending — see [[Chapter 2 Alignment]]
+> Chapter 2 as revised 2026-08-24 uses a single smoothing coefficient `η` for
+> all four components instead of α/β/γ/δ. The value is unchanged (`0.10`), so
+> nothing computes differently; the rename is a naming fix, and `η` should also
+> become an action argument so it can be calibrated without recompiling.
+> Not yet applied — everything below describes the current code.
+>
+> The indicator `ν_tr ∈ {0, 1}` was checked against the revised chapter
+> (`part2.tex` line 262) and **matches** — no change needed there.
+
 ## Identification
 
 | Field | Value |

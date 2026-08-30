@@ -18,6 +18,13 @@ status: implemented, covered by tests, verified on a live sc-server
 > Each call **overwrites** `trust` from scratch, rather than blending it with the
 > old value.
 
+> [!warning] Weights pending change — see [[Chapter 2 Alignment]]
+> Chapter 2 as revised 2026-08-24 sets `λ_k = 1/4` as the default; the
+> `λ = (0.40, 0.25, 0.15, 0.20)` described throughout this note comes from an
+> illustrative calculation that has since been deleted from the chapter.
+> Not yet applied. The change also moves `test_agent_aggregate_trust.cpp`
+> from `0.82345` to `0.82975` and the integration test from `0.04` to `0.025`.
+
 ## Identification
 
 | Field | Value |
