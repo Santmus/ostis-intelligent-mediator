@@ -75,10 +75,17 @@ mediator_001 <- concept_intelligent_mediator;;
 mediator_001 => nrel_main_idtf:
     [Посредник, обслуживающий запрос request_001] (* <- lang_ru;; *);;
 
+intent_001 <- concept_intent;;
+intent_001 => nrel_main_idtf:
+    [Намерение: подобрать маршрут доставки, минимизирующий энергозатраты]
+    (* <- lang_ru;; *);;
+request_001 => nrel_interprets: intent_001;;
+intent_001 => nrel_intent_goal: goal_optimal_route;;
+
 plan_001 <- concept_processing_plan;;
 plan_001 => nrel_main_idtf:
     [План обработки запроса request_001] (* <- lang_ru;; *);;
-request_001 => nrel_has_plan: plan_001;;
+intent_001 => nrel_has_plan: plan_001;;
 
 plan_version_001_v1 <- concept_plan_version;;
 plan_version_001_v1 => nrel_main_idtf:

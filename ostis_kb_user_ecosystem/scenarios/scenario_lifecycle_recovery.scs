@@ -46,10 +46,16 @@ mediator_rec <- concept_intelligent_mediator;;
 mediator_rec => nrel_main_idtf:
     [Посредник, обслуживающий запрос request_rec_001] (* <- lang_ru;; *);;
 
+intent_rec_001 <- concept_intent;;
+intent_rec_001 => nrel_main_idtf:
+    [Намерение: рассчитать сводный прогноз спроса по трём складам]
+    (* <- lang_ru;; *);;
+request_rec_001 => nrel_interprets: intent_rec_001;;
+
 plan_rec_001 <- concept_processing_plan;;
 plan_rec_001 => nrel_main_idtf:
     [План обработки запроса request_rec_001] (* <- lang_ru;; *);;
-request_rec_001 => nrel_has_plan: plan_rec_001;;
+intent_rec_001 => nrel_has_plan: plan_rec_001;;
 
 plan_rec_v1 <- concept_plan_version;;
 plan_rec_v1 => nrel_main_idtf:

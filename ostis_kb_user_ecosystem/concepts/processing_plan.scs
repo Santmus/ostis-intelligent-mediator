@@ -50,9 +50,10 @@ definition -> definition_processing_plan: ...
     => nrel_main_idtf: [Опр.(план обработки запроса)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [План обработки p — сущность, связывающая запрос q с графом
-            подзадач T(q) и с назначением исполнителей χ. План является
-            областью определения отношения decomposes: decomposes(p, σ).
+        -> [План обработки p — зафиксированный результат декомпозиции
+            намерения ι: сущность, связывающая ι с графом подзадач T(q)
+            и с назначением исполнителей χ. План является областью
+            определения отношения decomposes: decomposes(p, σ).
             План не изменяется на месте: каждое изменение маршрута
             порождает новую версию плана, связанную с предыдущей
             отношением replans.] (* <- lang_ru;; *);;
@@ -239,7 +240,7 @@ nrel_has_plan
 <- binary_relation;
 <- oriented_relation;
 <- functional_relation;
-=> nrel_first_domain: concept_user_request;
+=> nrel_first_domain: concept_intent;
 => nrel_second_domain: concept_processing_plan;;
 
 nrel_has_plan_version
