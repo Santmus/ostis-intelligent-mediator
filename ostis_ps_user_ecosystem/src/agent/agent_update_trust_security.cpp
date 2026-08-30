@@ -5,6 +5,7 @@
 #include "common/float_link_io.hpp"
 #include "keynodes/trust_keynodes.hpp"
 
+using trust_utils::IsUnitInterval;
 using trust_utils::ReadFloatLinkContent;
 using trust_utils::WriteFloatLinkContent;
 
@@ -28,6 +29,12 @@ ScResult AgentUpdateTrustSecurity::DoProgram(ScAction & action)
   if (!ReadFloatLinkContent(m_context, incidentLinkAddr, incidentAbsence))
   {
     m_logger.Error("AgentUpdateTrustSecurity: incident indicator argument is not a numeric sc-link.");
+    return action.FinishWithError();
+  }
+
+  if (!IsUnitInterval(incidentAbsence))
+  {
+    m_logger.Error("AgentUpdateTrustSecurity: incident indicator argument is out of range [0, 1].");
     return action.FinishWithError();
   }
 

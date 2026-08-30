@@ -5,6 +5,7 @@
 #include "common/float_link_io.hpp"
 #include "keynodes/trust_keynodes.hpp"
 
+using trust_utils::IsUnitInterval;
 using trust_utils::ReadFloatLinkContent;
 using trust_utils::WriteFloatLinkContent;
 
@@ -28,6 +29,12 @@ ScResult AgentUpdateTrustTransparency::DoProgram(ScAction & action)
   if (!ReadFloatLinkContent(m_context, justificationLinkAddr, justification))
   {
     m_logger.Error("AgentUpdateTrustTransparency: justification argument is not a numeric sc-link.");
+    return action.FinishWithError();
+  }
+
+  if (!IsUnitInterval(justification))
+  {
+    m_logger.Error("AgentUpdateTrustTransparency: justification argument is out of range [0, 1].");
     return action.FinishWithError();
   }
 

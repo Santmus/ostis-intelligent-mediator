@@ -33,4 +33,9 @@ inline void WriteFloatLinkContent(ScAgentContext & context, ScAddr const & linkA
 {
   context.SetLinkContent(linkAddr, std::to_string(value));
 }
+
+inline bool IsUnitInterval(float value)
+{
+  return value >= 0.0f && value <= 1.0f;
+}
 }  // namespace trust_utils

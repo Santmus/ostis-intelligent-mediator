@@ -38,3 +38,6 @@ target_link_libraries(ostis-ps-trust-tests
     PRIVATE ostis-ps-trust
 )
 target_include_directories(ostis-ps-trust-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+include(GoogleTest)
+gtest_discover_tests(ostis-ps-trust-tests)
