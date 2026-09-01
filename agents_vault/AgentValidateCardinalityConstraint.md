@@ -81,8 +81,9 @@ part), `agent_coalition_reconfigurator` (potential consumer of
 - on violation, create an instance of the passed violation class
   (`concept_cardinality_constraint_violation` or
   `concept_existence_constraint_violation` — rules use different
-  classes for formally identical counting mechanics) and attach it under
-  `result_level`;
+  classes for formally identical counting mechanics), attach it under
+  `result_level`, and link it to the checked `target` via
+  `nrel_concerns` (`concepts/integrity.scs`, AGENTS_AUDIT.md §6.8);
 - finish correctly with an error when any of the seven arguments is
   missing or when `mode` is unrecognized.
 
@@ -102,12 +103,13 @@ part), `agent_coalition_reconfigurator` (potential consumer of
 - **`shape_provenance_chain_complete` is not implemented at all** — checking
   the transitive path `nrel_derived_from` is a fundamentally different task
   (graph traversal, not counting incident arcs).
-- **the violation is not linked by a formal relation to `target`** — it is only
-  attached under `result_level` (same technique as
-  `concept_security_incident` in [[AgentDetectAnomalousRequestRate]]).
-  The project ontology does not define a relation "violation relates to
-  element", and the rule text is limited to prose "reference to an
-  ABox fragment" — the agent honestly does not invent this.
+- **the violation's only formal link to `target` is `nrel_concerns`,
+  generic on purpose** — the new relation (added together with this fix,
+  AGENTS_AUDIT.md §6.8) ranges over `sc_node` on its second domain,
+  since the ontology defines no common "any entity" superclass to type
+  it more narrowly; it is still attached under `result_level` in
+  addition (same technique as `concept_security_incident` in
+  [[AgentDetectAnomalousRequestRate]]), not instead.
 - **does not distinguish "no arcs at all" from "a related arc exists, but not
   of the right type"** — it simply counts matches by exact relation; if the
   caller passes the wrong relation, the agent will not notice.
@@ -135,20 +137,23 @@ part), `agent_coalition_reconfigurator` (potential consumer of
 A new/updated sc-link `value_link` on `result_level` with `1.0`
 (within bounds) or `0.0` (violation). If violation — additionally:
 a new instance of `violation_class`, attached under `result_level`
-via `ConstPermPosArc` (without a separate link to `target`). Success —
+via `ConstPermPosArc` and linked to `target` via
+`violation -[nrel_concerns]-> target`. Success —
 `FinishSuccessfully()` + `FormResult(target, valueLink)`.
 
 ## Connections
 
 **Dependencies:** `common/float_link_io.hpp` (`ReadFloatLinkContent`/
 `WriteFloatLinkContent` — reused unchanged, third time in a row),
-`keynodes/integrity_keynodes.hpp` (`IntegrityKeynodes`, new file).
+`common/relation_io.hpp` (`LinkByRelation` — for `nrel_concerns`),
+`keynodes/integrity_keynodes.hpp` (`IntegrityKeynodes`, extended with
+`nrel_concerns`).
 
 **Reads:** arcs of `relation` at `target` (in one of the three patterns),
 content of `min_count`/`max_count`.
 
 **Writes:** `value_link` to `result_level`; on violation — a new node of
-class `violation_class`.
+class `violation_class`, plus a `nrel_concerns` link from it to `target`.
 
 **Workflow.** Independent of the other nine agents of the project in terms
 of data — does not read or write trust/provenance/subtasks/integration.
@@ -175,8 +180,9 @@ ELSE
 
   IF NOT valid
   THEN
-    create a node of class violation_class
-    attach it under result_level (ConstPermPosArc)
+    v := create a node of class violation_class
+    attach v under result_level (ConstPermPosArc)
+    link v -[nrel_concerns]-> target
 
   write (valid ? 1.0 : 0.0) to value_link result_level (create if missing)
   action.FormResult(target, value_link)
@@ -229,7 +235,7 @@ Reproduces `shape_user_request_authorship`: `nrel_formulates⁻¹` with no
 incoming user at all, `minCount=1, maxCount=1`.
 Output: indicator `0.0`, a node of class
 `concept_cardinality_constraint_violation` created and attached under
-`result_level`.
+`result_level`, linked to `target` via `nrel_concerns`.
 On the live server — the same shape on the real `request_001`
 (in the KB there is exactly one `user_alice => nrel_formulates: request_001`):
 indicator `1.0` (within bounds `[1,1]`), no violation; the violating case

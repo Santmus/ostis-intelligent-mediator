@@ -38,8 +38,12 @@ semantic inconsistency, logical contradiction, etc., see
 but simple source-trust voting.
 
 **Goal.** Among a set of conflicting results, choose the one produced by
-the system with the maximum `trust(s,τ,h)`, and record the outcome as
-`concept_integrated_result`, formally resolving the conflict.
+the system with the maximum `trust(s,τ,h)`, record the outcome as
+`concept_integrated_result`, and formally resolve the conflict through a
+reified `concept_conflict_resolution_act` plus an explanation, rather
+than by pointing `nrel_resolves_conflict` at the result directly (a
+divergence from the implementation flagged in
+`relations/relations_trust.scs` and closed by this fix).
 
 **Value.** A cheap, fast (without building an argumentative framework, as
 in `rule_resolve_by_argumentation`) conflict-resolution heuristic — and
@@ -60,17 +64,25 @@ consistent answer instead of contradictory ones.
   `value_link`);
 - select the candidate with the maximum weight (`arg max_i w_i`);
 - create `concept_integrated_result`, link it to the winner via
-  `nrel_integrated_in` and to the passed conflict via
-  `nrel_resolves_conflict`;
+  `nrel_integrated_in`;
+- create a `concept_conflict_resolution_act`, specialized as
+  `concept_resolution_by_trust_weighting`, and link the passed conflict
+  to it via `nrel_resolved_by`; move the conflict's `nrel_conflict_status`
+  (functional relation) to `concept_conflict_status_resolved`;
+- create a `concept_explanation`, link it to the conflict via
+  `nrel_resolves_conflict` and to the integrated result via
+  `nrel_explained_by`;
 - terminate correctly with an error when arguments are missing or the
   candidate group is empty.
 
 **Limitations (from the code):**
-- **does not generate a textual justification** ("with justification" in
-  the rule text) — this is essentially the task of
-  `agent_explanation_builder`, not implemented in the project; only a
-  debug message with the final weight remains in the log, not a formal
-  sc-structure.
+- **the explanation carries no textual justification** ("with
+  justification" in the rule text) — the created `concept_explanation`
+  node is structurally correct (typed, linked to both the conflict and
+  the integrated result) but empty of content; filling it in is
+  essentially the task of `agent_explanation_builder`, not implemented
+  in the project — only a debug message with the final weight remains in
+  the log.
 - **a candidate without a trust chain gets weight 0**, not an
   error/exception — indistinguishable from a system with genuinely zero
   trust (the same principle as in [[AgentAggregateTrust]]).
@@ -98,31 +110,44 @@ consistent answer instead of contradictory ones.
 
 ## Output
 
-A new instance of `concept_integrated_result` (ir), linked:
+A new instance of `concept_integrated_result` (ir), a new
+`concept_conflict_resolution_act` (act, specialized as
+`concept_resolution_by_trust_weighting`), and a new `concept_explanation`
+(expl), linked:
 - `r* -[nrel_integrated_in]-> ir` (winning candidate),
-- `ir -[nrel_resolves_conflict]-> conflict` (passed argument).
+- `conflict -[nrel_resolved_by]-> act`,
+- `conflict -[nrel_conflict_status]-> concept_conflict_status_resolved`
+  (functional — any prior status arc is erased),
+- `expl -[nrel_resolves_conflict]-> conflict`,
+- `ir -[nrel_explained_by]-> expl`.
 
-`FormResult(ir, r*)`. Side effect — generation of `ir` and both links
-(`ConstCommonArc` + classifying `ConstPermPosArc` from the relation,
-following the standard pattern for non-role binary relations in
-sc-machine).
+`FormResult(ir, r*, act, expl)`. Side effect — generation of all three
+new nodes and the five links above (`ConstCommonArc` + classifying
+`ConstPermPosArc` from the relation, following the standard pattern for
+non-role binary relations in sc-machine; the status link uses
+`SetFunctionalRelationTarget`).
 
 ## Links
 
 **Dependencies:** `common/float_link_io.hpp`
 (`ReadFloatLinkContent`), `common/relation_io.hpp`
-(`TargetOf`/`LinkByRelation` — when [[AgentDispatchReadySubtask]]
-appeared and these same functions were needed a second time, they were
-moved from a local copy into a common header),
-`keynodes/integration_keynodes.hpp` (`IntegrationKeynodes`).
+(`TargetOf`/`LinkByRelation`/`SetFunctionalRelationTarget` — when
+[[AgentDispatchReadySubtask]] appeared and these same functions were
+needed a second time, they were moved from a local copy into a common
+header), `keynodes/integration_keynodes.hpp` (`IntegrationKeynodes`,
+extended with `nrel_resolved_by`, `nrel_conflict_status`,
+`nrel_explained_by`, `concept_conflict_resolution_act`,
+`concept_resolution_by_trust_weighting`,
+`concept_conflict_status_resolved`, `concept_explanation`).
 
 **Reads:** `nrel_produced_by` of each candidate,
 `nrel_has_trust_level` of the producing system, `value_link` of the
 found `trust_level` — the same node that [[AgentAggregateTrust]] writes
 to.
 
-**Writes:** new `concept_integrated_result` + two links
-(`nrel_integrated_in`, `nrel_resolves_conflict`).
+**Writes:** new `concept_integrated_result`, new
+`concept_conflict_resolution_act`, new `concept_explanation`, and the
+five links listed under Output.
 
 **Workflow.** The only agent formally dependent on the **result** of
 [[AgentAggregateTrust]] (through data — it reads the same `trust_level`
@@ -151,8 +176,18 @@ ELSE
   ELSE
     ir := create a node of class concept_integrated_result
     link best -[nrel_integrated_in]-> ir
-    link ir -[nrel_resolves_conflict]-> conflict
-    action.FormResult(ir, best)
+
+    act := create a node of class concept_conflict_resolution_act,
+           also classified concept_resolution_by_trust_weighting
+    link conflict -[nrel_resolved_by]-> act
+    set conflict -[nrel_conflict_status]-> concept_conflict_status_resolved
+      // functional relation: prior status arc is erased
+
+    expl := create a node of class concept_explanation
+    link expl -[nrel_resolves_conflict]-> conflict
+    link ir -[nrel_explained_by]-> expl
+
+    action.FormResult(ir, best, act, expl)
     → action.FinishSuccessfully()
 ```
 
@@ -175,6 +210,9 @@ synchronous, waiting on the caller side via `InitiateAndWait`.
 - The data (trust, results) are not PII, but `concept_integrated_result`
   can become the basis for decisions affecting users
   (`concept_collective_decision <= nrel_inclusion: concept_integrated_result`).
+- The generated `concept_explanation` has no textual content — a
+  consumer expecting a human-readable justification for the resolution
+  will find only a structurally linked, empty node.
 
 ## Metrics
 
@@ -194,8 +232,14 @@ passing; scenario 1 additionally verified on a live sc-server).
 Input: three candidates with trust 0.60, 0.95, 0.80 (insertion order
 deliberately not ascending/descending).
 Output: the candidate with 0.95 wins (not the first or last inserted);
-`concept_integrated_result` is created,
-`nrel_integrated_in`/`nrel_resolves_conflict` linked.
+`concept_integrated_result` created and linked from the winner via
+`nrel_integrated_in`; the conflict is linked to a
+`concept_resolution_by_trust_weighting` act via `nrel_resolved_by` and
+its `nrel_conflict_status` is `concept_conflict_status_resolved`; a
+`concept_explanation` is linked to the conflict via
+`nrel_resolves_conflict` and to the integrated result via
+`nrel_explained_by`; all four created nodes (`ir`, `r*`, `act`, `expl`)
+are present in the action result.
 
 **2. `TreatsCandidateWithoutTrustChainAsZero`**
 Input: one candidate without `nrel_produced_by`, another with trust 0.10.
