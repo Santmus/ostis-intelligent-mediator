@@ -64,17 +64,30 @@ and an overview of unimplemented candidates
 
 ## Implemented agents
 
-Twelve sc-agents of the `TrustModule` operationalize rules from the
+Seventeen sc-agents of the `TrustModule` operationalize rules from the
 `concepts/sc_agents.scs` catalog:
 
-| Group | Agents | Rules |
-|---|---|---|
-| `agent_trust_evaluator` (trust, complete) | `AgentUpdateTrustReliability`, `AgentUpdateTrustAccuracy`, `AgentUpdateTrustSecurity`, `AgentUpdateTrustTransparency`, `AgentAggregateTrust` | `rules_trust_update.scs` |
-| `agent_cooperative_executor` (cooperation, complete) | `AgentDispatchReadySubtask`, `AgentRegisterPartialResult`, `AgentPropagateToDependent` | `rules_cooperation.scs` |
-| Others | `AgentComputePiMetric`, `AgentDetectAnomalousRequestRate`, `AgentResolveByTrustWeighted`, `AgentValidateCardinalityConstraint` | `rules_provenance_completion.scs` (partial), `rules_security_privacy.scs`, `rules_integration.scs` (partial), `rules_integrity_validation.scs` (partial) |
+| Group | Agents | Rules file | Status |
+|---|---|---|---|
+| `agent_trust_evaluator` | `AgentUpdateTrustReliability`, `AgentUpdateTrustAccuracy`, `AgentUpdateTrustSecurity`, `AgentUpdateTrustTransparency`, `AgentAggregateTrust` | `rules_trust_update.scs` | complete |
+| `agent_cooperative_executor` | `AgentDispatchReadySubtask`, `AgentRegisterPartialResult`, `AgentPropagateToDependent` | `rules_cooperation.scs` | complete |
+| `agent_integrity_checker` | `AgentValidateCardinalityConstraint`, `AgentValidateProvenanceChain` | `rules_integrity_validation.scs` | complete (7 of 7 rules) |
+| `agent_provenance_registrar` | `AgentComputePiMetric`, `AgentValidateProvenanceChain`* | `rules_provenance_completion.scs` | partial (2 of 6 rules) |
+| `agent_result_integrator` | `AgentResolveByTrustWeighted`, `AgentValidateIntegration` | `rules_integration.scs` | partial (2 of 5 rules) |
+| `agent_explanation_builder` | `AgentBuildExplanation` | `rules_explanation.scs` | partial (structural core of 4 rules) |
+| `agent_coalition_reconfigurator` | `AgentExcludeFromCoalition`, `AgentReassignOnResourceExhaustion` | `rules_coalition_reconfiguration.scs` | partial (2 of 4 rules) |
+| security (no single owner) | `AgentDetectAnomalousRequestRate` | `rules_security_privacy.scs` | partial (1 rule) |
+
+\* `AgentValidateProvenanceChain` implements one rule that is duplicated
+verbatim in both `rules_integrity_validation.scs`
+(`rule_validate_provenance_chain`) and `rules_provenance_completion.scs`
+(`rule_verify_transitive_closure`), so it counts toward both groups.
 
 A detailed map of agents, dependencies, and end-to-end tests is in
-[`agents_vault/Agent Index.md`](agents_vault/Agent%20Index.md).
+[`agents_vault/Agent Index.md`](agents_vault/Agent%20Index.md); a
+per-rule readiness/status breakdown is in
+[`agents_vault/Implementation Backlog.md`](agents_vault/Implementation%20Backlog.md)
+and [`ostis_ps_user_ecosystem/AGENTS_AUDIT.md`](ostis_ps_user_ecosystem/AGENTS_AUDIT.md).
 
 ## Build and tests
 

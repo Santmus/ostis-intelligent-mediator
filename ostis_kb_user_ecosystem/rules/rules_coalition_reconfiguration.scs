@@ -9,7 +9,9 @@ section_rules_coalition_reconfiguration
 => nrel_main_idtf:
     [Подраздел. Правила реконфигурации коалиции (π_rec)] (* <- lang_ru;; *);
     [Subsection. Coalition Reconfiguration Rules (π_rec)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_exclude_from_coalition;
+<- rrel_key_sc_element: action_reassign_on_resource_exhaustion;;
 
 // ---------------------------------------------------------------------
 // Правила раздельного расхода ресурсов восстановления. Переназначение
@@ -97,6 +99,29 @@ rule -> rule_refuse_on_timeout: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Классы действий для программной (C++) реализации механической части
+// двух правил ниже -- sc-агенты AgentExcludeFromCoalition и
+// AgentReassignOnResourceExhaustion
+// (ostis_ps_user_ecosystem/src/agent/agent_exclude_from_coalition.*,
+// agent_reassign_on_resource_exhaustion.*). Оба -- только детерминированный
+// state-transition; запуск rule_coalition_optimization (комбинаторная
+// задача без алгоритма в тексте правил, см. Implementation Backlog.md)
+// не реализован ни в одном из них.
+// ---------------------------------------------------------------------
+
+action_exclude_from_coalition
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: исключить систему из коалиции] (* <- lang_ru;; *);
+    [action: exclude system from coalition] (* <- lang_en;; *);;
+
+action_reassign_on_resource_exhaustion
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: переназначить подзадачи при истощении ресурса] (* <- lang_ru;; *);
+    [action: reassign subtasks on resource exhaustion] (* <- lang_en;; *);;
 
 rule -> rule_on_system_failure: ...
 (*

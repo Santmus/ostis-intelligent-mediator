@@ -14,14 +14,19 @@
 #include "agent/agent_propagate_to_dependent.hpp"
 #include "agent/agent_build_explanation.hpp"
 #include "agent/agent_validate_integration.hpp"
+#include "agent/agent_validate_provenance_chain.hpp"
+#include "agent/agent_exclude_from_coalition.hpp"
+#include "agent/agent_reassign_on_resource_exhaustion.hpp"
 
-// AgentComputePiMetric (провенансные метрики), AgentDetectAnomalousRequestRate
-// (безопасность), AgentResolveByTrustWeighted/AgentValidateIntegration
+// AgentComputePiMetric/AgentValidateProvenanceChain (провенанс),
+// AgentDetectAnomalousRequestRate (безопасность),
+// AgentResolveByTrustWeighted/AgentValidateIntegration
 // (интеграция результатов), AgentDispatchReadySubtask/AgentRegisterPartialResult/
 // AgentPropagateToDependent (кооперативное исполнение),
-// AgentValidateCardinalityConstraint (валидация целостности) и
-// AgentBuildExplanation (объяснения) не о доверии, но зарегистрированы
-// здесь же: SC_MODULE_REGISTER определяет
+// AgentValidateCardinalityConstraint (валидация целостности),
+// AgentBuildExplanation (объяснения) и AgentExcludeFromCoalition/
+// AgentReassignOnResourceExhaustion (реконфигурация коалиции) не о
+// доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
 // иначе конфликт символов. Пока агентов немного, отдельная библиотека
@@ -40,4 +45,7 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentRegisterPartialResult>()
     ->Agent<AgentPropagateToDependent>()
     ->Agent<AgentBuildExplanation>()
-    ->Agent<AgentValidateIntegration>();
+    ->Agent<AgentValidateIntegration>()
+    ->Agent<AgentValidateProvenanceChain>()
+    ->Agent<AgentExcludeFromCoalition>()
+    ->Agent<AgentReassignOnResourceExhaustion>();

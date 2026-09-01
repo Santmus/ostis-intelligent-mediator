@@ -10,9 +10,17 @@
 таблицы §7.5 «Отсутствующие агенты», перенесённые в реализованные
 (частично); `AgentValidateIntegration` закрывает часть заявленной области
 `AgentVerifyResult` (explanation + conflicts), опираясь на данные, которые
-теперь реально создаёт `AgentBuildExplanation`.  
-Проверено: `ctest` — 49 из 49 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31523 элемента.
+теперь реально создаёт `AgentBuildExplanation`. Добавлен также
+`AgentValidateProvenanceChain` (§5.8) — закрывает `rule_verify_transitive_closure`/
+`rule_validate_provenance_chain` (транзитивная достижимость запроса по
+`nrel_derived_from`), седьмое из семи правил `rules_integrity_validation.scs`
+(файл теперь покрыт полностью). Добавлены также `AgentExcludeFromCoalition`
+(§5.9) и `AgentReassignOnResourceExhaustion` (§5.10) — механическая часть
+`rule_on_system_failure`/`rule_on_resource_exhaustion`
+(`rules_coalition_reconfiguration.scs`), первые агенты семейства
+`agent_coalition_reconfigurator`.  
+Проверено: `ctest` — 62 из 62 тестов пройдены, сборка KB через
+`sc-builder` — чисто, 31580 элементов.
 
 ## 1. Цель и границы аудита
 
@@ -32,8 +40,8 @@
 | Проверка | Результат |
 |---|---|
 | Сборка `cmake --build build` | Успешно |
-| `ctest --test-dir build --output-on-failure` | 49 из 49 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31523 элемента, без ошибок |
+| `ctest --test-dir build --output-on-failure` | 62 из 62 тестов пройдены |
+| Сборка KB (`sc-builder --clear`) | Успешно, 31580 элементов, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -53,6 +61,9 @@
 | `AgentValidateCardinalityConstraint` | Кардинальная проверка SC-графа | Сделано частично (§5.4) |
 | `AgentBuildExplanation` | Реификация акта построения объяснения | Сделано частично (§5.6) |
 | `AgentValidateIntegration` | Валидация интегрированного результата (explanation + conflicts) | Сделано частично (§5.7) |
+| `AgentValidateProvenanceChain` | Достижимость запроса по цепочке `nrel_derived_from` | Сделано частично (§5.8) |
+| `AgentExcludeFromCoalition` | Исключение отказавшей системы из коалиции | Сделано частично (§5.9) |
+| `AgentReassignOnResourceExhaustion` | Массовое переназначение подзадач при истощении ресурса | Сделано частично (§5.10) |
 
 Модуль `TrustModule` для всех агентов один — реорганизация не начата (§7.6).
 
@@ -304,6 +315,97 @@ explanandum уже классифицирован `concept_integrated_result` �
 `src/keynodes/integration_keynodes.hpp` (расширен: `nrel_conflicts_with`,
 `action_validate_integration`), `tests/test_agent_validate_integration.cpp`
 (4 теста), `agents_vault/AgentValidateIntegration.md`.
+
+### 5.8. `AgentValidateProvenanceChain` — достижимость запроса по цепочке провенанса (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_integrity_validation.scs`, 7-е из 7 правил, ранее помеченное "не реализовано — a fundamentally different task")
+
+**Проблема была:** `rule_verify_transitive_closure`
+(`rules/rules_provenance_completion.scs`) и дублирующее его
+`rule_validate_provenance_chain` (`rules/rules_integrity_validation.scs`)
+требуют транзитивной достижимости `concept_user_request` по
+`nrel_derived_from` от `ir` — единственная в проекте задача обхода графа,
+а не подсчёта/проверки одной дуги; `Implementation Backlog.md` прямо
+называл её "a fundamentally different task."
+
+**Сделано:** один агент на оба правила (тот же приём, что у
+`AgentValidateIntegration` для их собственной пары дублирующихся правил).
+Обход в ширину по `nrel_derived_from` с множеством посещённых узлов —
+защита от зацикливания, поскольку отношение объявлено транзитивным, но не
+антирефлексивным. Результат — булев индикатор; при недостижимости —
+`concept_existence_constraint_violation`, связанное с `ir` через
+`nrel_concerns` (тот же приём, что у `AgentComputePiMetric`/
+`AgentValidateCardinalityConstraint`). Тестами подтверждена корректная
+терминация на графе с циклом. Закрывает 7-е из 7 правил
+`rules_integrity_validation.scs` — файл теперь покрыт полностью.
+
+**Осталось:** снижение π_proc/π_data и запуск `rule_fill_missing_provenance`
+— вне области агента (нет входного metric_level, эвристика без
+алгоритма); эскалация `agent_provenance_registrar` не реализована (нет
+получателя); **сама проверяемая связь `nrel_derived_from` пока не
+создаётся ни одним агентом проекта** — используется только в прозе
+`axioms/axioms_provenance.scs`, ни в одном сценарии; наблюдение по
+онтологии, не исправление — `nrel_derived_from` объявлено доменом
+`concept_processing_result → concept_processing_result`
+(`relations/relations_provenance.scs`), а `concept_user_request` не
+является `concept_processing_result` (`concepts/interactions.scs`) —
+дуга, которую требует правило, формально выходит за объявленный домен
+отношения; агент только читает существующие дуги и не создаёт новых,
+поэтому это оставлено как открытое наблюдение, а не решено здесь.
+
+Файлы: `src/agent/agent_validate_provenance_chain.{hpp,cpp}`,
+`src/keynodes/provenance_keynodes.hpp` (расширен: `nrel_derived_from`,
+`concept_user_request`, `action_validate_provenance_chain`),
+`tests/test_agent_validate_provenance_chain.cpp` (5 тестов),
+`agents_vault/AgentValidateProvenanceChain.md`.
+
+### 5.9. `AgentExcludeFromCoalition` — исключение отказавшей системы (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_coalition_reconfiguration.scs`, ранее "not implemented")
+
+**Проблема была:** ни один агент не реагировал на отказ подзадачи —
+исполнитель оставался числиться членом коалиции, даже когда назначенная
+ему подзадача перешла в статус `failed`.
+
+**Сделано:** механическая часть `rule_on_system_failure`. Все три условия
+правила проверяются буквально (`subtask_status = failed`, наличие
+`assigned_to`, конкретная связь `member_of(s, K)` с ПЕРЕДАННОЙ вызывающей
+стороной коалицией K, а не любой коалицией исполнителя) — при выполнении
+всех трёх дуга `nrel_member_of` стирается, индикатор = 1.0; иначе — без
+изменений, индикатор = 0.0 (невыполненное условие, не ошибка).
+
+**Осталось:** запуск `rule_coalition_optimization` для подзадач, ранее
+назначенных исключённой системе — комбинаторная задача распределения без
+алгоритма в тексте правил (`rules_allocation.scs`, тот же класс блокировки,
+что у §7.3/§7.4); сама переданная `community` не выводится агентом
+самостоятельно — вызывающая сторона обязана знать, из какой именно
+коалиции исключать.
+
+Файлы: `src/agent/agent_exclude_from_coalition.{hpp,cpp}`,
+`src/keynodes/coalition_keynodes.hpp` (новый),
+`tests/test_agent_exclude_from_coalition.cpp` (4 теста),
+`agents_vault/AgentExcludeFromCoalition.md`.
+
+### 5.10. `AgentReassignOnResourceExhaustion` — массовое переназначение при истощении ресурса (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_coalition_reconfiguration.scs`, ранее "not implemented")
+
+**Проблема была:** истощение ресурса `L_s` системы не вело ни к какому
+изменению статусов подзадач, которые эта система всё ещё числилась
+исполняющей.
+
+**Сделано:** механическая часть `rule_on_resource_exhaustion`. Агент сам
+находит все подзадачи, назначенные переданной системе (обратный поиск по
+`nrel_assigned_to`, без группы-аргумента от вызывающей стороны), и
+переводит статус каждой в `concept_subtask_status_reassigned`
+(функциональное отношение — старая дуга стирается). Количество
+переназначенных подзадач записывается числом в индикатор; ноль подзадач —
+`0.0`, не ошибка.
+
+**Осталось:** сам факт `resource_exhausted` не проверяется и не
+вычисляется агентом — принимается как заданный вход; запуск
+`rule_coalition_optimization` не реализован (та же причина, что у §5.9);
+переназначенные подзадачи не получают нового исполнителя —
+`agent_task_allocator` не реализован.
+
+Файлы: `src/agent/agent_reassign_on_resource_exhaustion.{hpp,cpp}`,
+`src/keynodes/coalition_keynodes.hpp` (общий с §5.9),
+`tests/test_agent_reassign_on_resource_exhaustion.cpp` (4 теста),
+`agents_vault/AgentReassignOnResourceExhaustion.md`.
 
 ## 6. Сильные стороны реализации
 

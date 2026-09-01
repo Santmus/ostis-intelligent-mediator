@@ -5,7 +5,7 @@ tags: [moc, trust-agents, provenance-agents]
 
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
-The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains fourteen
+The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains seventeen
 sc-agents: five implement the rules for updating the trust vector π_tr, one —
 the computable part of provenance completeness metrics, one — detection
 of anomalous request frequency, one — resolution of result conflicts by
@@ -14,8 +14,11 @@ subtask execution (dispatch → result registration →
 propagation to dependent subtasks), one — the mechanical core
 of SHACL cardinality checks, one — structural reification of explanation
 construction acts, one — validation of an integrated result (explanation +
-conflicts) before publication. Code: `ostis_ps_user_ecosystem/src/agent/`.
-Rule ontology: `ostis_kb_user_ecosystem/rules/`.
+conflicts) before publication, one — transitive-closure validation of a
+result's provenance chain back to the originating request, two —
+coalition reconfiguration on system failure and resource exhaustion.
+Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
+`ostis_kb_user_ecosystem/rules/`.
 
 ## Agent map
 
@@ -35,6 +38,9 @@ Rule ontology: `ostis_kb_user_ecosystem/rules/`.
 | [[AgentPropagateToDependent]] | `action_propagate_to_dependent` | act_inform for each dependent σ' | reverse dependency-graph traversal |
 | [[AgentBuildExplanation]] | `action_build_explanation` | explanation + explanation_construction_act | structural reification |
 | [[AgentValidateIntegration]] | `action_validate_integration` | indicator | explanation ∧ ¬conflict gate |
+| [[AgentValidateProvenanceChain]] | `action_validate_provenance_chain` | indicator + integrity_violation | BFS reachability to user_request |
+| [[AgentExcludeFromCoalition]] | `action_exclude_from_coalition` | `nrel_member_of` (erased) + indicator | conditional state transition |
+| [[AgentReassignOnResourceExhaustion]] | `action_reassign_on_resource_exhaustion` | `nrel_subtask_status` (bulk) + count | reverse-index bulk update |
 
 ## How to read these notes
 
@@ -48,7 +54,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All fourteen agents use:
+All seventeen agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -72,7 +78,8 @@ All fourteen agents use:
   (`IntegrationKeynodes`) / `keynodes/task_keynodes.hpp`
   (`TaskKeynodes`) / `keynodes/integrity_keynodes.hpp`
   (`IntegrityKeynodes`) / `keynodes/explanation_keynodes.hpp`
-  (`ExplanationKeynodes`) — key sc-elements and action classes.
+  (`ExplanationKeynodes`) / `keynodes/coalition_keynodes.hpp`
+  (`CoalitionKeynodes`) — key sc-elements and action classes.
 - Base class `ScActionInitiatedAgent` (sc-machine) — reacts to the
   event `ScEventAfterGenerateOutgoingArc` with subscription element
   `action_initiated`.
@@ -81,8 +88,10 @@ All fourteen agents use:
   [[AgentComputePiMetric]], [[AgentDetectAnomalousRequestRate]],
   [[AgentResolveByTrustWeighted]], [[AgentDispatchReadySubtask]],
   [[AgentValidateCardinalityConstraint]], [[AgentRegisterPartialResult]],
-  [[AgentPropagateToDependent]], [[AgentBuildExplanation]] and
-  [[AgentValidateIntegration]] are registered there too, despite the name.
+  [[AgentPropagateToDependent]], [[AgentBuildExplanation]],
+  [[AgentValidateIntegration]], [[AgentValidateProvenanceChain]],
+  [[AgentExcludeFromCoalition]] and [[AgentReassignOnResourceExhaustion]]
+  are registered there too, despite the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
 agents (not [[AgentComputePiMetric]]/[[AgentDetectAnomalousRequestRate]]) —
@@ -123,6 +132,20 @@ reads `nrel_conflicts_with`, which no agent in the project currently
 writes (only present as fixture data in KB scenarios) — so in practice its
 "has_conflict" branch is exercised by tests, not by any other agent's
 output.
+[[AgentValidateProvenanceChain]] is fully data-independent — it reads
+`nrel_derived_from`, which (like `nrel_conflicts_with`) no agent in the
+project writes; it is the first agent to perform an unbounded graph
+traversal rather than a single-hop lookup, and the only one whose tests
+include a cyclic-graph fixture to prove termination.
+[[AgentExcludeFromCoalition]] and [[AgentReassignOnResourceExhaustion]]
+are the first agents outside `agent_cooperative_executor`'s trio to
+mutate `nrel_subtask_status` — but they are triggered by *failure*
+(`concept_subtask_status_failed` → excluded from coalition,
+resource exhaustion → `reassigned`), the opposite end of the status
+lifecycle from [[AgentDispatchReadySubtask]]/[[AgentRegisterPartialResult]]'s
+`proposed → in_progress → completed` happy path. Both are otherwise
+data-independent from the rest of the module — the only two operating on
+`nrel_member_of`/coalition membership.
 
 ## Running agents standalone
 

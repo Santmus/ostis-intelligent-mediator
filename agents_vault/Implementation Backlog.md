@@ -47,7 +47,19 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > counterfactual) genuinely undone — see its Limitations. `rule_validate_integration`
 > (`rules_integration.scs`) is now also implemented, [[AgentValidateIntegration]] —
 > it depends on exactly the `nrel_explained_by` data [[AgentBuildExplanation]]
-> produces, so the two land together.
+> produces, so the two land together. `rule_verify_transitive_closure`
+> (`rules_provenance_completion.scs`, duplicated as
+> `rule_validate_provenance_chain` in `rules_integrity_validation.scs`) is
+> also now implemented, [[AgentValidateProvenanceChain]] — a BFS over
+> `nrel_derived_from` to a `concept_user_request`, the first agent in the
+> module to walk a transitive relation rather than check a single arc.
+> `rules_coalition_reconfiguration.scs`'s two READY rules
+> (`rule_on_system_failure`, `rule_on_resource_exhaustion`) are also now
+> implemented, [[AgentExcludeFromCoalition]] and
+> [[AgentReassignOnResourceExhaustion]] — the mechanical state-transition
+> half of each; the `rule_coalition_optimization` recalculation neither
+> triggers remains the same unsolved combinatorial problem blocking
+> `rules_allocation.scs`.
 
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
@@ -72,9 +84,9 @@ list of the section — an internal inconsistency of the KB catalog itself.
 | `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | **partial (2 of 5 rules — [[AgentResolveByTrustWeighted]], [[AgentValidateIntegration]])** |
 | `agent_explanation_builder` | building explanations/provenance chains | `rules_explanation.scs` | **partial (structural core of 4 rules — [[AgentBuildExplanation]])** |
 | **`agent_trust_evaluator`** | **trust vector update T(s,τ)** | `rules_trust_update.scs` | **✅ implemented (5 agents)** |
-| `agent_coalition_reconfigurator` | compensatory coalition recalculation | `rules_coalition_reconfiguration.scs` | not implemented |
-| `agent_integrity_checker` | integrity checking (SHACL-like shapes) | `rules_integrity_validation.scs` | **partial (6 of 7 rules — [[AgentValidateCardinalityConstraint]])** |
-| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (1 rule — [[AgentComputePiMetric]])** |
+| `agent_coalition_reconfigurator` | compensatory coalition recalculation | `rules_coalition_reconfiguration.scs` | **partial (2 of 4 rules — [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]])** |
+| `agent_integrity_checker` | integrity checking (SHACL-like shapes) | `rules_integrity_validation.scs` | **✅ implemented (7 of 7 rules — [[AgentValidateCardinalityConstraint]] ×6, [[AgentValidateProvenanceChain]] ×1)** |
+| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (2 of 6 rules — [[AgentComputePiMetric]], [[AgentValidateProvenanceChain]])** |
 | `agent_context_updater` | interaction context update | — (no separate file) | not implemented |
 | `agent_conflict_detector` | result conflict detection | `rules_integration.scs` (partial) | not implemented |
 
@@ -109,13 +121,16 @@ is nowhere computed explicitly.
 
 ### `rules_coalition_reconfiguration.scs` — agent `agent_coalition_reconfigurator`, 4 rules
 
-- `rule_on_system_failure` — IF status=failed∧assigned_to∧member_of THEN exclude s, recalculate coalition — **READY**
-- `rule_on_resource_exhaustion` — on resource_exhausted mark reassigned, recalculate — **READY**
+- `rule_on_system_failure` — IF status=failed∧assigned_to∧member_of THEN exclude s, recalculate coalition — **READY** → ✅ mechanical part implemented, [[AgentExcludeFromCoalition]] (recalculation itself still not done)
+- `rule_on_resource_exhaustion` — on resource_exhausted mark reassigned, recalculate — **READY** → ✅ mechanical part implemented, [[AgentReassignOnResourceExhaustion]] (recalculation itself still not done)
 - `rule_on_constraint_violation` — "lower trust(s,τ,h)" without a formula for the amount of lowering — **PARTIAL**
 - `rule_on_context_drift` — `ctx_compat(C',s) < θ_ctx` → exclude s — **PARTIAL** (ctx_compat not defined)
 
 The two trigger rules (failure/resource exhaustion) are pure state-transition
-logic. The other two depend on undefined quantities.
+logic — both now implemented, minus the `rule_coalition_optimization`
+recalculation step neither can do (see `rules_allocation.scs` below: it's
+the same unsolved combinatorial assignment problem). The other two rules
+depend on undefined quantities.
 Numeric example: `scenario_coalition_reconfiguration.scs` — "Lowering
 trust in intelligent_system_ranker: 0.71 → 0.58" (ready before/after pair,
 but without a formula for calculating the lowering itself).
@@ -191,7 +206,7 @@ Numeric example: `scenario_collective_decision.scs` (`[0.91]`),
 `scenario_security_breach_response.scs` (`[0.95]`) — final decision weights
 (but not a complete set of competing w_i for argmax).
 
-### `rules_integrity_validation.scs` — agent `agent_integrity_checker`, 7 rules (SHACL shapes)
+### `rules_integrity_validation.scs` — agent `agent_integrity_checker`, 7 rules (SHACL shapes) — **✅ fully implemented**
 
 - `rule_validate_authorship_shape` — nrel_formulates⁻¹ minCount1 maxCount1, class concept_user — **READY** → ✅ implemented, [[AgentValidateCardinalityConstraint]]
 - `rule_validate_subtask_status_shape` — nrel_subtask_status/priority minCount1 — **READY** → ✅ implemented, [[AgentValidateCardinalityConstraint]]
@@ -199,7 +214,7 @@ Numeric example: `scenario_collective_decision.scs` (`[0.91]`),
 - `rule_validate_integrated_result_shape` — explained_by minCount1 ∧ ¬conflicts_with — **READY** → ✅ partially implemented (minCount part only), [[AgentValidateCardinalityConstraint]]
 - `rule_validate_is_capability_shape` — has_capability_profile minCount1 — **READY** → ✅ partially implemented (minCount part only), [[AgentValidateCardinalityConstraint]]
 - `rule_validate_context_completeness` — 5 rrel_*_context minCount1 each — **PARTIAL** (the check itself is ready, but the "fill from history" add-on is not detailed) → ✅ implemented (check), [[AgentValidateCardinalityConstraint]]
-- `rule_validate_provenance_chain` — transitive_path derived_from to user_request — **READY** (graph reachability), not implemented — a fundamentally different task (graph traversal, not edge counting)
+- `rule_validate_provenance_chain` — transitive_path derived_from to user_request — **READY** (graph reachability) → ✅ implemented, [[AgentValidateProvenanceChain]] — a fundamentally different task (graph traversal, not edge counting) from the other six
 
 Almost the entire file consists of homogeneous, extremely low-ambiguity
 cardinality/existence checks for sc-links — even simpler than the arithmetic
@@ -228,13 +243,15 @@ of the already implemented agents. No numeric example.
 - `rule_auto_record_prov_activity` — on process execution create prov_activity(actor,input,timestamp) — **READY**
 - `rule_compute_pi_metrics` — `π_proc=|{π:∃prov(π)}|/|Proc|` (similarly π_dec, π_data) — **READY** → ✅ implemented, [[AgentComputePiMetric]]
 - `rule_fill_missing_provenance` — reconstruction from log/history/timestamp — **PARTIAL** (heuristic without algorithm)
-- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — **READY**
-- `rule_verify_transitive_closure` — transitive_closure(derived_from,ir) to request — **READY**
+- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — **READY on paper, PARTIAL in practice**: it names `activity_of_e` (a `concept_prov_activity` distinct from the explanation node itself) and `wasAttributedTo(e, agent_explanation_builder)` (needs a `concept_prov_agent` instance) — the PROV-O triad (`concept_prov_entity`/`_activity`/`_agent`) that `rule_auto_record_prov_entity`/`_activity` would populate is not created by any agent, so this rule has no typed inputs to act on yet, despite [[AgentBuildExplanation]] already producing the `uses_results`/`applies_rules` role data it would read
+- `rule_verify_transitive_closure` — transitive_closure(derived_from,ir) to request — **READY** → ✅ implemented, [[AgentValidateProvenanceChain]] (duplicates `rule_validate_provenance_chain` in `rules_integrity_validation.scs`, same agent covers both)
 
 **The most "dense" file in terms of readiness** — 5 of 6 rules are
 deterministic (counting/ratio of fractions, building a fixed set of
-provenance links on trigger, graph reachability). `rule_compute_pi_metrics`
-is structurally almost identical to the already implemented trust aggregation.
+provenance links on trigger, graph reachability); 2 of those 5 are now
+implemented ([[AgentComputePiMetric]], [[AgentValidateProvenanceChain]]).
+`rule_compute_pi_metrics` is structurally almost identical to the already
+implemented trust aggregation.
 Numeric example: `scenario_explanation_construction.scs` — "π_proc=8/8=1.0",
 "π_dec=5/5=1.0", "π_data=12/12=1.0" — fully ready calculation with exact
 numbers, direct analog of `scenario_trust_assessment.scs`.

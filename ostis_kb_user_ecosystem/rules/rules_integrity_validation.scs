@@ -238,6 +238,10 @@ shape_provenance_chain_complete => nrel_main_idtf:
     [SHACL PropertyShape: полнота цепочки derived_from]
     (* <- lang_ru;; *);;
 
+// Дублирует rule_verify_transitive_closure (rules/rules_provenance_completion.scs) --
+// реализовано там же одним агентом AgentValidateProvenanceChain
+// (action_validate_provenance_chain); снижение π_proc и эскалация
+// agent_provenance_registrar не реализованы.
 rule -> rule_validate_provenance_chain: ...
 (*
     <- concept_sc_rule;;

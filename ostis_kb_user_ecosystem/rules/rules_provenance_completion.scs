@@ -10,7 +10,8 @@ section_rules_provenance_completion
     [Подраздел. Правила восполнения провенанса] (* <- lang_ru;; *);
     [Subsection. Provenance Completion Rules] (* <- lang_en;; *);
 <- atomic_section;
-<- rrel_key_sc_element: action_compute_pi_metric;;
+<- rrel_key_sc_element: action_compute_pi_metric;
+<- rrel_key_sc_element: action_validate_provenance_chain;;
 
 rule -> rule_auto_record_prov_entity: ...
 (*
@@ -113,6 +114,24 @@ rule -> rule_link_explanation_to_provenance: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации rule_verify_transitive_closure
+// -- sc-агент AgentValidateProvenanceChain
+// (ostis_ps_user_ecosystem/src/agent/agent_validate_provenance_chain.*).
+// Дублирует rule_validate_provenance_chain (rules/rules_integrity_validation.scs,
+// та же проверка достижимости concept_user_request по nrel_derived_from) --
+// один агент закрывает оба правила, как AgentValidateIntegration закрыл
+// rule_validate_integration/rule_validate_integrated_result_shape.
+// Снижение π_data и запуск rule_fill_missing_provenance не реализованы --
+// см. Limitations agent_validate_provenance_chain.hpp.
+// ---------------------------------------------------------------------
+
+action_validate_provenance_chain
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: проверить цепочку провенанса] (* <- lang_ru;; *);
+    [action: validate provenance chain] (* <- lang_en;; *);;
 
 rule -> rule_verify_transitive_closure: ...
 (*
