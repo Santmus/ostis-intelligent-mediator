@@ -2,14 +2,16 @@
 
 #include <sc-memory/sc_keynodes.hpp>
 
-// Ключевые sc-элементы для агента разрешения конфликта результатов по
-// взвешенному доверию (rule_resolve_by_trust_weighted,
-// rules/rules_integration.scs). Все перечисленные ниже -- уже
+// Ключевые sc-элементы для агентов интеграции результатов
+// (rules/rules_integration.scs): разрешение конфликта по взвешенному
+// доверию (rule_resolve_by_trust_weighted) и валидация интегрированного
+// результата (rule_validate_integration). Все перечисленные ниже -- уже
 // существующие элементы онтологии (relations/relations_execution.scs,
 // relations/relations_trust.scs, concepts/interactions.scs); системные
 // идентификаторы совпадают, поэтому ScKeynode находит существующие
-// узлы, а не создаёт дубликаты. action_resolve_by_trust_weighted также
-// объявлен в SC-коде для документации и единообразия модели.
+// узлы, а не создаёт дубликаты. action_resolve_by_trust_weighted и
+// action_validate_integration также объявлены в SC-коде для документации
+// и единообразия модели.
 class IntegrationKeynodes : public ScKeynodes
 {
 public:
@@ -20,6 +22,7 @@ public:
   static inline ScKeynode const nrel_resolved_by{"nrel_resolved_by", ScType::ConstNodeNonRole};
   static inline ScKeynode const nrel_conflict_status{"nrel_conflict_status", ScType::ConstNodeNonRole};
   static inline ScKeynode const nrel_explained_by{"nrel_explained_by", ScType::ConstNodeNonRole};
+  static inline ScKeynode const nrel_conflicts_with{"nrel_conflicts_with", ScType::ConstNodeNonRole};
 
   static inline ScKeynode const concept_integrated_result{"concept_integrated_result", ScType::NodeConstClass};
   static inline ScKeynode const concept_conflict_resolution_act{
@@ -32,4 +35,6 @@ public:
 
   static inline ScKeynode const action_resolve_by_trust_weighted{
       "action_resolve_by_trust_weighted", ScType::NodeConstClass};
+  static inline ScKeynode const action_validate_integration{
+      "action_validate_integration", ScType::NodeConstClass};
 };

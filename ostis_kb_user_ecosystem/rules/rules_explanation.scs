@@ -8,7 +8,30 @@ section_rules_explanation
 => nrel_main_idtf:
     [Подраздел. Правила построения объяснения (π_exp)] (* <- lang_ru;; *);
     [Subsection. Explanation Construction Rules (π_exp)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_build_explanation;;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации структурной части
+// всех четырёх правил ниже -- sc-агент AgentBuildExplanation
+// (ostis_ps_user_ecosystem/src/agent/agent_build_explanation.*). Один
+// агент на все правила: конкретный класс объяснения (local/global/
+// contrastive/counterfactual/...) выбирает вызывающая сторона аргументом,
+// как и AgentComputePiMetric для π_proc/π_dec/π_data. Агент строит
+// овеществлённый concept_explanation_construction_act по шаблону
+// prov_template_explanation (axioms/axioms_provenance.scs) и связывает
+// explanandum с объяснением через nrel_supported_by_explanation (и
+// nrel_explained_by, если explanandum -- concept_integrated_result), но
+// не формирует содержательный текст объяснения и не связывает
+// использованные правила/источники через nrel_prov_used -- см.
+// комментарий в agent_build_explanation.hpp.
+// ---------------------------------------------------------------------
+
+action_build_explanation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: построить объяснение] (* <- lang_ru;; *);
+    [action: build explanation] (* <- lang_en;; *);;
 
 rule -> rule_build_local_explanation: ...
 (*

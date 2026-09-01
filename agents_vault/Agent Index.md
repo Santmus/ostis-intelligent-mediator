@@ -5,14 +5,16 @@ tags: [moc, trust-agents, provenance-agents]
 
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
-The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains twelve sc-agents:
-five implement the rules for updating the trust vector π_tr, one —
+The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains fourteen
+sc-agents: five implement the rules for updating the trust vector π_tr, one —
 the computable part of provenance completeness metrics, one — detection
 of anomalous request frequency, one — resolution of result conflicts by
 weighted trust, three — the full life cycle of cooperative
 subtask execution (dispatch → result registration →
 propagation to dependent subtasks), one — the mechanical core
-of SHACL cardinality checks. Code: `ostis_ps_user_ecosystem/src/agent/`.
+of SHACL cardinality checks, one — structural reification of explanation
+construction acts, one — validation of an integrated result (explanation +
+conflicts) before publication. Code: `ostis_ps_user_ecosystem/src/agent/`.
 Rule ontology: `ostis_kb_user_ecosystem/rules/`.
 
 ## Agent map
@@ -31,6 +33,8 @@ Rule ontology: `ostis_kb_user_ecosystem/rules/`.
 | [[AgentValidateCardinalityConstraint]] | `action_validate_cardinality_constraint` | indicator + integrity_violation | arc count vs [min,max] |
 | [[AgentRegisterPartialResult]] | `action_register_partial_result` | partial_result + provenance triple + subtask_status | unconditional commit |
 | [[AgentPropagateToDependent]] | `action_propagate_to_dependent` | act_inform for each dependent σ' | reverse dependency-graph traversal |
+| [[AgentBuildExplanation]] | `action_build_explanation` | explanation + explanation_construction_act | structural reification |
+| [[AgentValidateIntegration]] | `action_validate_integration` | indicator | explanation ∧ ¬conflict gate |
 
 ## How to read these notes
 
@@ -44,11 +48,12 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All twelve agents use:
+All fourteen agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
-  only needs to know that the link exists, and
-  [[AgentRegisterPartialResult]], which has no numeric indicator).
+  only needs to know that the link exists,
+  [[AgentRegisterPartialResult]], which has no numeric indicator, and
+  [[AgentBuildExplanation]], which writes no numeric indicator at all).
 - `common/relation_io.hpp` — shared `TargetOf`/`LinkByRelation` for
   finding/creating non-role binary relations (`nrel_*`); introduced when
   implementing [[AgentResolveByTrustWeighted]], extracted into a common
@@ -59,12 +64,15 @@ All twelve agents use:
   [[AgentDispatchReadySubtask]]) and `LinkByRole` (a generalization of the
   helper of the same name from the same place) were also moved there — the
   same reuse pattern when a second/third consumer appeared.
+  [[AgentBuildExplanation]] is the first agent to reuse `LinkByRole` for a
+  five-role reification without introducing any new helper.
 - `keynodes/trust_keynodes.hpp` (`TrustKeynodes`) / `keynodes/provenance_keynodes.hpp`
   (`ProvenanceKeynodes`) / `keynodes/security_keynodes.hpp`
   (`SecurityKeynodes`) / `keynodes/integration_keynodes.hpp`
   (`IntegrationKeynodes`) / `keynodes/task_keynodes.hpp`
   (`TaskKeynodes`) / `keynodes/integrity_keynodes.hpp`
-  (`IntegrityKeynodes`) — key sc-elements and action classes.
+  (`IntegrityKeynodes`) / `keynodes/explanation_keynodes.hpp`
+  (`ExplanationKeynodes`) — key sc-elements and action classes.
 - Base class `ScActionInitiatedAgent` (sc-machine) — reacts to the
   event `ScEventAfterGenerateOutgoingArc` with subscription element
   `action_initiated`.
@@ -72,9 +80,9 @@ All twelve agents use:
   one module (`SC_MODULE_REGISTER`) per shared library, so
   [[AgentComputePiMetric]], [[AgentDetectAnomalousRequestRate]],
   [[AgentResolveByTrustWeighted]], [[AgentDispatchReadySubtask]],
-  [[AgentValidateCardinalityConstraint]], [[AgentRegisterPartialResult]]
-  and [[AgentPropagateToDependent]] are registered there too, despite
-  the name.
+  [[AgentValidateCardinalityConstraint]], [[AgentRegisterPartialResult]],
+  [[AgentPropagateToDependent]], [[AgentBuildExplanation]] and
+  [[AgentValidateIntegration]] are registered there too, despite the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
 agents (not [[AgentComputePiMetric]]/[[AgentDetectAnomalousRequestRate]]) —
@@ -99,6 +107,22 @@ the only agent operating in the «KB integrity» domain
 (`concept_integrity_constraint`/`concept_integrity_violation`), and
 the only one that implements not a single rule but a mechanical core
 shared by six SHACL shapes at once.
+[[AgentBuildExplanation]] is data-independent from the twelve trust/
+subtask/integrity agents — the only agent in the «explanation» domain
+(`concept_explanation`/`concept_explanation_construction_act`) — and,
+like [[AgentValidateCardinalityConstraint]], implements the shared
+structural core of four rules (`rule_build_local_explanation`/`_global`/
+`_contrastive`/`_counterfactual`) rather than one. It is not yet called
+by [[AgentResolveByTrustWeighted]] or any other agent — see its own
+Limitations. It does, however, feed [[AgentValidateIntegration]]: the
+latter's `explained_by(ir,e)` check is only ever satisfied by an arc that
+[[AgentBuildExplanation]] (or [[AgentResolveByTrustWeighted]]'s own inline
+placeholder) actually created — the only data link crossing from the
+«explanation» domain into «integration». [[AgentValidateIntegration]] also
+reads `nrel_conflicts_with`, which no agent in the project currently
+writes (only present as fixture data in KB scenarios) — so in practice its
+"has_conflict" branch is exercised by tests, not by any other agent's
+output.
 
 ## Running agents standalone
 

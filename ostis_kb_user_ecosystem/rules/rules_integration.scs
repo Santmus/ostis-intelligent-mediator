@@ -12,7 +12,8 @@ section_rules_integration
     [Subsection. Integration and Conflict Resolution Rules (π_intg)]
     (* <- lang_en;; *);
 <- atomic_section;
-<- rrel_key_sc_element: action_resolve_by_trust_weighted;;
+<- rrel_key_sc_element: action_resolve_by_trust_weighted;
+<- rrel_key_sc_element: action_validate_integration;;
 
 rule -> rule_detect_conflict: ...
 (*
@@ -90,6 +91,22 @@ rule -> rule_resolve_by_trust_weighted: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации rule_validate_integration
+// -- sc-агент AgentValidateIntegration
+// (ostis_ps_user_ecosystem/src/agent/agent_validate_integration.*).
+// Проверяет ровно два условия ниже; вызов rule_resolve_by_* при провале
+// не реализован -- как и активация смежных агентов у
+// AgentDetectAnomalousRequestRate, это ответственность внешнего
+// оркестратора, которого в проекте нет.
+// ---------------------------------------------------------------------
+
+action_validate_integration
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: валидировать интегрированный результат] (* <- lang_ru;; *);
+    [action: validate integrated result] (* <- lang_en;; *);;
 
 rule -> rule_validate_integration: ...
 (*

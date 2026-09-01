@@ -37,6 +37,18 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > first agent in the catalog implemented at 100% (3 of 3 rules).
 > The remaining items in this document are still survey only.
 
+> [!note] Update 2026-09-01
+> `rules_explanation.scs` moves from "not suitable now" to partial:
+> [[AgentBuildExplanation]] implements the structural core shared by all
+> four `rule_build_*` rules (reification of
+> `concept_explanation_construction_act` per `prov_template_explanation`),
+> leaving only the per-type semantic content (aggregation for global,
+> difference-finding for contrastive, minimal-change search for
+> counterfactual) genuinely undone — see its Limitations. `rule_validate_integration`
+> (`rules_integration.scs`) is now also implemented, [[AgentValidateIntegration]] —
+> it depends on exactly the `nrel_explained_by` data [[AgentBuildExplanation]]
+> produces, so the two land together.
+
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
 (see [[AgentUpdateTrustReliability]] and others).
@@ -57,8 +69,8 @@ list of the section — an internal inconsistency of the KB catalog itself.
 | `agent_task_decomposer` | request decomposition δ: Q_form → 2^T | `rules_decomposition.scs` | not implemented |
 | `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | not implemented |
 | `agent_cooperative_executor` | cooperative execution (FIPA-ACL) | `rules_cooperation.scs` | **✅ implemented (3 agents)** |
-| `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | not implemented |
-| `agent_explanation_builder` | building explanations/provenance chains | `rules_explanation.scs` | not implemented |
+| `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | **partial (2 of 5 rules — [[AgentResolveByTrustWeighted]], [[AgentValidateIntegration]])** |
+| `agent_explanation_builder` | building explanations/provenance chains | `rules_explanation.scs` | **partial (structural core of 4 rules — [[AgentBuildExplanation]])** |
 | **`agent_trust_evaluator`** | **trust vector update T(s,τ)** | `rules_trust_update.scs` | **✅ implemented (5 agents)** |
 | `agent_coalition_reconfigurator` | compensatory coalition recalculation | `rules_coalition_reconfiguration.scs` | not implemented |
 | `agent_integrity_checker` | integrity checking (SHACL-like shapes) | `rules_integrity_validation.scs` | **partial (6 of 7 rules — [[AgentValidateCardinalityConstraint]])** |
@@ -139,17 +151,22 @@ ready-made subtask DAGs (`nrel_subtask_depends_on`) as test fixtures.
 
 ### `rules_explanation.scs` — agent `agent_explanation_builder`, 4 rules
 
-- `rule_build_local_explanation` — create `concept_explanation_local` from a provenance template — **PARTIAL**
-- `rule_build_global_explanation` — aggregate local explanations into a global one — **PARTIAL**
-- `rule_build_contrastive_explanation` — record differences between provenance chains X and Y — **PARTIAL**
-- `rule_build_counterfactual` — "minimal input change yielding a different result" — **PARTIAL** (open algorithmic problem)
+- `rule_build_local_explanation` — create `concept_explanation_local` from a provenance template — **PARTIAL** → ✅ structural core implemented, [[AgentBuildExplanation]]
+- `rule_build_global_explanation` — aggregate local explanations into a global one — **PARTIAL** → ✅ structural core implemented, [[AgentBuildExplanation]] (aggregation itself still not done)
+- `rule_build_contrastive_explanation` — record differences between provenance chains X and Y — **PARTIAL** → ✅ structural core implemented, [[AgentBuildExplanation]] (difference-finding itself still not done)
+- `rule_build_counterfactual` — "minimal input change yielding a different result" — **PARTIAL** (open algorithmic problem) → ✅ structural core implemented, [[AgentBuildExplanation]] (minimal-change search itself still not done)
 
-All 4 rules are formally specified (trigger → create entity), but the key
-operation ("aggregate", "record differences", "minimal change") has no concrete
-algorithm in the text.
+All 4 rules are formally specified (trigger → create entity), and the
+common "create entity, reify the construction act with its five roles"
+part is now done by [[AgentBuildExplanation]] for all four at once — the
+same "one agent, caller supplies the type" pattern as [[AgentComputePiMetric]].
+The key type-specific operation ("aggregate", "record differences",
+"minimal change") still has no concrete algorithm in the text and remains
+the caller's job.
 Numeric example: `scenario_explanation_construction.scs` gives an exact scheme
 of the reified act (`explanation_act_001`/`explanation_77`), effectively
-concretizing the "template" for local/global.
+concretizing the "template" for local/global — reproduced by
+`test_agent_build_explanation.cpp`.
 `scenario_recommendation.scs` — ready counterfactual example: "if the time
 tolerance were increased by 12%, route r_3 would become optimal".
 
@@ -159,12 +176,15 @@ tolerance were increased by 12%, route r_3 would become optimal".
 - `rule_aggregate_results` — selecting strategy S taking into account trust(s,τ,h) and C — **PARTIAL**
 - `rule_resolve_by_argumentation` — build ⟨Args,Attacks⟩, take grounded extension — **PARTIAL** (grounded extension is a known algorithm, but construction of Args/Attacks is not defined)
 - `rule_resolve_by_trust_weighted` — `w_i=trust(s_i,τ,h); r*=arg max_i w_i` — **READY** → ✅ implemented, [[AgentResolveByTrustWeighted]]
-- `rule_validate_integration` — `∃e.explained_by(ir,e) ∧ ¬∃c.conflicts_with(ir,c)` — **READY**
+- `rule_validate_integration` — `∃e.explained_by(ir,e) ∧ ¬∃c.conflicts_with(ir,c)` — **READY** → ✅ implemented, [[AgentValidateIntegration]]
 
-`rule_resolve_by_trust_weighted` is a strong candidate: it directly reuses the
-already implemented [[AgentAggregateTrust|trust(s,τ,h)]], reducing to argmax
-over ready numbers. `rule_validate_integration` is a simple check for
-presence/absence of links.
+`rule_resolve_by_trust_weighted` directly reuses the already implemented
+[[AgentAggregateTrust|trust(s,τ,h)]], reducing to argmax over ready numbers.
+`rule_validate_integration` was a simple check for presence/absence of
+links, but only became meaningful once something actually wrote
+`nrel_explained_by` — see [[AgentBuildExplanation]]; it checks
+`nrel_conflicts_with` in both directions since the relation is symmetric
+but not always materialized both ways in KB scenario fixtures.
 Numeric example: `scenario_collective_decision.scs` (`[0.91]`),
 `scenario_financial_decision_support.scs` (`[0.88]`),
 `scenario_recommendation.scs` (`[0.78]`),
@@ -185,7 +205,10 @@ Almost the entire file consists of homogeneous, extremely low-ambiguity
 cardinality/existence checks for sc-links — even simpler than the arithmetic
 of trust agents, with no undefined subfunctions.
 `rule_validate_integrated_result_shape` duplicates `rule_validate_integration`
-from `rules_integration.scs` (file overlap).
+from `rules_integration.scs` (file overlap) — the latter is now fully
+implemented by [[AgentValidateIntegration]], independently of this file's
+`minCount`-only partial coverage of the same shape via
+[[AgentValidateCardinalityConstraint]].
 Numeric example: there is no explicit violation in the scenarios, but
 "positive" fixtures (valid request/result with all mandatory links) are
 present in almost every scenario.
@@ -262,7 +285,10 @@ relevant to `rule_choose_modality`, but not a number).
 
 ## Not Suitable Now (Requires NLP/Heuristics Without a Formula in the Text)
 
-`rules_interpretation.scs` as a whole, most of `rules_decomposition.scs`
-(except `rule_check_acyclicity`) and `rules_explanation.scs` — the key
-operation like "ι(text,C)→goal" is essentially an LLM task, not a
-computable formula fixed in the KB text.
+`rules_interpretation.scs` as a whole and most of `rules_decomposition.scs`
+(except `rule_check_acyclicity`) — the key operation like "ι(text,C)→goal"
+is essentially an LLM task, not a computable formula fixed in the KB text.
+`rules_explanation.scs` no longer belongs here in full: its structural
+core is implemented ([[AgentBuildExplanation]]); only the per-type
+semantic content (aggregation/difference-finding/minimal-change search)
+remains an LLM-shaped task.
