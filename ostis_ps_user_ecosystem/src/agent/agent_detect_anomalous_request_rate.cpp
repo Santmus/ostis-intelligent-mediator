@@ -54,6 +54,8 @@ ScResult AgentDetectAnomalousRequestRate::DoProgram(ScAction & action)
   {
     ScAddr const incidentAddr = m_context.GenerateNode(ScType::ConstNode);
     m_context.GenerateConnector(ScType::ConstPermPosArc, SecurityKeynodes::concept_security_incident, incidentAddr);
+    m_context.GenerateConnector(
+        ScType::ConstPermPosArc, SecurityKeynodes::concept_incident_denial_of_service, incidentAddr);
     m_context.GenerateConnector(ScType::ConstPermPosArc, resultLevelAddr, incidentAddr);
   }
 

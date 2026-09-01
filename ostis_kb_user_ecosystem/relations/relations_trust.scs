@@ -61,14 +61,14 @@ nrel_consistent_with
 // а не самим результатом. Коллективное решение как способ разрешения
 // связывается с конфликтом через акт разрешения (nrel_resolved_by).
 //
-// РАСХОЖДЕНИЕ С РЕАЛИЗАЦИЕЙ (снимается на этапе синхронизации агентов):
+// Расхождение с реализацией снято 01.09.2026 (AGENTS_AUDIT.md, §6.4):
 // AgentResolveByTrustWeighted
 // (ostis_ps_user_ecosystem/src/agent/agent_resolve_by_trust_weighted.cpp)
-// создаёт resolves_conflict(integrated_result, conflict), то есть
-// с прежней областью определения. Порядок приведения: агент должен
-// создавать concept_conflict_resolution_act, связывать его с конфликтом
-// через nrel_resolved_by, устанавливать nrel_conflict_status = resolved
-// и относить resolves_conflict к порождённому объяснению.
+// теперь создаёт concept_conflict_resolution_act, связывает его
+// с конфликтом через nrel_resolved_by, устанавливает
+// nrel_conflict_status = resolved и относит resolves_conflict
+// к порождённому объяснению -- в соответствии с областью определения
+// ниже.
 nrel_resolves_conflict
 <- sc_node_non_role_relation;
 => nrel_main_idtf:

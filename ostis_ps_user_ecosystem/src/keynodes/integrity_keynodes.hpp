@@ -11,6 +11,12 @@
 // concept_cardinality_check_* -- новые маркеры направления/типа связи:
 // сами SHACL-shape'ы различают "property X", "property X⁻¹" и
 // "property rrel_Y" только текстом, без формального признака.
+//
+// concept_existence_constraint_violation и nrel_concerns также
+// переиспользуются AgentComputePiMetric (AGENTS_AUDIT.md п.6.7) --
+// это тот же тип нарушения "ожидаемая связь отсутствует", только
+// проверяемая сущность там -- группа измеряемых элементов, а не
+// произвольный target.
 class IntegrityKeynodes : public ScKeynodes
 {
 public:

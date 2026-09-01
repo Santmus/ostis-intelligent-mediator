@@ -62,15 +62,22 @@ the provenance subsystem.
 - finish with an error correctly when one of the two arguments is missing.
 
 **Limitations (per code):**
-- **does not implement** the part of the rule "if π < 1.0 — create a
-  `concept_integrity_violation` of type `transparency_gap`; run
-  `rule_fill_missing_provenance`" — the ontology has no formally
-  defined class/relation for typing a violation specifically as a
-  `transparency_gap` (only free-form rule text), and
-  `rule_fill_missing_provenance` itself is a heuristic without an algorithm
-  (reconstruction from event logs/history/timestamps is not
-  formalized). The agent **only computes the number** and takes no
-  action based on it.
+- **`transparency_gap` still has no formal class** — the rule's "create
+  a `concept_integrity_violation` of type `transparency_gap`" names a
+  type that exists only as free-form rule text, never declared as a
+  `sc_node_class`. Since AGENTS_AUDIT.md §6.7, the agent closes the
+  computable half of this bullet with the vocabulary that *does*
+  exist: on a non-empty group with `pi < 1.0` it creates an instance of
+  `concept_existence_constraint_violation` (`concepts/integrity.scs`,
+  the same subclass [[AgentValidateCardinalityConstraint]] uses for
+  "expected relation is missing"), attaches it under `metric_level`, and
+  links it to the checked `elements_group` via `nrel_concerns`.
+- **still does not run `rule_fill_missing_provenance`** or record why a
+  reconstruction attempt failed — recovering missing provenance from
+  event logs/history/timestamps is a heuristic without an algorithm, and
+  per AGENTS_AUDIT.md §6.7 belongs to separate
+  `agent_provenance_recovery`/`agent_provenance_registrar` agents, not
+  implemented in the project.
 - **an empty group yields `pi = 0`, not an error** — mathematically 0/0 is
   undefined, but the agent treats "nothing to measure" as "zero
   completeness" rather than an exceptional situation. If the caller
@@ -102,21 +109,31 @@ arcs to elements of any type).
 ## Output
 
 The updated/created numeric sc-link `value_link` on `metric_level`
-with content `std::to_string(pi)`. Side effect — generation of
-`value_link` + a connecting arc on first call. Success —
-`FinishSuccessfully()` + `FormResult(metricLevel, valueLink)`.
+with content `std::to_string(pi)`. If the group is non-empty and
+`pi < 1.0` — additionally: a new `concept_existence_constraint_violation`
+attached under `metric_level` and linked to `elements_group` via
+`nrel_concerns`. Side effect — generation of `value_link` + a
+connecting arc on first call, plus the violation node and its link when
+applicable. Success — `FinishSuccessfully()` +
+`FormResult(metricLevel, valueLink)` (the violation, if any, is not
+included in the result struct — same convention as
+[[AgentValidateCardinalityConstraint]]).
 
 ## Links
 
 **Dependencies:** `common/float_link_io.hpp` (only `WriteFloatLinkContent`
 — there are no reads through it, values are read directly by the sign of
-relation existence, not as a number), `keynodes/provenance_keynodes.hpp`
-(`ProvenanceKeynodes::nrel_has_provenance`, `action_compute_pi_metric`).
+relation existence, not as a number), `common/relation_io.hpp`
+(`LinkByRelation` — for `nrel_concerns`), `keynodes/provenance_keynodes.hpp`
+(`ProvenanceKeynodes::nrel_has_provenance`, `action_compute_pi_metric`),
+`keynodes/integrity_keynodes.hpp` (`IntegrityKeynodes::concept_existence_constraint_violation`,
+`nrel_concerns`).
 
 **Reads:** membership of `elements_group` (`ConstPermPosArc`), presence of
 `nrel_has_provenance` for each member.
 
-**Writes:** the `value_link` of node `metric_level`.
+**Writes:** the `value_link` of node `metric_level`; on `pi < 1.0` with a
+non-empty group, a new violation node and its `nrel_concerns` link.
 
 **Workflow.** The first agent in the project outside the trust vector
 — the beginning of `agent_provenance_registrar` implementation. Not formally
@@ -139,6 +156,12 @@ ELSE
     THEN  withProvenance += 1
 
   pi := total > 0 ? withProvenance / total : 0.0   // empty group -> 0, not error
+
+  IF  total > 0  AND  withProvenance < total
+  THEN
+    v := create a node of class concept_existence_constraint_violation
+    attach v under metric_level (ConstPermPosArc)
+    link v -[nrel_concerns]-> elements_group
 
   IF  metric_level has no value_link
   THEN  create value_link (ConstNodeLink) + arc metric_level -> value_link
@@ -166,6 +189,10 @@ via `InitiateAndWait`.
   an arbitrary (not necessarily `concept_provenance_record`) element
   — the π metric will be artificially inflated without real auditing.
 - The π metric is an abstract number and contains no PII.
+- The created violation is attributed to the whole `elements_group` via
+  `nrel_concerns`, not to the individual member(s) actually missing
+  provenance — a consumer cannot tell which element(s) caused `pi < 1.0`
+  without re-running the same membership scan the agent already did.
 
 ## Metrics
 
@@ -174,22 +201,29 @@ via `InitiateAndWait`.
 | Latency | Synchronous, no I/O; linear in group size — O(N) iterators (one `CreateIterator5` per element) + O(1) to write the result. For large groups (thousands of elements), significantly more expensive than 2-argument trust agents. |
 | Accuracy | Not applicable to the formula itself (deterministic division); correctness is verified by tests, including a reproduction of the reference scenario. |
 | Cost | Negligible for typical group sizes. |
-| Alerts | Not implemented — same as other agents in the project. An alert for "π dropped sharply between periodic computations" would be especially appropriate (in the spirit of the original rule "if π_• < 1.0 create a violation"), but this part of the rule was deliberately not implemented (see Limitations). |
+| Alerts | The rule's own violation-on-`pi<1.0` signal is now created (see Output/Limitations), but nothing consumes it proactively — no alert fires "π dropped sharply between periodic computations"; a consumer has to query for `concept_existence_constraint_violation` instances explicitly. |
 
 ## Tests
 
-File: `tests/test_agent_compute_pi_metric.cpp` (3 tests, all pass; scenario 2 additionally verified on a live sc-server — result `0.600000`).
+File: `tests/test_agent_compute_pi_metric.cpp` (4 tests, all pass; scenario 2 additionally verified on a live sc-server — result `0.600000`).
 
 **1. `ReproducesScenarioAllFiveHaveProvenance`**
 Input: group of 5 elements, all have `nrel_has_provenance`
 (reproduces "π_dec = 5/5 = 1.0" from `scenario_explanation_construction.scs`).
-Output: `pi = 1.0`, `FinishedSuccessfully`.
+Output: `pi = 1.0`, `FinishedSuccessfully`, no violation created.
 
 **2. `ComputesPartialCoverageRatio`**
 Input: group of 5 elements, 3 have provenance, 2 do not.
 Output: `pi = 3/5 = 0.6`, `FinishedSuccessfully` — confirms that
-the computation is non-trivial (not always 0 or 1).
+the computation is non-trivial (not always 0 or 1); a
+`concept_existence_constraint_violation` is created under `metric_level`
+and linked to the group via `nrel_concerns` (AGENTS_AUDIT.md §6.7).
 
-**3. `FinishesWithErrorOnMissingArguments`**
+**3. `DoesNotCreateViolationForEmptyGroup`**
+Input: empty group (`pi = 0.0` by convention).
+Output: no violation created — nothing to measure is not treated as
+"total provenance failure".
+
+**4. `FinishesWithErrorOnMissingArguments`**
 Input: action without arguments.
 Output: `FinishedWithError`.

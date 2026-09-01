@@ -18,16 +18,17 @@ ScAddr MakeFloatLink(ScAgentContext & ctx, float value)
 
 // Ищет среди детей resultLevelAddr узел класса concept_security_incident,
 // не полагаясь на различение sc-ссылки/узла типом в запросе итератора.
-bool HasIncidentChild(ScAgentContext & ctx, ScAddr const & resultLevelAddr)
+// Возвращает ScAddr::Empty, если такого инцидента нет.
+ScAddr FindIncidentChild(ScAgentContext & ctx, ScAddr const & resultLevelAddr)
 {
   ScIterator3Ptr const it3 = ctx.CreateIterator3(resultLevelAddr, ScType::ConstPermPosArc, ScType::Unknown);
   while (it3->Next())
   {
     ScAddr const childAddr = it3->Get(2);
     if (ctx.CheckConnector(SecurityKeynodes::concept_security_incident, childAddr, ScType::ConstPermPosArc))
-      return true;
+      return childAddr;
   }
-  return false;
+  return ScAddr::Empty;
 }
 }  // namespace
 
@@ -55,7 +56,13 @@ TEST_F(AgentDetectAnomalousRequestRateTest, DetectsAnomalyAndCreatesIncident)
   EXPECT_TRUE(m_ctx->GetLinkContent(valueIt->Get(2), content));
   EXPECT_NEAR(std::stof(content), 1.0f, 0.0001f);
 
-  EXPECT_TRUE(HasIncidentChild(*m_ctx, resultLevelAddr));
+  ScAddr const incidentAddr = FindIncidentChild(*m_ctx, resultLevelAddr);
+  ASSERT_TRUE(m_ctx->IsElement(incidentAddr));
+
+  // Чисто объёмный сигнал (rate/baseline) обосновывает только DoS,
+  // не Tampering (AGENTS_AUDIT.md п.6.9).
+  EXPECT_TRUE(m_ctx->CheckConnector(
+      SecurityKeynodes::concept_incident_denial_of_service, incidentAddr, ScType::ConstPermPosArc));
 
   m_ctx->UnsubscribeAgent<AgentDetectAnomalousRequestRate>();
 }
@@ -83,7 +90,7 @@ TEST_F(AgentDetectAnomalousRequestRateTest, DoesNotFlagNormalTraffic)
   EXPECT_TRUE(m_ctx->GetLinkContent(valueIt->Get(2), content));
   EXPECT_NEAR(std::stof(content), 0.0f, 0.0001f);
 
-  EXPECT_FALSE(HasIncidentChild(*m_ctx, resultLevelAddr));
+  EXPECT_FALSE(m_ctx->IsElement(FindIncidentChild(*m_ctx, resultLevelAddr)));
 
   m_ctx->UnsubscribeAgent<AgentDetectAnomalousRequestRate>();
 }

@@ -50,9 +50,11 @@ rule -> rule_auto_record_prov_activity: ...
 // (ostis_ps_user_ecosystem/src/agent/agent_compute_pi_metric.*).
 // Один и тот же агент вычисляет любую из трёх метрик (π_proc, π_dec,
 // π_data) в зависимости от того, какую группу элементов передал
-// вызывающий код; часть правила про создание
-// concept_integrity_violation и запуск rule_fill_missing_provenance
-// не реализована (см. комментарий в agent_compute_pi_metric.hpp).
+// вызывающий код; при pi < 1.0 на непустой группе агент создаёт
+// concept_existence_constraint_violation (concepts/integrity.scs),
+// связанный с проверяемой группой через nrel_concerns -- запуск
+// rule_fill_missing_provenance по-прежнему не реализован (см.
+// комментарий в agent_compute_pi_metric.hpp).
 // ---------------------------------------------------------------------
 
 action_compute_pi_metric

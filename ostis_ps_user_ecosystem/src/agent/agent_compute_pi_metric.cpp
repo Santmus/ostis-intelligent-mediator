@@ -3,8 +3,11 @@
 #include <sc-memory/sc_memory_headers.hpp>
 
 #include "common/float_link_io.hpp"
+#include "common/relation_io.hpp"
+#include "keynodes/integrity_keynodes.hpp"
 #include "keynodes/provenance_keynodes.hpp"
 
+using trust_utils::LinkByRelation;
 using trust_utils::WriteFloatLinkContent;
 
 namespace
@@ -46,6 +49,21 @@ ScResult AgentComputePiMetric::DoProgram(ScAction & action)
   }
 
   float const pi = total > 0 ? static_cast<float>(withProvenance) / static_cast<float>(total) : 0.0f;
+
+  // pi < 1.0 при непустой группе -- нарушение существования (у части
+  // элементов нет провенансной записи, хотя она обязана быть). Пустая
+  // группа не флагуется: измерять нечего, а не "всё потеряно" (см.
+  // AGENTS_AUDIT.md п.6.7 -- вычислимая часть правила дополнена
+  // созданием IntegrityViolation, восстановление пропущенного
+  // провенанса по-прежнему не реализовано).
+  if (total > 0 && withProvenance < total)
+  {
+    ScAddr const violationAddr = m_context.GenerateNode(ScType::ConstNode);
+    m_context.GenerateConnector(
+        ScType::ConstPermPosArc, IntegrityKeynodes::concept_existence_constraint_violation, violationAddr);
+    m_context.GenerateConnector(ScType::ConstPermPosArc, metricLevelAddr, violationAddr);
+    LinkByRelation(m_context, violationAddr, elementsGroupAddr, IntegrityKeynodes::nrel_concerns);
+  }
 
   ScAddr valueLinkAddr;
   ScIterator3Ptr const it3 =

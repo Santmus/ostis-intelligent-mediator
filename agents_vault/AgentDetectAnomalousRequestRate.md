@@ -59,15 +59,21 @@ component.
   baseline is exceeded by the given margin;
 - write a boolean indicator (1.0/0.0) into the target node’s sc-link,
   creating it on first access;
-- on anomaly detection, generate an instance of `concept_security_incident`
-  and link it to the target node;
+- on anomaly detection, generate an instance of `concept_security_incident`,
+  also classified `concept_incident_denial_of_service`, and link it to
+  the target node;
 - terminate with an error when arguments are missing or content is
   non-numeric.
 
 **Limitations (per code):**
-- **does not select a specific STRIDE subclass** of the incident (DoS or
-  Tampering) — creates only the base `concept_security_incident`; the
-  subclass selection criterion in the rule text is not formalized.
+- **the STRIDE subclass choice is a deliberate narrowing, not a
+  general solution** — the rule text leaves "DoS либо Tampering"
+  unformalized, but this agent's *only* signal is a volumetric ratio
+  (`rate`/`baseline`); it never sees request content, so it cannot ever
+  justify Tampering (a data-integrity violation). Classifying as
+  `concept_incident_denial_of_service` is therefore sound for this
+  specific agent (AGENTS_AUDIT.md §6.9), but does not generalize to a
+  rule that could plausibly indicate either subclass.
 - **does not activate** `agent_coalition_reconfigurator` and
   `agent_provenance_registrar` “to record the incident,” as the rule text
   requires — both are outside this agent’s scope (the first is not
@@ -78,6 +84,19 @@ component.
   `trust_level` stores its `value_link`); there is no formal link between
   the incident and the specific `target_component` that was attacked —
   the ontology has no ready-made relation for this.
+- the remaining AGENTS_AUDIT.md §6.9 bullets are still open: the
+  incident is not linked to a subject/system/request/observation
+  period (the agent doesn’t even receive their identities as
+  arguments — only pre-computed `rate`/`baseline` numbers), gets no
+  audit record (`concept_audit_record`’s own definition ties it to an
+  execution act or a failure, not to a security incident — reusing it
+  here would need a new relation the audit does not name), does not
+  lower `t_sec`, and does not pause a route, trigger an access check,
+  a reassignment, or an escalation. None of these has a concrete
+  relation name in the rule text or the audit (unlike, say,
+  `is_input_for` for §6.10), so closing them would mean inventing new
+  ontology rather than reusing existing vocabulary — deferred pending
+  that design decision.
 - `k_sigma` is nowhere validated as > 0 — a negative `k_sigma` will make
   almost any non-zero traffic “anomalous”.
 - `baseline <= 0` is a special case (see Behavior): division by zero is
@@ -98,8 +117,9 @@ component.
 ## Output
 
 The updated/created sc-link `value_link` on `result_level` with `1.0`
-(anomaly) or `0.0` (normal). If an anomaly — a `concept_security_incident`
-is additionally generated, linked to `result_level` (`ConstPermPosArc`).
+(anomaly) or `0.0` (normal). If an anomaly — a `concept_security_incident`,
+also classified `concept_incident_denial_of_service`, is additionally
+generated and linked to `result_level` (`ConstPermPosArc`).
 Success — `FinishSuccessfully()` + `FormResult(resultLevel, valueLink)`.
 
 ## Links
@@ -107,7 +127,7 @@ Success — `FinishSuccessfully()` + `FormResult(resultLevel, valueLink)`.
 **Dependencies:** `common/float_link_io.hpp` (`ReadFloatLinkContent`/
 `WriteFloatLinkContent`), `keynodes/security_keynodes.hpp`
 (`SecurityKeynodes::concept_security_incident`,
-`action_detect_anomalous_request_rate`).
+`concept_incident_denial_of_service`, `action_detect_anomalous_request_rate`).
 
 **Reads:** the content of the three numeric sc-links.
 
@@ -144,6 +164,7 @@ ELSE
 
   IF  anomalous
   THEN  create node of class concept_security_incident,
+        also classified concept_incident_denial_of_service,
         link result_level -> incident (ConstPermPosArc)
 
   action.FormResult(result_level, value_link)
@@ -171,6 +192,12 @@ literally matches “exceeds the baseline by 27 times” from
   statement of a security incident; the agent does not verify the
   caller’s right to make such a statement (see the project-wide
   Limitation — no authentication of the action initiator).
+- Committing to `concept_incident_denial_of_service` specifically (vs.
+  the generic base class before this fix) means a downstream consumer
+  now sees a confident STRIDE classification even though the underlying
+  signal is only ever "rate exceeded baseline by some factor" — a
+  legitimate but unusual traffic spike gets the same specific label as
+  a genuine attack.
 - The data (request frequencies) are abstract numbers and contain no PII.
 
 ## Metrics
@@ -192,7 +219,9 @@ pass; scenario 1 additionally verified on a live sc-server — got
 Input: `rate=5400, baseline=200, k_sigma=5` (5400/200=27, “exceeds the
 baseline by 27 times” from `scenario_security_breach_response.scs`).
 Output: indicator `1.0`, a node of class `concept_security_incident`
-created, `FinishedSuccessfully`.
+created and also classified `concept_incident_denial_of_service`
+(AGENTS_AUDIT.md §6.9 — a volumetric signal can only justify DoS),
+`FinishedSuccessfully`.
 
 **2. `DoesNotFlagNormalTraffic`**
 Input: `rate=250, baseline=200, k_sigma=5` (250/200=1.25 ≤ 5).
