@@ -17,16 +17,23 @@
 #include "agent/agent_validate_provenance_chain.hpp"
 #include "agent/agent_exclude_from_coalition.hpp"
 #include "agent/agent_reassign_on_resource_exhaustion.hpp"
+#include "agent/agent_check_acyclicity.hpp"
+#include "agent/agent_validate_right_to_explanation.hpp"
+#include "agent/agent_evaluate_progressive_disclosure.hpp"
+#include "agent/agent_choose_modality.hpp"
 
 // AgentComputePiMetric/AgentValidateProvenanceChain (провенанс),
-// AgentDetectAnomalousRequestRate (безопасность),
-// AgentResolveByTrustWeighted/AgentValidateIntegration
+// AgentDetectAnomalousRequestRate/AgentValidateRightToExplanation
+// (безопасность), AgentResolveByTrustWeighted/AgentValidateIntegration
 // (интеграция результатов), AgentDispatchReadySubtask/AgentRegisterPartialResult/
 // AgentPropagateToDependent (кооперативное исполнение),
 // AgentValidateCardinalityConstraint (валидация целостности),
-// AgentBuildExplanation (объяснения) и AgentExcludeFromCoalition/
-// AgentReassignOnResourceExhaustion (реконфигурация коалиции) не о
-// доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
+// AgentBuildExplanation (объяснения), AgentExcludeFromCoalition/
+// AgentReassignOnResourceExhaustion (реконфигурация коалиции),
+// AgentCheckAcyclicity (декомпозиция запроса) и
+// AgentEvaluateProgressiveDisclosure/AgentChooseModality (адаптация под
+// пользователя) не о доверии, но зарегистрированы здесь же:
+// SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
 // иначе конфликт символов. Пока агентов немного, отдельная библиотека
@@ -48,4 +55,8 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentValidateIntegration>()
     ->Agent<AgentValidateProvenanceChain>()
     ->Agent<AgentExcludeFromCoalition>()
-    ->Agent<AgentReassignOnResourceExhaustion>();
+    ->Agent<AgentReassignOnResourceExhaustion>()
+    ->Agent<AgentCheckAcyclicity>()
+    ->Agent<AgentValidateRightToExplanation>()
+    ->Agent<AgentEvaluateProgressiveDisclosure>()
+    ->Agent<AgentChooseModality>();

@@ -5,18 +5,24 @@ tags: [moc, trust-agents, provenance-agents]
 
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
-The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains seventeen
-sc-agents: five implement the rules for updating the trust vector π_tr, one —
-the computable part of provenance completeness metrics, one — detection
-of anomalous request frequency, one — resolution of result conflicts by
-weighted trust, three — the full life cycle of cooperative
-subtask execution (dispatch → result registration →
+The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains
+twenty-one sc-agents: five implement the rules for updating the trust
+vector π_tr, one — the computable part of provenance completeness
+metrics, one — detection of anomalous request frequency, one —
+resolution of result conflicts by weighted trust, three — the full life
+cycle of cooperative subtask execution (dispatch → result registration →
 propagation to dependent subtasks), one — the mechanical core
 of SHACL cardinality checks, one — structural reification of explanation
 construction acts, one — validation of an integrated result (explanation +
 conflicts) before publication, one — transitive-closure validation of a
 result's provenance chain back to the originating request, two —
-coalition reconfiguration on system failure and resource exhaustion.
+coalition reconfiguration on system failure and resource exhaustion, one —
+acyclicity checking of the subtask dependency graph after decomposition,
+one — gating delivery on the right-to-explanation property for
+decision/recommendation requests, one — deciding whether a provenance
+chain/result set is complex enough to require progressive disclosure,
+one — choosing an interaction modality from situational and preference
+flags.
 Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 `ostis_kb_user_ecosystem/rules/`.
 
@@ -41,6 +47,10 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentValidateProvenanceChain]] | `action_validate_provenance_chain` | indicator + integrity_violation | BFS reachability to user_request |
 | [[AgentExcludeFromCoalition]] | `action_exclude_from_coalition` | `nrel_member_of` (erased) + indicator | conditional state transition |
 | [[AgentReassignOnResourceExhaustion]] | `action_reassign_on_resource_exhaustion` | `nrel_subtask_status` (bulk) + count | reverse-index bulk update |
+| [[AgentCheckAcyclicity]] | `action_check_acyclicity` | indicator + integrity_violation | DFS cycle detection |
+| [[AgentValidateRightToExplanation]] | `action_validate_right_to_explanation` | indicator + integrity_violation | conditional gate check |
+| [[AgentEvaluateProgressiveDisclosure]] | `action_evaluate_progressive_disclosure` | indicator (decision, not validity) | two-threshold decision over DFS depth + count |
+| [[AgentChooseModality]] | `action_choose_modality` | chosen modality class (not numeric) | three-way branch over two new ontology flags |
 
 ## How to read these notes
 
@@ -54,7 +64,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All seventeen agents use:
+All twenty-one agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -79,7 +89,8 @@ All seventeen agents use:
   (`TaskKeynodes`) / `keynodes/integrity_keynodes.hpp`
   (`IntegrityKeynodes`) / `keynodes/explanation_keynodes.hpp`
   (`ExplanationKeynodes`) / `keynodes/coalition_keynodes.hpp`
-  (`CoalitionKeynodes`) — key sc-elements and action classes.
+  (`CoalitionKeynodes`) / `keynodes/adaptive_interface_keynodes.hpp`
+  (`AdaptiveInterfaceKeynodes`) — key sc-elements and action classes.
 - Base class `ScActionInitiatedAgent` (sc-machine) — reacts to the
   event `ScEventAfterGenerateOutgoingArc` with subscription element
   `action_initiated`.
@@ -90,8 +101,10 @@ All seventeen agents use:
   [[AgentValidateCardinalityConstraint]], [[AgentRegisterPartialResult]],
   [[AgentPropagateToDependent]], [[AgentBuildExplanation]],
   [[AgentValidateIntegration]], [[AgentValidateProvenanceChain]],
-  [[AgentExcludeFromCoalition]] and [[AgentReassignOnResourceExhaustion]]
-  are registered there too, despite the name.
+  [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]],
+  [[AgentCheckAcyclicity]], [[AgentValidateRightToExplanation]],
+  [[AgentEvaluateProgressiveDisclosure]] and [[AgentChooseModality]] are
+  registered there too, despite the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
 agents (not [[AgentComputePiMetric]]/[[AgentDetectAnomalousRequestRate]]) —
@@ -146,6 +159,64 @@ lifecycle from [[AgentDispatchReadySubtask]]/[[AgentRegisterPartialResult]]'s
 `proposed → in_progress → completed` happy path. Both are otherwise
 data-independent from the rest of the module — the only two operating on
 `nrel_member_of`/coalition membership.
+[[AgentCheckAcyclicity]] is the first agent implemented for
+`agent_task_decomposer`/`rules_decomposition.scs` — data-independent from
+the rest of the module, it reads `nrel_decomposed_into` (newly added to
+`TaskKeynodes`) and the same `nrel_subtask_depends_on` relation
+[[AgentDispatchReadySubtask]]/[[AgentPropagateToDependent]] already use,
+but for cycle detection rather than readiness/propagation lookups. Like
+[[AgentValidateProvenanceChain]] it performs a multi-hop graph traversal
+rather than a single-hop lookup, but distinguishes `onStack` from
+`visited` (DFS-style) instead of a single visited set (BFS-style),
+because reachability alone is not enough to tell a cycle apart from a
+converging (diamond-shaped) DAG.
+[[AgentValidateRightToExplanation]] is the second agent for
+`rules_security_privacy.scs`, alongside [[AgentDetectAnomalousRequestRate]].
+It is the first agent whose violation node is classified by two classes
+at once (`concept_integrity_violation` and the already-existing
+`concept_property_right_to_explanation`) rather than by one newly
+declared subclass — no new ontology class was needed, since
+`concepts/security_privacy.scs` already had a specific-enough class for
+this property. It reads `nrel_explained_by`, the same relation
+[[AgentValidateIntegration]] checks and [[AgentBuildExplanation]]
+writes, but is data-independent from both — no agent in the module calls
+another agent directly.
+[[AgentEvaluateProgressiveDisclosure]] is the first agent for
+`rules_user_adaptation.scs` — a genuinely new `keynodes/adaptive_interface_keynodes.hpp`
+file was created for it, the smallest keynodes file in the project (one
+action class), matching how `coalition_keynodes.hpp` started before
+[[AgentReassignOnResourceExhaustion]] joined [[AgentExcludeFromCoalition]]
+in it. It is also the first agent whose indicator is a decision rather
+than a validity judgment (`1.0` = "the rule fired", not "no violation") —
+deliberately flagged in its own doc so this doesn't get read as the
+usual `AgentValidate*` polarity. Reuses `nrel_derived_from`
+([[AgentValidateProvenanceChain]]'s relation) for a longest-path depth
+computation rather than reachability, and `elements_group`-style
+membership counting ([[AgentComputePiMetric]]'s convention) for the
+partial-result threshold — the first agent to combine both
+already-established traversal idioms in one check.
+[[AgentChooseModality]] closes `rule_choose_modality`, the other rule of
+`rules_user_adaptation.scs`. It was originally flagged READY in
+[[Implementation Backlog]] but, on inspection, was not: neither of its
+two branch conditions ("ограничение визуального восприятия" on
+`rrel_user_situation_context`, "preference_visual" on a
+`concept_user_preference` instance) had any typed sc-representation
+anywhere in the ontology — `concept_user_preference` was a flat,
+non-subdivided class, and the one scenario fixture that names a visual
+preference (`scenario_intelligent_tutoring.scs`'s `preference_ivan_visual`)
+carried the information only in a free-text `nrel_main_idtf` label.
+Finishing this rule therefore required two small, targeted ontology
+additions first — `concept_visual_perception_constraint`
+(`<= nrel_inclusion: concept_user_situation_context`,
+`concepts/contexts.scs`) and `concept_preference_visual_modality`
+(`<= nrel_inclusion: concept_user_preference`, `concepts/users.scs`) —
+narrow subclasses naming exactly what the rule's own prose already
+described, not new semantics. The existing `preference_ivan_visual`
+fixture was updated to carry the new typed classification alongside its
+original free-text label. [[AgentChooseModality]] is also the second
+agent (after [[AgentBuildExplanation]]) whose result is a chosen
+sc-element rather than a numeric indicator — `FormResult` returns the
+selected modality class directly.
 
 ## Running agents standalone
 
@@ -203,10 +274,12 @@ trust weights became `λ_k = 1/4`, and the four smoothing coefficients α/β/γ/
 became a single `η`, calibratable at run time as an optional action argument.
 Five agents affected, seven verified unaffected.
 
-[[Implementation Backlog]] — an overview of the remaining six unimplemented
-agents from the catalog `concepts/sc_agents.scs`. `agent_trust_evaluator`
-and `agent_cooperative_executor` are fully implemented;
-`agent_provenance_registrar`, the F_rule_sec security subsystem,
-`agent_result_integrator`/`agent_conflict_detector` and
-`agent_integrity_checker` are partially implemented, with a readiness
-assessment for each rule.
+[[Implementation Backlog]] — an overview of the remaining agents from the
+catalog `concepts/sc_agents.scs`. `agent_trust_evaluator`,
+`agent_cooperative_executor` and `agent_integrity_checker` are fully
+implemented; `agent_provenance_registrar`, the F_rule_sec security
+subsystem, `agent_result_integrator`/`agent_conflict_detector`,
+`agent_explanation_builder`, `agent_coalition_reconfigurator`,
+`agent_task_decomposer` and the F_rule_adapt adaptive-interface rules
+(no single owner in the catalog) are partially implemented, with a
+readiness assessment for each rule.

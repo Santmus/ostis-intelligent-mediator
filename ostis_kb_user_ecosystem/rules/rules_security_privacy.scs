@@ -10,7 +10,8 @@ section_rules_security_privacy
     (* <- lang_ru;; *);
     [Subsection. Security and Privacy Rules (F_rule_sec)] (* <- lang_en;; *);
 <- atomic_section;
-<- rrel_key_sc_element: action_detect_anomalous_request_rate;;
+<- rrel_key_sc_element: action_detect_anomalous_request_rate;
+<- rrel_key_sc_element: action_validate_right_to_explanation;;
 
 rule -> rule_enforce_consent_check: ...
 (*
@@ -101,6 +102,21 @@ rule -> rule_audit_log_integrity: ...
             безопасности.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации гейт-проверки правила
+// ниже -- sc-агент AgentValidateRightToExplanation
+// (ostis_ps_user_ecosystem/src/agent/agent_validate_right_to_explanation.*).
+// "agent_explanation_builder обязан построить" не реализовано -- сам
+// agent_explanation_builder не вызывается отсюда (см. Limitations
+// агента); проверяется только результат уже выполненного построения.
+// ---------------------------------------------------------------------
+
+action_validate_right_to_explanation
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: проверить право на объяснение] (* <- lang_ru;; *);
+    [action: validate right to explanation] (* <- lang_en;; *);;
 
 rule -> rule_right_to_explanation: ...
 (*

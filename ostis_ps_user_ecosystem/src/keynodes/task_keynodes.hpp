@@ -4,7 +4,9 @@
 
 // Ключевые sc-элементы для трёх агентов agent_cooperative_executor
 // (rule_dispatch_ready_subtask, rule_register_partial_result,
-// rule_propagate_to_dependent -- rules/rules_cooperation.scs). Все
+// rule_propagate_to_dependent -- rules/rules_cooperation.scs), а также
+// для AgentCheckAcyclicity (rule_check_acyclicity --
+// rules/rules_decomposition.scs, agent_task_decomposer). Все
 // перечисленные ниже -- уже существующие элементы онтологии
 // (relations/relations_execution.scs, relations/relations_task.scs,
 // relations/relations_context.scs, relations/role_relations.scs,
@@ -12,14 +14,20 @@
 // concepts/knowledge_exchange.scs, concepts/sc_agents.scs); системные
 // идентификаторы совпадают, поэтому ScKeynode находит существующие
 // узлы, а не создаёт дубликаты. action_dispatch_ready_subtask,
-// action_register_partial_result и action_propagate_to_dependent также
-// объявлены в SC-коде для документации и единообразия модели.
+// action_register_partial_result, action_propagate_to_dependent и
+// action_check_acyclicity также объявлены в SC-коде для документации и
+// единообразия модели.
 class TaskKeynodes : public ScKeynodes
 {
 public:
   static inline ScKeynode const nrel_assigned_to{"nrel_assigned_to", ScType::ConstNodeNonRole};
   static inline ScKeynode const nrel_subtask_status{"nrel_subtask_status", ScType::ConstNodeNonRole};
   static inline ScKeynode const nrel_subtask_depends_on{"nrel_subtask_depends_on", ScType::ConstNodeNonRole};
+
+  // decomposed_into(q, σ): concept_user_request -> concept_subtask
+  // (relations/relations_task.scs) -- используется AgentCheckAcyclicity
+  // для перечисления T(q), над которым проверяется acyclic(depends_on).
+  static inline ScKeynode const nrel_decomposed_into{"nrel_decomposed_into", ScType::ConstNodeNonRole};
 
   // Провенансный триплет rule_register_partial_result -- не
   // функциональные отношения (у результата/подзадачи может быть
@@ -83,4 +91,7 @@ public:
       "action_register_partial_result", ScType::NodeConstClass};
   static inline ScKeynode const action_propagate_to_dependent{
       "action_propagate_to_dependent", ScType::NodeConstClass};
+
+  // rules/rules_decomposition.scs -> rule_check_acyclicity.
+  static inline ScKeynode const action_check_acyclicity{"action_check_acyclicity", ScType::NodeConstClass};
 };

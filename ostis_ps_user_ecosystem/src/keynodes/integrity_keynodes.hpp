@@ -16,7 +16,9 @@
 // переиспользуются AgentComputePiMetric (AGENTS_AUDIT.md п.6.7) --
 // это тот же тип нарушения "ожидаемая связь отсутствует", только
 // проверяемая сущность там -- группа измеряемых элементов, а не
-// произвольный target.
+// произвольный target. concept_acyclicity_constraint_violation --
+// формализован вместе с AgentCheckAcyclicity (rules_decomposition.scs
+// -> rule_check_acyclicity), тем же приёмом, что и первые два.
 class IntegrityKeynodes : public ScKeynodes
 {
 public:
@@ -24,6 +26,8 @@ public:
       "concept_cardinality_constraint_violation", ScType::NodeConstClass};
   static inline ScKeynode const concept_existence_constraint_violation{
       "concept_existence_constraint_violation", ScType::NodeConstClass};
+  static inline ScKeynode const concept_acyclicity_constraint_violation{
+      "concept_acyclicity_constraint_violation", ScType::NodeConstClass};
 
   static inline ScKeynode const concept_cardinality_check_outgoing_non_role{
       "concept_cardinality_check_outgoing_non_role", ScType::NodeConstClass};

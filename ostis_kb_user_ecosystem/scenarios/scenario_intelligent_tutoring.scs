@@ -37,6 +37,7 @@ competence_ivan_geometry => nrel_main_idtf:
     [Компетенция: геометрия 10 кл — освоено 52%
      (выявлены пробелы в стереометрии)] (* <- lang_ru;; *);;
 preference_ivan_visual <- concept_user_preference;;
+preference_ivan_visual <- concept_preference_visual_modality;;
 preference_ivan_visual => nrel_main_idtf:
     [Предпочтение: визуальные объяснения с динамическими построениями]
     (* <- lang_ru;; *);;

@@ -10,7 +10,9 @@ section_rules_user_adaptation
     [Подраздел. Правила адаптации под пользователя (F_rule_adapt)]
     (* <- lang_ru;; *);
     [Subsection. User Adaptation Rules (F_rule_adapt)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_choose_modality;
+<- rrel_key_sc_element: action_evaluate_progressive_disclosure;;
 
 rule -> rule_choose_presentation_template: ...
 (*
@@ -26,6 +28,24 @@ rule -> rule_choose_presentation_template: ...
             Else: concept_template_decision_card.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации правила ниже --
+// sc-агент AgentChooseModality
+// (ostis_ps_user_ecosystem/src/agent/agent_choose_modality.*).
+// Оба условия ветвления правила ("ограничение визуального восприятия",
+// "preference_visual") прежде существовали только в прозе -- ни
+// concept_user_situation_context, ни concept_user_preference не имели
+// типизированных подклассов для них; формализованы вместе с этим
+// агентом (concept_visual_perception_constraint -- concepts/contexts.scs,
+// concept_preference_visual_modality -- concepts/users.scs).
+// ---------------------------------------------------------------------
+
+action_choose_modality
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: выбрать модальность взаимодействия] (* <- lang_ru;; *);
+    [action: choose interaction modality] (* <- lang_en;; *);;
 
 rule -> rule_choose_modality: ...
 (*
@@ -43,6 +63,23 @@ rule -> rule_choose_modality: ...
             Default: concept_modality_text.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации вычислимой части
+// правила ниже -- sc-агент AgentEvaluateProgressiveDisclosure
+// (ostis_ps_user_ecosystem/src/agent/agent_evaluate_progressive_disclosure.*).
+// "Адаптивный интерфейс представляет верхний уровень" не реализовано --
+// сам adaptive_interface (concepts/adaptive_interface.scs) не имеет ни
+// одного экземпляра, создаваемого каким-либо агентом проекта; агент
+// только вычисляет двухпороговое условие и сообщает решение.
+// ---------------------------------------------------------------------
+
+action_evaluate_progressive_disclosure
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: оценить необходимость прогрессивного раскрытия]
+    (* <- lang_ru;; *);
+    [action: evaluate progressive disclosure] (* <- lang_en;; *);;
 
 rule -> rule_progressive_disclosure: ...
 (*

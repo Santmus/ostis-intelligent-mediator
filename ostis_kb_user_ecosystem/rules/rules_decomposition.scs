@@ -8,7 +8,8 @@ section_rules_decomposition
 => nrel_main_idtf:
     [Подраздел. Правила декомпозиции запроса (π_dec)] (* <- lang_ru;; *);
     [Subsection. Decomposition Rules (π_dec)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_check_acyclicity;;
 
 rule -> rule_apply_decomposition_pattern: ...
 (*
@@ -40,6 +41,26 @@ rule -> rule_recursive_decomposition: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации механической части
+// правила ниже -- sc-агент AgentCheckAcyclicity
+// (ostis_ps_user_ecosystem/src/agent/agent_check_acyclicity.*). DFS по
+// nrel_subtask_depends_on над T(q) = {σ : decomposed_into(q, σ)}
+// (concepts/tasks.scs, definition_dependency_graph); при обнаружении
+// цикла создаёт concept_acyclicity_constraint_violation
+// (concepts/integrity.scs, формализован вместе с этим агентом).
+// "Инициировать пересмотр шаблона декомпозиции" не реализовано --
+// agent_task_decomposer сам не реализован (rule_apply_decomposition_pattern/
+// rule_recursive_decomposition -- PARTIAL, требуют sim_T и библиотеку
+// шаблонов, не определённых в тексте, см. Implementation Backlog.md).
+// ---------------------------------------------------------------------
+
+action_check_acyclicity
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: проверить ацикличность графа зависимостей] (* <- lang_ru;; *);
+    [action: check acyclicity of dependency graph] (* <- lang_en;; *);;
 
 rule -> rule_check_acyclicity: ...
 (*

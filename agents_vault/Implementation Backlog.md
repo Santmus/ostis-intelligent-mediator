@@ -61,6 +61,42 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > triggers remains the same unsolved combinatorial problem blocking
 > `rules_allocation.scs`.
 
+> [!note] Update 2026-09-02
+> `rule_check_acyclicity` (`rules_decomposition.scs`) is now implemented,
+> [[AgentCheckAcyclicity]] — DFS cycle detection over
+> `nrel_subtask_depends_on` restricted to T(q) = decomposed_into(q, ·),
+> the first agent for `agent_task_decomposer`. The other two rules in
+> that file (`rule_apply_decomposition_pattern`,
+> `rule_recursive_decomposition`) remain PARTIAL — both need `sim_T` and
+> a template library not defined in the text, same class of gap as
+> `rule_coalition_optimization`. `rule_right_to_explanation`
+> (`rules_security_privacy.scs`) is also now implemented,
+> [[AgentValidateRightToExplanation]] — the second agent for F_rule_sec
+> alongside [[AgentDetectAnomalousRequestRate]]; reuses `nrel_explained_by`
+> (the same relation [[AgentBuildExplanation]] writes and
+> [[AgentValidateIntegration]] checks) rather than the differently-named
+> `nrel_supported_by_explanation` the neighboring axiom uses for a
+> similar obligation — see the agent's own Limitations for that
+> terminology mismatch. `rule_progressive_disclosure`
+> (`rules_user_adaptation.scs`) is also now implemented,
+> [[AgentEvaluateProgressiveDisclosure]] — the first agent for
+> F_rule_adapt: a two-threshold decision (provenance-chain depth via
+> `nrel_derived_from`, partial-result count via `elements_group`-style
+> membership). Its sibling `rule_choose_modality`, previously labeled
+> READY below ("inputs are Boolean/class flags already existing as
+> sc-facts"), turned out on inspection NOT to be — see the corrected
+> entry in the file breakdown below.
+
+> [!note] Update 2026-09-02 (continued)
+> `rule_choose_modality` is now also implemented, [[AgentChooseModality]] —
+> after the readiness correction above, two narrow ontology subclasses
+> were added first (`concept_visual_perception_constraint`
+> `<= nrel_inclusion: concept_user_situation_context`,
+> `concepts/contexts.scs`; `concept_preference_visual_modality`
+> `<= nrel_inclusion: concept_user_preference`, `concepts/users.scs`),
+> naming exactly what the rule's own prose already described.
+> `rules_user_adaptation.scs` is now 2 of 6 rules implemented.
+
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
 (see [[AgentUpdateTrustReliability]] and others).
@@ -78,7 +114,7 @@ list of the section — an internal inconsistency of the KB catalog itself.
 | Agent sys-idtf | Purpose | Rules file | Status |
 |---|---|---|---|
 | `agent_request_interpreter` | request interpretation ι: Q_ext×C → Q_form | `rules_interpretation.scs` | not implemented |
-| `agent_task_decomposer` | request decomposition δ: Q_form → 2^T | `rules_decomposition.scs` | not implemented |
+| `agent_task_decomposer` | request decomposition δ: Q_form → 2^T | `rules_decomposition.scs` | **partial (1 of 3 rules — [[AgentCheckAcyclicity]])** |
 | `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | not implemented |
 | `agent_cooperative_executor` | cooperative execution (FIPA-ACL) | `rules_cooperation.scs` | **✅ implemented (3 agents)** |
 | `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | **partial (2 of 5 rules — [[AgentResolveByTrustWeighted]], [[AgentValidateIntegration]])** |
@@ -156,13 +192,19 @@ of the `partial_result` structure, reproduced by the integration test
 
 - `rule_apply_decomposition_pattern` — argmax sim_T(τ_q,τ_p) over templates — **PARTIAL** (sim_T and template structure not defined)
 - `rule_recursive_decomposition` — recursive application of the previous rule — **PARTIAL**
-- `rule_check_acyclicity` — after decomposition run acyclic(depends_on) — **READY** (classic graph algorithm)
+- `rule_check_acyclicity` — after decomposition run acyclic(depends_on) — **READY** (classic graph algorithm) → ✅ implemented, [[AgentCheckAcyclicity]]
 
 Selecting/instantiating the decomposition pattern requires NLP-like semantic
 similarity and a template library — not ready as-is.
-Acyclicity checking is fully self-contained.
+Acyclicity checking is fully self-contained, and is now implemented as a
+DFS over `nrel_subtask_depends_on` restricted to T(q); it does not (and
+per the rule's own trigger, cannot) initiate the decomposition-pattern
+reconsideration the rule text also asks for, since neither of the other
+two rules is implemented.
 Numeric example: no explicit numbers, but almost every scenario provides
-ready-made subtask DAGs (`nrel_subtask_depends_on`) as test fixtures.
+ready-made subtask DAGs (`nrel_subtask_depends_on`) as test fixtures —
+reused directly as the acyclic-case test fixture in
+`test_agent_check_acyclicity.cpp`.
 
 ### `rules_explanation.scs` — agent `agent_explanation_builder`, 4 rules
 
@@ -256,41 +298,63 @@ Numeric example: `scenario_explanation_construction.scs` — "π_proc=8/8=1.0",
 "π_dec=5/5=1.0", "π_data=12/12=1.0" — fully ready calculation with exact
 numbers, direct analog of `scenario_trust_assessment.scs`.
 
-### `rules_security_privacy.scs` — no single agent, 7 rules
+### `rules_security_privacy.scs` — no single agent, 7 rules — **partial (2 of 7 rules)**
 
 - `rule_enforce_consent_check` — `∃c.consent_covers(c,pii)∧valid(c)` — **PARTIAL**
 - `rule_data_minimization` — payload with only necessary PII, redact the rest — **PARTIAL** (no table of "which PII is needed for which subtask")
 - `rule_detect_anomalous_request_rate` — `rate(source,target,Δt) > k_σ·baseline_rate(target)` — **READY** → ✅ implemented, [[AgentDetectAnomalousRequestRate]]
 - `rule_audit_log_integrity` — append-only provenance, rewrite attempt → violation — **PARTIAL** (more of a system invariant than a calculation)
-- `rule_right_to_explanation` — delivered_to∧request_type∈{...} ⇒ explained_by is mandatory — **READY**
+- `rule_right_to_explanation` — delivered_to∧request_type∈{...} ⇒ explained_by is mandatory — **READY** → ✅ implemented, [[AgentValidateRightToExplanation]]
 - `rule_check_data_residency` — knowledge sources must be in an acceptable jurisdiction r — **PARTIAL** (no data about source jurisdictions in the rest of the KB)
 - `rule_apply_access_control_policy` — RBAC/ABAC/capability-based check — **PARTIAL** (3 different unspecified sub-algorithms)
 
 `rule_detect_anomalous_request_rate` is a pure threshold formula,
 structurally almost like trust agents; `rule_right_to_explanation` is a simple
-gate-check. The other 5 require external policies/tables.
+gate-check, now implemented as a two-part conjunctive precondition read
+directly off existing `nrel_delivered_to`/request-type/`nrel_explained_by`
+data. The other 4 require external policies/tables.
 Numeric example: `scenario_security_breach_response.scs` — "5400
 req/min, exceeds baseline by 27×" — ready input for
 `rule_detect_anomalous_request_rate`.
 
-### `rules_user_adaptation.scs` — adaptive interface + `agent_explanation_builder`, 6 rules
+### `rules_user_adaptation.scs` — adaptive interface + `agent_explanation_builder`, 6 rules — **partial (2 of 6 rules)**
 
 - `rule_choose_presentation_template` — cognitive_load(u)≤θ_low∧desktop ⇒ detailed; >θ_high∨mobile ⇒ summary; else ⇒ card — **PARTIAL** (cognitive_load(u) is nowhere computed explicitly)
-- `rule_choose_modality` — visual-constraint ⇒ voice; preference_visual ⇒ visual; default ⇒ text — **READY** (inputs are Boolean/class flags already existing as sc-facts)
-- `rule_progressive_disclosure` — depth(provenance)>4 ∨ \|partial_results\|>5 ⇒ executive summary — **READY** (internal graph metrics, no external dependencies)
+- `rule_choose_modality` — visual-constraint ⇒ voice; preference_visual ⇒ visual; default ⇒ text — corrected 2026-09-02 from READY to PARTIAL-on-inspection (see note below), then closed by adding the two missing typed flags → ✅ implemented, [[AgentChooseModality]]
+- `rule_progressive_disclosure` — depth(provenance)>4 ∨ \|partial_results\|>5 ⇒ executive summary — **READY** (internal graph metrics, no external dependencies) → ✅ implemented, [[AgentEvaluateProgressiveDisclosure]]
 - `rule_simplify_terminology_for_end_user` — end_user∧¬domain_expert ⇒ apply glossary — **PARTIAL** (needs a terminology table not defined here)
 - `rule_user_feedback_to_user_model` — update competence/preference/history; "recalculate cognitive_load over last 10" — **PARTIAL** (the cognitive_load formula itself is not defined)
 - `rule_context_aware_layout` — night-shift/low-light ⇒ dark theme + font ×1.10 — **PARTIAL** ("reduce number of elements" is not quantified, though font ×1.10 is a pure formula)
 
-`rule_choose_modality` and `rule_progressive_disclosure` are pure
-threshold/classification rules without external dependencies.
-`rule_choose_presentation_template` is structurally ready, but depends on
-`cognitive_load(u)`, whose formula is nowhere defined in the KB (unlike trust,
-for which the source exists).
+`rule_progressive_disclosure` is a pure threshold/classification rule
+without external dependencies, and is now implemented.
+`rule_choose_modality` was originally also assessed READY here
+("inputs are Boolean/class flags already existing as sc-facts"), but on
+inspection this did not hold up: `concept_user_preference`
+(`concepts/users.scs`) was a flat, non-subdivided class — there was no
+`concept_preference_visual` or equivalent, and no way to mark a
+situational-context node as "visually constrained" anywhere in the
+ontology. The one scenario that names a visual preference,
+`scenario_intelligent_tutoring.scs`'s `preference_ivan_visual`, carried
+that information only in a free-text `nrel_main_idtf` label
+(*"Предпочтение: визуальные объяснения с динамическими построениями"*),
+not a typed fact. Unlike `rule_choose_presentation_template`'s
+`cognitive_load(u)` (a genuinely undefined *formula* — a bigger,
+open-ended gap), this rule's gap was two narrow, nameable *flags* the
+rule's own prose already specified — closed by adding
+`concept_visual_perception_constraint` (`<= nrel_inclusion:
+concept_user_situation_context`, `concepts/contexts.scs`) and
+`concept_preference_visual_modality` (`<= nrel_inclusion:
+concept_user_preference`, `concepts/users.scs`), then implementing
+[[AgentChooseModality]] against them. `preference_ivan_visual` now also
+carries `<- concept_preference_visual_modality`.
+`rule_choose_presentation_template` remains blocked by
+`cognitive_load(u)`'s undefined formula — a different, still-open class
+of gap.
 Numeric example: not found (`cognitive_load`, `θ_low/θ_high` — 0 matches across
-all 15 scenarios); a qualitative example exists —
-`scenario_intelligent_tutoring.scs` contains `preference_ivan_visual` (a flag
-relevant to `rule_choose_modality`, but not a number).
+all 15 scenarios); `scenario_intelligent_tutoring.scs`'s `preference_ivan_visual`
+is now a typed positive fixture for `rule_choose_modality`'s preference
+branch.
 
 ## Top-5 Most Obvious Candidates
 

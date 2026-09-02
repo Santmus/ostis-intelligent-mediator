@@ -175,6 +175,24 @@ concept_user_preference
 => nrel_main_idtf: [пользовательское предпочтение] (* <- lang_ru;; *);
 => nrel_main_idtf: [user preference] (* <- lang_en;; *);;
 
+// Подкласс-флаг: предпочтение визуальной модальности представления
+// (rules/rules_user_adaptation.scs -> rule_choose_modality:
+// "пользователь предпочитает визуальные объяснения (preference_visual)").
+// Прежде существовало только как свободнотекстовая метка nrel_main_idtf
+// у экземпляров вроде preference_ivan_visual
+// (scenarios/scenario_intelligent_tutoring.scs), без типизированного
+// признака; формализовано вместе с AgentChooseModality
+// (ostis_ps_user_ecosystem). concept_user_preference остаётся плоским
+// классом за пределами этого единственного подкласса -- другие виды
+// предпочтений (например, preference_low_energy,
+// scenarios/scenario_request_processing.scs) не типизированы.
+concept_preference_visual_modality
+<- sc_node_class;
+=> nrel_main_idtf:
+    [предпочтение визуальной модальности] (* <- lang_ru;; *);
+    [visual modality preference] (* <- lang_en;; *);;
+concept_preference_visual_modality <= nrel_inclusion: concept_user_preference;;
+
 concept_user_competence
 <- sc_node_class;
 => nrel_main_idtf: [компетенция пользователя] (* <- lang_ru;; *);

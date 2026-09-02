@@ -102,10 +102,23 @@ concept_existence_constraint_violation
 => nrel_main_idtf:
     [нарушение ограничения существования] (* <- lang_ru;; *);;
 
+// concept_acyclicity_constraint уже объявлено выше (подкласс
+// concept_integrity_constraint), но сам факт его нарушения -- по
+// аналогии с двумя классами выше -- не был формализован как отдельный
+// sc_node_class; формализован вместе с AgentCheckAcyclicity
+// (rules/rules_decomposition.scs -> rule_check_acyclicity,
+// ostis_ps_user_ecosystem).
+concept_acyclicity_constraint_violation
+<- sc_node_class;
+<- concept_integrity_violation;
+=> nrel_main_idtf:
+    [нарушение ограничения ацикличности] (* <- lang_ru;; *);;
+
 concept_integrity_violation <= nrel_subdividing: ...
 (*
     -> concept_cardinality_constraint_violation;
-       concept_existence_constraint_violation;;
+       concept_existence_constraint_violation;
+       concept_acyclicity_constraint_violation;;
 *);;
 
 // nrel_concerns — типизированная связь нарушения с проверяемой

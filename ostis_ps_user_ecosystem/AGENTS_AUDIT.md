@@ -5,7 +5,7 @@
 статусу (сделано / сделано частично / осталось сделать), а не по
 хронологии находок, чтобы не смешивать констатацию проблемы с её решением
 в одном потоке текста.  
-Дата этой редакции: 01 сентября 2026 г. — добавлен `AgentBuildExplanation`
+Дата предыдущей редакции: 01 сентября 2026 г. — добавлен `AgentBuildExplanation`
 (§5.6) и `AgentValidateIntegration` (§5.7), второй и третий агенты из
 таблицы §7.5 «Отсутствующие агенты», перенесённые в реализованные
 (частично); `AgentValidateIntegration` закрывает часть заявленной области
@@ -19,8 +19,34 @@
 `rule_on_system_failure`/`rule_on_resource_exhaustion`
 (`rules_coalition_reconfiguration.scs`), первые агенты семейства
 `agent_coalition_reconfigurator`.  
-Проверено: `ctest` — 62 из 62 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31580 элементов.
+Дата этой редакции: 02 сентября 2026 г. — добавлен `AgentCheckAcyclicity`
+(§5.11) — закрывает `rule_check_acyclicity` (`rules_decomposition.scs`),
+первый агент семейства `agent_task_decomposer`: DFS-проверка ацикличности
+над `nrel_subtask_depends_on`, ограниченная T(q) = decomposed_into(q, ·).
+Добавлен также `AgentValidateRightToExplanation` (§5.12) — закрывает
+`rule_right_to_explanation` (`rules_security_privacy.scs`), второй агент
+файла F_rule_sec наряду с `AgentDetectAnomalousRequestRate`: условный
+гейт delivered_to ∧ request_type ⇒ explained_by, переиспользующий уже
+существующий класс `concept_property_right_to_explanation` для узла
+нарушения вместо объявления нового подкласса. Добавлен также
+`AgentEvaluateProgressiveDisclosure` (§5.13) — закрывает
+`rule_progressive_disclosure` (`rules_user_adaptation.scs`), первый
+агент файла F_rule_adapt: двухпороговое решение по глубине
+provenance-цепочки (`nrel_derived_from`) и количеству частичных
+результатов. При этом обнаружено, что соседнее правило
+`rule_choose_modality`, ранее помеченное READY в
+`agents_vault/Implementation Backlog.md`, таковым не является — ни одно
+из двух условий ветвления не имеет типизированного представления в
+онтологии; оценка готовности в Implementation Backlog.md исправлена.
+Затем правило доведено до конца: добавлен `AgentChooseModality` (§5.14) —
+закрывает `rule_choose_modality`, второй агент F_rule_adapt наряду с
+`AgentEvaluateProgressiveDisclosure`. Потребовалось точечное расширение
+онтологии двумя узкими подклассами (`concept_visual_perception_constraint`,
+`concept_preference_visual_modality`), формализующими ровно то, что уже
+называла проза правила, без изобретения новой семантики.
+`rules_user_adaptation.scs` теперь 2 из 6 правил.  
+Проверено: `ctest` — 82 из 82 тестов пройдены, сборка KB через
+`sc-builder` — чисто, 31708 элементов.
 
 ## 1. Цель и границы аудита
 
@@ -40,8 +66,8 @@
 | Проверка | Результат |
 |---|---|
 | Сборка `cmake --build build` | Успешно |
-| `ctest --test-dir build --output-on-failure` | 62 из 62 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31580 элементов, без ошибок |
+| `ctest --test-dir build --output-on-failure` | 82 из 82 тестов пройдены |
+| Сборка KB (`sc-builder --clear`) | Успешно, 31708 элементов, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -64,6 +90,10 @@
 | `AgentValidateProvenanceChain` | Достижимость запроса по цепочке `nrel_derived_from` | Сделано частично (§5.8) |
 | `AgentExcludeFromCoalition` | Исключение отказавшей системы из коалиции | Сделано частично (§5.9) |
 | `AgentReassignOnResourceExhaustion` | Массовое переназначение подзадач при истощении ресурса | Сделано частично (§5.10) |
+| `AgentCheckAcyclicity` | Проверка ацикличности графа зависимостей подзадач | Сделано частично (§5.11) |
+| `AgentValidateRightToExplanation` | Гейт-проверка права пользователя на объяснение | Сделано частично (§5.12) |
+| `AgentEvaluateProgressiveDisclosure` | Решение о необходимости прогрессивного раскрытия | Сделано частично (§5.13) |
+| `AgentChooseModality` | Выбор модальности взаимодействия | Сделано частично (§5.14) |
 
 Модуль `TrustModule` для всех агентов один — реорганизация не начата (§7.6).
 
@@ -407,6 +437,183 @@ explanandum уже классифицирован `concept_integrated_result` �
 `tests/test_agent_reassign_on_resource_exhaustion.cpp` (4 теста),
 `agents_vault/AgentReassignOnResourceExhaustion.md`.
 
+### 5.11. `AgentCheckAcyclicity` — проверка ацикличности графа зависимостей подзадач (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_decomposition.scs`, ранее "not implemented")
+
+**Проблема была:** `definition_dependency_graph` (`concepts/tasks.scs`)
+формально требует, чтобы граф `nrel_subtask_depends_on` над множеством
+подзадач декомпозиции T(q) был ацикличным, но ни один агент это не
+проверял — цикл в данных мог образоваться (например, из-за ошибки
+шаблона декомпозиции) и остаться незамеченным.
+
+**Сделано:** механическая часть `rule_check_acyclicity`. Агент собирает
+T(q) через прямой обход `nrel_decomposed_into(request, ·)`, затем
+выполняет DFS по `nrel_subtask_depends_on` с раздельными множествами
+`onStack` (текущий путь обхода) и `visited` (все посещённые узлы) —
+цикл фиксируется только при переходе в узел из `onStack`, а не при любом
+повторном посещении, что отличает настоящий цикл от сходящихся
+(ромбовидных) путей корректного DAG. При обнаружении цикла создаётся
+новый класс `concept_acyclicity_constraint_violation`
+(`concepts/integrity.scs`, подкласс `concept_integrity_violation`,
+формализован по тому же образцу, что и
+`concept_cardinality_constraint_violation`/`concept_existence_constraint_violation`
+у §5.4), связанный с `request` через `nrel_concerns`; индикатор — `1.0`/`0.0`
+в `value_link`, тем же приёмом, что у §5.8.
+
+**Осталось:** «инициировать пересмотр шаблона декомпозиции» не
+реализовано — `agent_task_decomposer` сам не реализован
+(`rule_apply_decomposition_pattern`/`rule_recursive_decomposition` —
+PARTIAL, требуют `sim_T` и библиотеку шаблонов, не определённых в
+тексте, тот же класс блокировки, что у §7.3/§7.4/§5.9/§5.10); обход
+проверяет ацикличность подграфа, ДОСТИЖИМОГО из T(request), а не только
+рёбер строго между элементами T(request) — по всем сценариям проекта
+разницы на практике нет, но формально это наблюдение, а не
+исправленный дефект.
+
+Файлы: `src/agent/agent_check_acyclicity.{hpp,cpp}`,
+`src/keynodes/task_keynodes.hpp` (`nrel_decomposed_into`, `action_check_acyclicity` —
+новые), `src/keynodes/integrity_keynodes.hpp`
+(`concept_acyclicity_constraint_violation` — новый),
+`concepts/integrity.scs`, `rules/rules_decomposition.scs`,
+`tests/test_agent_check_acyclicity.cpp` (5 тестов),
+`agents_vault/AgentCheckAcyclicity.md`.
+
+### 5.12. `AgentValidateRightToExplanation` — гейт-проверка права на объяснение (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_security_privacy.scs`, ранее "READY", не реализовано)
+
+**Проблема была:** `concept_property_right_to_explanation`
+(`concepts/security_privacy.scs`) и `axiom_decision_requires_explanation`
+(`axioms/axioms_security.scs`) формализуют право пользователя на
+объяснение автоматизированного решения, но ни один агент это не
+проверял — интегрированный результат мог быть выдан пользователю без
+единой связанной объяснительной записи, причём именно для тех типов
+запроса (поддержка решения, рекомендация), где это критично.
+
+**Сделано:** условная гейт-проверка `rule_right_to_explanation`. Гейт
+срабатывает при выполнении ОБОИХ условий: наличие хотя бы одной дуги
+`ir -[delivered_to]-> ·` (конкретный получатель не проверяется — в
+консеквенте правила он не упоминается) И классификация `request`
+классом `concept_request_decision_support` либо
+`concept_request_recommendation`. Если гейт сработал — валидность
+определяется наличием `ir -[explained_by]-> ·` (то же отношение, что
+проверяет `AgentValidateIntegration` и создаёт `AgentBuildExplanation`);
+если не сработал — проверка вырожденно проходит независимо от
+`explained_by`. При невалидном исходе узел нарушения классифицируется
+СРАЗУ двумя классами — `concept_integrity_violation` и уже существующим
+`concept_property_right_to_explanation` — по буквальному образцу
+соседнего правила того же файла, `rule_enforce_consent_check`
+("создать concept_integrity_violation типа
+concept_property_consent_compliance"); новый подкласс онтологии не
+потребовался.
+
+**Осталось:** "agent_explanation_builder обязан построить" не
+реализовано — агент не вызывает `AgentBuildExplanation` при обнаруженном
+нарушении, только сигнализирует его отсутствие; "ir не может быть выдан
+пользователю" не имеет точки принудительного применения — `AgentPublishResult`
+не реализован (§7.5); связь `request -> integrated_result` не выводится
+агентом самостоятельно — вызывающая сторона обязана знать, какой именно
+запрос породил проверяемый результат (формального однохопового пути в
+онтологии нет), тот же класс ограничения, что у `community` в §5.9.
+Отдельное терминологическое наблюдение (не исправляется здесь): текст
+ЭТОГО правила требует `explained_by` (`nrel_explained_by`), тогда как
+соседняя аксиома `axiom_decision_requires_explanation` для похожего по
+смыслу требования использует другое отношение — `supported_by_explanation`
+(`nrel_supported_by_explanation`); реализовано буквально по тексту
+правила.
+
+Файлы: `src/agent/agent_validate_right_to_explanation.{hpp,cpp}`,
+`src/keynodes/security_keynodes.hpp` (`nrel_delivered_to`,
+`concept_request_decision_support`, `concept_request_recommendation`,
+`concept_integrity_violation`, `concept_property_right_to_explanation`,
+`action_validate_right_to_explanation` — новые), `rules/rules_security_privacy.scs`,
+`tests/test_agent_validate_right_to_explanation.cpp` (5 тестов),
+`agents_vault/AgentValidateRightToExplanation.md`.
+
+### 5.13. `AgentEvaluateProgressiveDisclosure` — решение о прогрессивном раскрытии (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_user_adaptation.scs`, ранее "READY", не реализовано)
+
+**Проблема была:** `concept_strategy_progressive_disclosure`
+(`concepts/adaptive_interface.scs`) именует стратегию, но двухпороговое
+условие её срабатывания ("глубина provenance-цепочки > 4 шагов ИЛИ
+количество частичных результатов > 5") нигде не вычислялось.
+
+**Сделано:** вычислимая часть `rule_progressive_disclosure`. Глубина —
+длина самой длинной цепочки исходящих дуг `nrel_derived_from` от
+переданного узла, вычисляется мемоизированным DFS с защитой от цикла
+(`onStack`, тот же приём, что у §5.11); количество — число прямых детей
+(`ConstPermPosArc`) переданной группы `partial_results_group`, тот же
+приём `elements_group`, что у `AgentComputePiMetric` (§5.3). Индикатор
+записывает САМО РЕШЕНИЕ правила (1.0 = раскрытие требуется), а не
+«валидно/невалидно» — единственный агент модуля с такой полярностью,
+явно задокументированной, чтобы не создавать ложной аналогии с
+семейством `AgentValidate*`.
+
+**Побочная находка:** соседнее правило `rule_choose_modality` того же
+файла, ранее помеченное READY в
+`agents_vault/Implementation Backlog.md` ("inputs are Boolean/class
+flags already existing as sc-facts"), при ближайшем рассмотрении
+таковым не оказалось: ни «ограничение визуального восприятия»
+(`rrel_user_situation_context`), ни «preference_visual»
+(`concept_user_preference`) не имеют типизированного представления —
+`concept_user_preference` (`concepts/users.scs`) — плоский класс без
+подразделения, единственный релевантный сценарий
+(`scenario_intelligent_tutoring.scs`, `preference_ivan_visual`) несёт
+эту информацию только в свободнотекстовом `nrel_main_idtf`. Реализация
+потребовала бы объявления новой типизации онтологии, а не
+операционализации существующей — оценка готовности исправлена в
+Implementation Backlog.md, правило НЕ реализовано в рамках этой работы.
+
+**Осталось:** «адаптивный интерфейс представляет верхний уровень» не
+материализуется — ни один агент проекта не создаёт экземпляр
+`concept_adaptive_interface`, `nrel_applies_strategy` не пишется; тот же
+класс ограничения, что у §5.9/§5.10/§5.12 (нет получателя/потребителя
+ниже по потоку). `rule_choose_modality` остаётся нереализованным (см.
+выше).
+
+Файлы: `src/agent/agent_evaluate_progressive_disclosure.{hpp,cpp}`,
+`src/keynodes/adaptive_interface_keynodes.hpp` (новый файл, первый агент
+домена), `rules/rules_user_adaptation.scs`,
+`tests/test_agent_evaluate_progressive_disclosure.cpp` (5 тестов),
+`agents_vault/AgentEvaluateProgressiveDisclosure.md`.
+
+### 5.14. `AgentChooseModality` — выбор модальности взаимодействия (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_user_adaptation.scs`, ранее "READY", оценка исправлена на PARTIAL в §5.13, доведено до реализации)
+
+**Проблема была:** `concept_interface_modality` и все шесть её
+подклассов (`concepts/adaptive_interface.scs`) были полностью
+типизированы, но правило, выбирающее между ними, не имело
+типизированных входов: ни «ограничение визуального восприятия»
+(`rrel_user_situation_context`), ни «preference_visual»
+(`concept_user_preference`) не существовали иначе как в прозе правила
+(находка при работе над §5.13).
+
+**Сделано:** точечное расширение онтологии двумя узкими подклассами,
+называющими ровно то, что уже называла проза правила, а не новую
+семантику: `concept_visual_perception_constraint` (`<= nrel_inclusion:
+concept_user_situation_context`, `concepts/contexts.scs`) и
+`concept_preference_visual_modality` (`<= nrel_inclusion:
+concept_user_preference`, `concepts/users.scs`). Существующий сценарный
+фикстур `scenario_intelligent_tutoring.scs` (`preference_ivan_visual`,
+прежде описанный только свободным текстом) дополнен типизированной
+классификацией. Агент реализует трёхветочный выбор в порядке,
+буквально заданном правилом (If/Elif/Default): ограничение восприятия
+→ `concept_modality_voice`; иначе предпочтение → `concept_modality_visual`;
+иначе → `concept_modality_text`; результат — сама выбранная
+разделяемая модальность-класс, а не числовой индикатор (тот же приём
+нечислового результата, что у `AgentBuildExplanation`, §5.6).
+
+**Осталось:** `nrel_uses_modality(interface, modality)` не пишется —
+ни один агент проекта не создаёт экземпляр `concept_adaptive_interface`
+(тот же класс ограничения, что у §5.13); прочие ситуационные
+индикаторы, упомянутые в прозе соседних правил того же файла
+(mobile/on-the-go — `rule_choose_presentation_template`; night-shift/
+low-light — `rule_context_aware_layout`), и прочие виды пользовательских
+предпочтений остаются неформализованными — намеренно вне рамок этой
+правки.
+
+Файлы: `src/agent/agent_choose_modality.{hpp,cpp}`,
+`src/keynodes/adaptive_interface_keynodes.hpp` (расширен),
+`concepts/contexts.scs`, `concepts/users.scs`, `rules/rules_user_adaptation.scs`,
+`scenarios/scenario_intelligent_tutoring.scs` (типизация существующего
+фикстура), `tests/test_agent_choose_modality.cpp` (5 тестов),
+`agents_vault/AgentChooseModality.md`.
+
 ## 6. Сильные стороны реализации
 
 Раздел не менялся — актуален для всех агентов независимо от статуса выше.
@@ -561,7 +768,12 @@ AgentProvenanceRecovery           → восстанавливает пропу�
 `AgentValidateCardinalityConstraint` (§5.4) и `AgentComputePiMetric`
 (§5.3). Единого агента с именем `AgentVerifyResult` в проекте нет —
 его заявленная область разделена между тремя существующими агентами,
-каждый из которых закрывает её лишь частично.
+каждый из которых закрывает её лишь частично. Аналогично, часть заявленной
+области `AgentValidatePlan` — «проверяет ацикличность» — закрыта
+`AgentCheckAcyclicity` (§5.11, `rule_check_acyclicity`); «полнота» и
+«допустимость плана» (`rule_assignment_admissibility`,
+`rules_allocation.scs`) остаются нереализованными — тот же класс
+блокировки, что у §7.3/§7.4.
 
 ### 7.6. Архитектурная реорганизация модуля (было: §8)
 
