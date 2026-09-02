@@ -6,7 +6,7 @@ tags: [moc, trust-agents, provenance-agents]
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
 The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains
-twenty-three sc-agents: five implement the rules for updating the trust
+twenty-four sc-agents: five implement the rules for updating the trust
 vector π_tr, one — the computable part of provenance completeness
 metrics, one — detection of anomalous request frequency, one —
 resolution of result conflicts by weighted trust, three — the full life
@@ -22,7 +22,9 @@ one — gating delivery on the right-to-explanation property for
 decision/recommendation requests, one — deciding whether a provenance
 chain/result set is complex enough to require progressive disclosure,
 one — choosing an interaction modality from situational and preference
-flags, two — populating the PROV-O provenance triad (entity/activity).
+flags, two — populating the PROV-O provenance triad (entity/activity),
+one — deciding between decomposition and an integrity violation when no
+system is an admissible executor.
 Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 `ostis_kb_user_ecosystem/rules/`.
 
@@ -53,6 +55,7 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentChooseModality]] | `action_choose_modality` | chosen modality class (not numeric) | three-way branch over two new ontology flags |
 | [[AgentRecordProvEntity]] | `action_record_prov_entity` | `concept_prov_entity` + `nrel_has_provenance` | PROV-O construction |
 | [[AgentRecordProvActivity]] | `action_record_prov_activity` | `concept_prov_activity` + roles | PROV-O construction |
+| [[AgentHandleNoAdmissibleAssignment]] | `action_handle_no_admissible_assignment` | indicator + integrity_violation | binary branch on subtask class |
 
 ## How to read these notes
 
@@ -66,7 +69,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All twenty-three agents use:
+All twenty-four agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -92,7 +95,8 @@ All twenty-three agents use:
   (`IntegrityKeynodes`) / `keynodes/explanation_keynodes.hpp`
   (`ExplanationKeynodes`) / `keynodes/coalition_keynodes.hpp`
   (`CoalitionKeynodes`) / `keynodes/adaptive_interface_keynodes.hpp`
-  (`AdaptiveInterfaceKeynodes`) — key sc-elements and action classes.
+  (`AdaptiveInterfaceKeynodes`) / `keynodes/allocation_keynodes.hpp`
+  (`AllocationKeynodes`) — key sc-elements and action classes.
 - Base class `ScActionInitiatedAgent` (sc-machine) — reacts to the
   event `ScEventAfterGenerateOutgoingArc` with subscription element
   `action_initiated`.
@@ -106,8 +110,9 @@ All twenty-three agents use:
   [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]],
   [[AgentCheckAcyclicity]], [[AgentValidateRightToExplanation]],
   [[AgentEvaluateProgressiveDisclosure]], [[AgentChooseModality]],
-  [[AgentRecordProvEntity]] and [[AgentRecordProvActivity]] are
-  registered there too, despite the name.
+  [[AgentRecordProvEntity]], [[AgentRecordProvActivity]] and
+  [[AgentHandleNoAdmissibleAssignment]] are registered there too,
+  despite the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
 agents (not [[AgentComputePiMetric]]/[[AgentDetectAnomalousRequestRate]]) —
@@ -239,15 +244,34 @@ functional, calling [[AgentRecordProvEntity]] afterward on the same
 result replaces it with the PROV-O-specific entity. Neither the model
 text nor this implementation pass says which mechanism is canonical —
 documented as an open question, not resolved.
+[[AgentHandleNoAdmissibleAssignment]] is the first (and, per
+[[Implementation Backlog]], last remaining READY-and-unimplemented)
+agent for `agent_task_allocator`/`rules_allocation.scs` — a new
+`keynodes/allocation_keynodes.hpp` file, minimal like
+`coalition_keynodes.hpp`/`adaptive_interface_keynodes.hpp` were at
+their first agent. It trusts the caller for the rule's premise (no
+system is an admissible executor for the subtask — `match()` is itself
+only partially defined, see [[Implementation Backlog]]'s own note on
+`rules_allocation.scs`) the same way
+[[AgentExcludeFromCoalition]]/[[AgentReassignOnResourceExhaustion]]
+trust `failed`/`resource_exhausted`, and resolves the rule's two-path
+consequent via `affirmation_subtask_executability`
+(`concepts/tasks.scs`: every subtask is executable or decomposable) —
+checking `concept_subtask_composite` rather than re-deriving anything.
+Data-independent from the rest of the module.
 
 ## Running agents standalone
 
 `ostis_ps_user_ecosystem/scripts/run_agent.py` -- a Python script on top of
-py-sc-client (venv sc-web) for launching any of the 12 agents against a live
+py-sc-client (venv sc-web) for launching any of the 24 agents against a live
 sc-server without C++ tests and without a browser JS console; by default
-it runs demo scenarios for all 12 agents in a row using illustrative
+it runs demo scenarios for all 24 agents in a row using illustrative
 numbers from tests/test_agent_*.cpp. Launch details are in the docstring
-of the file itself.
+of the file itself. Extended to the full 24 (from an original 12) during
+the ontology/article/agent consistency check on 2026-09-02, which also
+caught `demo_aggregate_trust` computing its expected value against the
+pre-2026-08-30 unequal trust weights instead of the current λ_k = 1/4 --
+fixed alongside the extension.
 
 > [!warning] Discovered sc-machine bug: do not erase the action node after InitiateAndWait
 > Erasing the sc-node of a finished action (`action_addr`, after it
@@ -302,6 +326,6 @@ catalog `concepts/sc_agents.scs`. `agent_trust_evaluator`,
 implemented; `agent_provenance_registrar`, the F_rule_sec security
 subsystem, `agent_result_integrator`/`agent_conflict_detector`,
 `agent_explanation_builder`, `agent_coalition_reconfigurator`,
-`agent_task_decomposer` and the F_rule_adapt adaptive-interface rules
-(no single owner in the catalog) are partially implemented, with a
-readiness assessment for each rule.
+`agent_task_decomposer`, `agent_task_allocator` and the F_rule_adapt
+adaptive-interface rules (no single owner in the catalog) are partially
+implemented, with a readiness assessment for each rule.

@@ -9,7 +9,7 @@
 Платформа должна быть запущена (`./start.sh` в ostis-web-platform) --
 sc-server слушает ws://localhost:8090/ws_json.
 
-Без аргументов запускает демо-сценарии для всех 12 агентов по очереди.
+Без аргументов запускает демо-сценарии для всех 24 агентов по очереди.
 С аргументами -- только перечисленные (см. DEMOS в конце файла для
 списка имён, например: `run_agent.py aggregate_trust resolve_conflict`).
 
@@ -121,6 +121,41 @@ def has_child_of_class(parent_addr, class_addr) -> bool:
         if client.search_by_template(tpl2):
             return True
     return False
+
+
+def is_classified(instance_addr, class_addr) -> bool:
+    tpl = ScTemplate()
+    tpl.triple(class_addr, sc_types.EDGE_ACCESS_VAR_POS_PERM, instance_addr)
+    return bool(client.search_by_template(tpl))
+
+
+def has_link_by_relation(src, trg, relation_addr) -> bool:
+    """src -[nrel_*]-> trg (аналог TargetOf/LinkByRelation из C++), только проверка наличия."""
+    tpl = ScTemplate()
+    tpl.quintuple(src, sc_types.EDGE_D_COMMON_VAR, trg, sc_types.EDGE_ACCESS_VAR_POS_PERM, relation_addr)
+    return bool(client.search_by_template(tpl))
+
+
+def target_of(src, relation_addr):
+    """Первая цель нероле-вого отношения nrel_* от src, либо None (аналог TargetOf из C++)."""
+    tpl = ScTemplate()
+    tpl.quintuple(
+        src, sc_types.EDGE_D_COMMON_VAR, sc_types.NODE_VAR, sc_types.EDGE_ACCESS_VAR_POS_PERM, relation_addr
+    )
+    results = client.search_by_template(tpl)
+    return results[0][2] if results else None
+
+
+def find_source_by_role(target_addr, role_addr):
+    """Узел X такой, что X -[ConstPermPosArc]-> target_addr, классифицированная role_addr
+    (rrel_*) -- аналог FindActByRoleTarget из tests/test_agent_build_explanation.cpp."""
+    tpl = ScTemplate()
+    tpl.quintuple(
+        sc_types.NODE_VAR, sc_types.EDGE_ACCESS_VAR_POS_PERM, target_addr, sc_types.EDGE_ACCESS_VAR_POS_PERM,
+        role_addr,
+    )
+    results = client.search_by_template(tpl)
+    return results[0][0] if results else None
 
 
 # --------------------------------------------------------------------------
@@ -260,8 +295,11 @@ def demo_aggregate_trust() -> None:
         trust_level = new_node(created)
 
         status, result = run_action("action_aggregate_trust", [rel, acc, sec, tr, trust_level], created)
-        # 0.40*0.8 + 0.25*0.6 + 0.15*0.9 + 0.20*0.7 (lambda из agent_aggregate_trust.cpp)
-        report("action_aggregate_trust", status, first_link_value(result), 0.745)
+        # 0.25*(0.8+0.6+0.9+0.7) -- lambda_k = 1/4 для всех компонент
+        # (agent_aggregate_trust.cpp, выровнено с гл. 2 диссертации 2026-08-30;
+        # раньше здесь стояли неравные веса 0.40/0.25/0.15/0.20 -- расхождение
+        # найдено и исправлено при сверке онтологии/статьи/агентов 2026-09-02).
+        report("action_aggregate_trust", status, first_link_value(result), 0.75)
     finally:
         if created:
             client.erase_elements(*created)
@@ -387,18 +425,6 @@ def demo_dispatch_ready_subtask() -> None:
 def demo_register_partial_result() -> None:
     created: list = []
     try:
-        def is_classified(instance_addr, class_addr) -> bool:
-            tpl = ScTemplate()
-            tpl.triple(class_addr, sc_types.EDGE_ACCESS_VAR_POS_PERM, instance_addr)
-            return bool(client.search_by_template(tpl))
-
-        def has_link_by_relation(src, trg, relation_addr) -> bool:
-            tpl = ScTemplate()
-            tpl.quintuple(
-                src, sc_types.EDGE_D_COMMON_VAR, trg, sc_types.EDGE_ACCESS_VAR_POS_PERM, relation_addr
-            )
-            return bool(client.search_by_template(tpl))
-
         system = new_node(created)
         result = new_node(created)
         subtask = new_node(created)
@@ -450,6 +476,249 @@ def demo_propagate_to_dependent() -> None:
             client.erase_elements(*created)
 
 
+def demo_validate_integration() -> None:
+    created: list = []
+    try:
+        integrated_result = new_node(created)
+        explanation = new_node(created)
+        link_by_relation(created, integrated_result, explanation, resolve("nrel_explained_by"))
+        result_level = new_node(created)
+
+        status, result = run_action("action_validate_integration", [integrated_result, result_level], created)
+        report("action_validate_integration (explained_by есть, конфликтов нет)", status, first_link_value(result), 1.0)
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_validate_provenance_chain() -> None:
+    created: list = []
+    try:
+        request = new_node(created)
+        tag_class(request, "concept_user_request")
+        integrated_result = new_node(created)
+        link_by_relation(created, integrated_result, request, resolve("nrel_derived_from"))
+        result_level = new_node(created)
+
+        status, result = run_action("action_validate_provenance_chain", [integrated_result, result_level], created)
+        report("action_validate_provenance_chain (1 шаг derived_from до user_request)", status, first_link_value(result), 1.0)
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_exclude_from_coalition() -> None:
+    created: list = []
+    try:
+        system = new_node(created)
+        subtask = new_node(created)
+        link_by_relation(created, subtask, system, resolve("nrel_assigned_to"))
+        link_by_relation(created, subtask, resolve("concept_subtask_status_failed"), resolve("nrel_subtask_status"))
+        community = new_node(created)
+        link_by_relation(created, system, community, resolve("nrel_member_of"))
+        result_level = new_node(created)
+
+        status, result = run_action("action_exclude_from_coalition", [subtask, community, result_level], created)
+        report("action_exclude_from_coalition (failed + assigned + member_of)", status, first_link_value(result), 1.0)
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_reassign_on_resource_exhaustion() -> None:
+    created: list = []
+    try:
+        system = new_node(created)
+        for _ in range(2):
+            subtask = new_node(created)
+            link_by_relation(created, subtask, system, resolve("nrel_assigned_to"))
+        result_level = new_node(created)
+
+        status, result = run_action("action_reassign_on_resource_exhaustion", [system, result_level], created)
+        report("action_reassign_on_resource_exhaustion (2 подзадачи назначены system)", status, first_link_value(result), 2.0)
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_check_acyclicity() -> None:
+    created: list = []
+    try:
+        request = new_node(created)
+        s1 = new_node(created)
+        s2 = new_node(created)
+        link_by_relation(created, request, s1, resolve("nrel_decomposed_into"))
+        link_by_relation(created, request, s2, resolve("nrel_decomposed_into"))
+        link_by_relation(created, s2, s1, resolve("nrel_subtask_depends_on"))
+        result_level = new_node(created)
+
+        status, result = run_action("action_check_acyclicity", [request, result_level], created)
+        report("action_check_acyclicity (линейная цепочка s2->s1, без цикла)", status, first_link_value(result), 1.0)
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_validate_right_to_explanation() -> None:
+    created: list = []
+    try:
+        integrated_result = new_node(created)
+        user = new_node(created)
+        link_by_relation(created, integrated_result, user, resolve("nrel_delivered_to"))
+        request = new_node(created)
+        tag_class(request, "concept_request_decision_support")
+        explanation = new_node(created)
+        link_by_relation(created, integrated_result, explanation, resolve("nrel_explained_by"))
+        result_level = new_node(created)
+
+        status, result = run_action(
+            "action_validate_right_to_explanation", [integrated_result, request, result_level], created
+        )
+        report(
+            "action_validate_right_to_explanation (delivered + decision_support + explained_by)",
+            status,
+            first_link_value(result),
+            1.0,
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_evaluate_progressive_disclosure() -> None:
+    created: list = []
+    try:
+        nrel_derived_from = resolve("nrel_derived_from")
+        nodes = [new_node(created) for _ in range(6)]
+        for i in range(5):
+            link_by_relation(created, nodes[i], nodes[i + 1], nrel_derived_from)
+        partial_results_group = new_node(created)
+        result_level = new_node(created)
+
+        status, result = run_action(
+            "action_evaluate_progressive_disclosure", [nodes[0], partial_results_group, result_level], created
+        )
+        report(
+            "action_evaluate_progressive_disclosure (глубина цепочки 5 > 4)", status, first_link_value(result), 1.0
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_choose_modality() -> None:
+    created: list = []
+    try:
+        situation = new_node(created)
+        tag_class(situation, "concept_visual_perception_constraint")
+        user_model = new_node(created)
+        result_level = new_node(created)
+
+        status, _ = run_action("action_choose_modality", [situation, user_model, result_level], created)
+        voice_chosen = status == "successfully" and has_child_of_class(result_level, resolve("concept_modality_voice"))
+        tag = "OK" if voice_chosen else "MISMATCH"
+        print(f"[{tag}] action_choose_modality (ограничение восприятия -> voice): status={status} voice_chosen={voice_chosen}")
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_record_prov_entity() -> None:
+    created: list = []
+    try:
+        result_node = new_node(created)
+        activity = new_node(created)
+        agent = new_node(created)
+
+        status, _ = run_action("action_record_prov_entity", [result_node, activity, agent], created)
+
+        entity = target_of(result_node, resolve("nrel_has_provenance"))
+        entity_ok = entity is not None and is_classified(entity, resolve("concept_prov_entity"))
+        generated_ok = entity is not None and has_link_by_relation(entity, activity, resolve("nrel_prov_was_generated_by"))
+        attributed_ok = entity is not None and has_link_by_relation(entity, agent, resolve("nrel_prov_was_attributed_to"))
+
+        ok = status == "successfully" and entity_ok and generated_ok and attributed_ok
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_record_prov_entity: status={status} "
+            f"prov_entity={entity_ok} wasGeneratedBy={generated_ok} wasAttributedTo={attributed_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_record_prov_activity() -> None:
+    created: list = []
+    try:
+        actor = new_node(created)
+        input_entity = new_node(created)
+        prov_agent = new_node(created)
+
+        status, _ = run_action("action_record_prov_activity", [actor, input_entity, prov_agent], created)
+
+        activity = find_source_by_role(actor, resolve("rrel_actor"))
+        activity_ok = activity is not None and is_classified(activity, resolve("concept_prov_activity"))
+        used_ok = activity is not None and has_link_by_relation(activity, input_entity, resolve("nrel_prov_used"))
+        associated_ok = activity is not None and has_link_by_relation(
+            activity, prov_agent, resolve("nrel_prov_was_associated_with")
+        )
+
+        ok = status == "successfully" and activity_ok and used_ok and associated_ok
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_record_prov_activity: status={status} "
+            f"prov_activity={activity_ok} PROV_used={used_ok} wasAssociatedWith={associated_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_handle_no_admissible_assignment() -> None:
+    created: list = []
+    try:
+        subtask = new_node(created)  # не concept_subtask_composite -- атомарная
+        result_level = new_node(created)
+
+        status, result = run_action("action_handle_no_admissible_assignment", [subtask, result_level], created)
+        report("action_handle_no_admissible_assignment (атомарная подзадача -> нарушение)", status, first_link_value(result), 0.0)
+        if status == "successfully":
+            violation_present = has_child_of_class(result_level, resolve("concept_integrity_violation"))
+            print(f"       concept_integrity_violation создано под result_level: {violation_present}")
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_build_explanation() -> None:
+    created: list = []
+    try:
+        explanandum = new_node(created)
+        tag_class(explanandum, "concept_integrated_result")
+        explanation_type = resolve("concept_explanation_local")
+
+        status, _ = run_action("action_build_explanation", [explanandum, explanation_type], created)
+
+        explanation = target_of(explanandum, resolve("nrel_supported_by_explanation"))
+        supported_ok = explanation is not None and is_classified(explanation, explanation_type)
+        explained_by_ok = explanation is not None and has_link_by_relation(
+            explanandum, explanation, resolve("nrel_explained_by")
+        )
+        act = find_source_by_role(explanandum, resolve("rrel_explanandum"))
+        act_ok = act is not None and is_classified(act, resolve("concept_explanation_construction_act"))
+
+        ok = status == "successfully" and supported_ok and explained_by_ok and act_ok
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_build_explanation: status={status} "
+            f"supported_by_explanation={supported_ok} explained_by={explained_by_ok} construction_act={act_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
 DEMOS = {
     "update_trust_reliability": lambda: demo_trust_ema("action_update_trust_reliability", "alpha"),
     "update_trust_accuracy": lambda: demo_trust_ema("action_update_trust_accuracy", "beta"),
@@ -463,6 +732,18 @@ DEMOS = {
     "dispatch_ready_subtask": demo_dispatch_ready_subtask,
     "register_partial_result": demo_register_partial_result,
     "propagate_to_dependent": demo_propagate_to_dependent,
+    "build_explanation": demo_build_explanation,
+    "validate_integration": demo_validate_integration,
+    "validate_provenance_chain": demo_validate_provenance_chain,
+    "exclude_from_coalition": demo_exclude_from_coalition,
+    "reassign_on_resource_exhaustion": demo_reassign_on_resource_exhaustion,
+    "check_acyclicity": demo_check_acyclicity,
+    "validate_right_to_explanation": demo_validate_right_to_explanation,
+    "evaluate_progressive_disclosure": demo_evaluate_progressive_disclosure,
+    "choose_modality": demo_choose_modality,
+    "record_prov_entity": demo_record_prov_entity,
+    "record_prov_activity": demo_record_prov_activity,
+    "handle_no_admissible_assignment": demo_handle_no_admissible_assignment,
 }
 
 

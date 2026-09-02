@@ -9,7 +9,8 @@ section_rules_allocation
 => nrel_main_idtf:
     [Подраздел. Правила распределения подзадач (π_all)] (* <- lang_ru;; *);
     [Subsection. Subtask Allocation Rules (π_all)] (* <- lang_en;; *);
-<- atomic_section;;
+<- atomic_section;
+<- rrel_key_sc_element: action_handle_no_admissible_assignment;;
 
 rule -> rule_compute_match_function: ...
 (*
@@ -64,6 +65,26 @@ rule -> rule_coalition_optimization: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации механической части
+// правила ниже -- sc-агент AgentHandleNoAdmissibleAssignment
+// (ostis_ps_user_ecosystem/src/agent/agent_handle_no_admissible_assignment.*).
+// Посылка "∀s ∈ S. ¬(match(σ,s) ≥ θ ∧ valid(C,L_s))" не проверяется
+// агентом -- match() определена лишь частично (rule_compute_match_function:
+// 5 из 6 слагаемых не формализованы, см. Implementation Backlog.md),
+// поэтому агент принимает это условие уже установленным вызывающей
+// стороной (тот же приём, что у AgentExcludeFromCoalition/
+// AgentReassignOnResourceExhaustion в отношении failed/resource_exhausted).
+// "Запустить rule_recursive_decomposition" не выполняется -- сама
+// декомпозиция (rule_apply_decomposition_pattern) не реализована.
+// ---------------------------------------------------------------------
+
+action_handle_no_admissible_assignment
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: обработать отсутствие допустимого назначения] (* <- lang_ru;; *);
+    [action: handle no admissible assignment] (* <- lang_en;; *);;
 
 rule -> rule_handle_no_admissible_assignment: ...
 (*

@@ -110,6 +110,18 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > typed PROV-O inputs) is removed, though the rule itself remains
 > unimplemented — see its corrected entry below.
 
+> [!note] Update 2026-09-02 (continued further still)
+> `rule_handle_no_admissible_assignment` (`rules_allocation.scs`) is now
+> implemented, [[AgentHandleNoAdmissibleAssignment]] — the first agent
+> for `agent_task_allocator`, and (per this survey) the last rule in the
+> entire backlog that was genuinely READY and still unimplemented.
+> Everything remaining below is PARTIAL (blocked on an undefined
+> formula/table) or NO (LLM-shaped). The rule's own premise
+> (`match(σ,s)` undefined for 5 of 6 terms) is trusted from the caller,
+> not recomputed; the mechanical consequent — decomposition path vs.
+> integrity violation — is resolved via
+> `affirmation_subtask_executability`'s composite/atomic split.
+
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
 (see [[AgentUpdateTrustReliability]] and others).
@@ -128,7 +140,7 @@ list of the section — an internal inconsistency of the KB catalog itself.
 |---|---|---|---|
 | `agent_request_interpreter` | request interpretation ι: Q_ext×C → Q_form | `rules_interpretation.scs` | not implemented |
 | `agent_task_decomposer` | request decomposition δ: Q_form → 2^T | `rules_decomposition.scs` | **partial (1 of 3 rules — [[AgentCheckAcyclicity]])** |
-| `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | not implemented |
+| `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | **partial (1 of 4 rules — [[AgentHandleNoAdmissibleAssignment]])** |
 | `agent_cooperative_executor` | cooperative execution (FIPA-ACL) | `rules_cooperation.scs` | **✅ implemented (3 agents)** |
 | `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | **partial (2 of 5 rules — [[AgentResolveByTrustWeighted]], [[AgentValidateIntegration]])** |
 | `agent_explanation_builder` | building explanations/provenance chains | `rules_explanation.scs` | **partial (structural core of 4 rules — [[AgentBuildExplanation]])** |
@@ -152,18 +164,24 @@ attached to "security sc-agents" and to the adaptive interface +
 
 ## File-by-File Breakdown
 
-### `rules_allocation.scs` — agent `agent_task_allocator`, 4 rules
+### `rules_allocation.scs` — agent `agent_task_allocator`, 4 rules — **partial (1 of 4 rules)**
 
 - `rule_compute_match_function` — `match(σ,s)=w_T·sim_T+w_I·sim_I+w_O·sim_O+w_C·ctx_compat+w_Q·qos_score+w_R·trust(s,τ,h)` — **PARTIAL**
 - `rule_assignment_admissibility` — `assign(σ,s) ← match(σ,s)≥θ ∧ valid(C,L_s)` — **PARTIAL**
 - `rule_coalition_optimization` — `χ*=arg max Σ match(σ,χ(σ))` under coverage∧consistent — **PARTIAL**
-- `rule_handle_no_admissible_assignment` — IF no admissible s THEN recursive decomposition/integrity_violation — **READY**
+- `rule_handle_no_admissible_assignment` — IF no admissible s THEN recursive decomposition/integrity_violation — **READY** → ✅ mechanical part implemented, [[AgentHandleNoAdmissibleAssignment]] (the "no admissible executor" premise itself is trusted from the caller, not recomputed — match() remains undefined; see below)
 
 The match() formula is explicit, but of the 6 terms only the `trust(s,τ,h)`
 term is ready (already implemented via [[AgentAggregateTrust]]) — the other five
 (sim_T, sim_I, sim_O, ctx_compat, qos_score) are not defined in the text.
 `rule_coalition_optimization` is a combinatorial assignment problem without
-a specified solution algorithm.
+a specified solution algorithm. `rule_handle_no_admissible_assignment`'s own
+premise depends on the same undefined `match()`, but its *consequent* — decide
+between the decomposition path and an integrity violation, via
+`affirmation_subtask_executability`'s composite/atomic split
+(`concepts/tasks.scs`) — is fully mechanical once the premise is taken as
+given, the same "trust the caller for the triggering fact" pattern already
+used for `rule_on_system_failure`/`rule_on_resource_exhaustion`.
 Numeric example: `scenario_request_processing.scs` —
 `rrel_required_confidence: [0.85]` (threshold θ), but the match() value itself
 is nowhere computed explicitly.

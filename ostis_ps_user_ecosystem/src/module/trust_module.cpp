@@ -23,6 +23,7 @@
 #include "agent/agent_choose_modality.hpp"
 #include "agent/agent_record_prov_entity.hpp"
 #include "agent/agent_record_prov_activity.hpp"
+#include "agent/agent_handle_no_admissible_assignment.hpp"
 
 // AgentComputePiMetric/AgentValidateProvenanceChain/AgentRecordProvEntity/
 // AgentRecordProvActivity (провенанс),
@@ -33,9 +34,10 @@
 // AgentValidateCardinalityConstraint (валидация целостности),
 // AgentBuildExplanation (объяснения), AgentExcludeFromCoalition/
 // AgentReassignOnResourceExhaustion (реконфигурация коалиции),
-// AgentCheckAcyclicity (декомпозиция запроса) и
+// AgentCheckAcyclicity (декомпозиция запроса),
 // AgentEvaluateProgressiveDisclosure/AgentChooseModality (адаптация под
-// пользователя) не о доверии, но зарегистрированы здесь же:
+// пользователя) и AgentHandleNoAdmissibleAssignment (распределение
+// подзадач) не о доверии, но зарегистрированы здесь же:
 // SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
@@ -64,4 +66,5 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentEvaluateProgressiveDisclosure>()
     ->Agent<AgentChooseModality>()
     ->Agent<AgentRecordProvEntity>()
-    ->Agent<AgentRecordProvActivity>();
+    ->Agent<AgentRecordProvActivity>()
+    ->Agent<AgentHandleNoAdmissibleAssignment>();

@@ -55,9 +55,16 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 `rule_link_explanation_to_provenance` (нужен был типизированный
 `concept_prov_activity`/`concept_prov_agent` — теперь есть чем их
 создавать), само правило по-прежнему не реализовано.
-`rules_provenance_completion.scs` теперь 4 из 6 правил.  
-Проверено: `ctest` — 88 из 88 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31746 элементов.
+`rules_provenance_completion.scs` теперь 4 из 6 правил. Добавлен также
+`AgentHandleNoAdmissibleAssignment` (§5.17) — закрывает
+`rule_handle_no_admissible_assignment` (`rules_allocation.scs`), первый
+агент семейства `agent_task_allocator` и, по итогам этого обзора,
+последнее оставшееся действительно READY и нереализованное правило во
+всём `agents_vault/Implementation Backlog.md` — всё, что осталось,
+теперь PARTIAL (упирается в неопределённую формулу/таблицу) либо NO
+(LLM-задача).  
+Проверено: `ctest` — 91 из 91 тестов пройдены, сборка KB через
+`sc-builder` — чисто, 31765 элементов.
 
 ## 1. Цель и границы аудита
 
@@ -77,8 +84,8 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | Проверка | Результат |
 |---|---|
 | Сборка `cmake --build build` | Успешно |
-| `ctest --test-dir build --output-on-failure` | 88 из 88 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31746 элементов, без ошибок |
+| `ctest --test-dir build --output-on-failure` | 91 из 91 тестов пройдены |
+| Сборка KB (`sc-builder --clear`) | Успешно, 31765 элементов, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -107,6 +114,7 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | `AgentChooseModality` | Выбор модальности взаимодействия | Сделано частично (§5.14) |
 | `AgentRecordProvEntity` | Регистрация PROV Entity | Сделано частично (§5.15) |
 | `AgentRecordProvActivity` | Регистрация PROV Activity | Сделано частично (§5.16) |
+| `AgentHandleNoAdmissibleAssignment` | Обработка отсутствия допустимого назначения | Сделано частично (§5.17) |
 
 Модуль `TrustModule` для всех агентов один — реорганизация не начата (§7.6).
 
@@ -694,6 +702,46 @@ sc-агента на его PROV-агента) нигде не формализ�
 `src/keynodes/provenance_keynodes.hpp` (общий с §5.15),
 `tests/test_agent_record_prov_activity.cpp` (3 теста),
 `agents_vault/AgentRecordProvActivity.md`.
+
+### 5.17. `AgentHandleNoAdmissibleAssignment` — обработка отсутствия допустимого назначения (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_allocation.scs`, ранее "READY", не реализовано)
+
+**Проблема была:** когда ни одна ИС не является допустимым исполнителем
+подзадачи, правило предлагает два пути (рекурсивная декомпозиция либо
+нарушение целостности), но ничто не решало, какой путь применим, и не
+создавало само нарушение.
+
+**Сделано:** механическая часть правила. Посылка ("нет допустимого
+исполнителя") принимается уже установленной вызывающей стороной — сама
+`match(σ,s)` определена лишь частично (только `trust(s,τ,h)` из шести
+слагаемых вычислим, см. §7.4/Implementation Backlog.md), тот же приём,
+что у §5.9/§5.10 в отношении `failed`/`resource_exhausted`. Ветвление
+консеквента разрешается через `affirmation_subtask_executability`
+(`concepts/tasks.scs`: всякая подзадача либо исполнима, либо
+декомпозируема) — если σ классифицирована `concept_subtask_composite`,
+путь декомпозиции применим (индикатор 1.0, нарушение не создаётся);
+иначе — создаётся `concept_integrity_violation`, связанный с σ через
+`nrel_concerns` (индикатор 0.0).
+
+**Осталось:** сама рекурсивная декомпозиция
+(`rule_apply_decomposition_pattern`) не выполняется — она сама не
+реализована (требует `sim_T` и библиотеку шаблонов, не определённых в
+тексте); «вернуть управление `agent_task_decomposer`» не реализовано —
+нет оркестратора жизненного цикла (§7.1); только `IsElement` на
+аргументах.
+
+По итогам этого обзора `rule_handle_no_admissible_assignment` было
+последним действительно READY и нереализованным правилом во всём
+`agents_vault/Implementation Backlog.md` — всё оставшееся там теперь
+PARTIAL (упирается в неопределённую формулу/таблицу, например
+`cognitive_load(u)`, недостающие пять слагаемых `match()`, таблицу
+терминологии) либо NO (интерпретация запроса, выбор шаблона
+декомпозиции — LLM-задачи, а не формулы).
+
+Файлы: `src/agent/agent_handle_no_admissible_assignment.{hpp,cpp}`,
+`src/keynodes/allocation_keynodes.hpp` (новый файл, первый агент
+домена), `rules/rules_allocation.scs`,
+`tests/test_agent_handle_no_admissible_assignment.cpp` (3 теста),
+`agents_vault/AgentHandleNoAdmissibleAssignment.md`.
 
 ## 6. Сильные стороны реализации
 
