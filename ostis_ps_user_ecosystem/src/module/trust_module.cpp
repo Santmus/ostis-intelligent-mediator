@@ -21,8 +21,11 @@
 #include "agent/agent_validate_right_to_explanation.hpp"
 #include "agent/agent_evaluate_progressive_disclosure.hpp"
 #include "agent/agent_choose_modality.hpp"
+#include "agent/agent_record_prov_entity.hpp"
+#include "agent/agent_record_prov_activity.hpp"
 
-// AgentComputePiMetric/AgentValidateProvenanceChain (провенанс),
+// AgentComputePiMetric/AgentValidateProvenanceChain/AgentRecordProvEntity/
+// AgentRecordProvActivity (провенанс),
 // AgentDetectAnomalousRequestRate/AgentValidateRightToExplanation
 // (безопасность), AgentResolveByTrustWeighted/AgentValidateIntegration
 // (интеграция результатов), AgentDispatchReadySubtask/AgentRegisterPartialResult/
@@ -59,4 +62,6 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentCheckAcyclicity>()
     ->Agent<AgentValidateRightToExplanation>()
     ->Agent<AgentEvaluateProgressiveDisclosure>()
-    ->Agent<AgentChooseModality>();
+    ->Agent<AgentChooseModality>()
+    ->Agent<AgentRecordProvEntity>()
+    ->Agent<AgentRecordProvActivity>();

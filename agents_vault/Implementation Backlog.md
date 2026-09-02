@@ -97,6 +97,19 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > naming exactly what the rule's own prose already described.
 > `rules_user_adaptation.scs` is now 2 of 6 rules implemented.
 
+> [!note] Update 2026-09-02 (continued further)
+> `rule_auto_record_prov_entity` and `rule_auto_record_prov_activity`
+> (`rules_provenance_completion.scs`) are now implemented,
+> [[AgentRecordProvEntity]] and [[AgentRecordProvActivity]] — populating
+> the PROV-O triad (`concept_prov_entity`/`_activity`/`_agent`,
+> `concepts/provenance.scs`) that had been fully typed but never
+> written to. Unlike `rule_choose_modality`, these two rules were
+> genuinely READY as originally labeled — no ontology gaps found.
+> `rules_provenance_completion.scs` is now 4 of 6 rules implemented,
+> and `rule_link_explanation_to_provenance`'s specific blocker (missing
+> typed PROV-O inputs) is removed, though the rule itself remains
+> unimplemented — see its corrected entry below.
+
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
 (see [[AgentUpdateTrustReliability]] and others).
@@ -122,7 +135,7 @@ list of the section — an internal inconsistency of the KB catalog itself.
 | **`agent_trust_evaluator`** | **trust vector update T(s,τ)** | `rules_trust_update.scs` | **✅ implemented (5 agents)** |
 | `agent_coalition_reconfigurator` | compensatory coalition recalculation | `rules_coalition_reconfiguration.scs` | **partial (2 of 4 rules — [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]])** |
 | `agent_integrity_checker` | integrity checking (SHACL-like shapes) | `rules_integrity_validation.scs` | **✅ implemented (7 of 7 rules — [[AgentValidateCardinalityConstraint]] ×6, [[AgentValidateProvenanceChain]] ×1)** |
-| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (2 of 6 rules — [[AgentComputePiMetric]], [[AgentValidateProvenanceChain]])** |
+| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (4 of 6 rules — [[AgentComputePiMetric]], [[AgentValidateProvenanceChain]], [[AgentRecordProvEntity]], [[AgentRecordProvActivity]])** |
 | `agent_context_updater` | interaction context update | — (no separate file) | not implemented |
 | `agent_conflict_detector` | result conflict detection | `rules_integration.scs` (partial) | not implemented |
 
@@ -279,21 +292,26 @@ The weakest file in terms of "formula-ness" — the key operation
 ι(text,C)→goal does not reduce to reading 2–5 numeric sc-links in the spirit
 of the already implemented agents. No numeric example.
 
-### `rules_provenance_completion.scs` — agent `agent_provenance_registrar`, 6 rules
+### `rules_provenance_completion.scs` — agent `agent_provenance_registrar`, 6 rules — **partial (4 of 6 rules)**
 
-- `rule_auto_record_prov_entity` — on appearance of result create prov_entity+wasGeneratedBy+wasAttributedTo — **READY**
-- `rule_auto_record_prov_activity` — on process execution create prov_activity(actor,input,timestamp) — **READY**
+- `rule_auto_record_prov_entity` — on appearance of result create prov_entity+wasGeneratedBy+wasAttributedTo — **READY** → ✅ implemented, [[AgentRecordProvEntity]]
+- `rule_auto_record_prov_activity` — on process execution create prov_activity(actor,input,timestamp) — **READY** → ✅ implemented, [[AgentRecordProvActivity]]
 - `rule_compute_pi_metrics` — `π_proc=|{π:∃prov(π)}|/|Proc|` (similarly π_dec, π_data) — **READY** → ✅ implemented, [[AgentComputePiMetric]]
 - `rule_fill_missing_provenance` — reconstruction from log/history/timestamp — **PARTIAL** (heuristic without algorithm)
-- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — **READY on paper, PARTIAL in practice**: it names `activity_of_e` (a `concept_prov_activity` distinct from the explanation node itself) and `wasAttributedTo(e, agent_explanation_builder)` (needs a `concept_prov_agent` instance) — the PROV-O triad (`concept_prov_entity`/`_activity`/`_agent`) that `rule_auto_record_prov_entity`/`_activity` would populate is not created by any agent, so this rule has no typed inputs to act on yet, despite [[AgentBuildExplanation]] already producing the `uses_results`/`applies_rules` role data it would read
+- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — was **"READY on paper, PARTIAL in practice"** because the PROV-O triad it needs (a `concept_prov_activity` for the explanation act, a `concept_prov_agent` for `agent_explanation_builder`) was not created by any agent. That specific blocker is now removed — [[AgentRecordProvEntity]]/[[AgentRecordProvActivity]] can populate exactly this triad — but the rule itself is still not implemented; closing it would mean wiring [[AgentBuildExplanation]]'s `uses_results`/`applies_rules` role data through to these two agents, a separate integration step not done here
 - `rule_verify_transitive_closure` — transitive_closure(derived_from,ir) to request — **READY** → ✅ implemented, [[AgentValidateProvenanceChain]] (duplicates `rule_validate_provenance_chain` in `rules_integrity_validation.scs`, same agent covers both)
 
 **The most "dense" file in terms of readiness** — 5 of 6 rules are
 deterministic (counting/ratio of fractions, building a fixed set of
-provenance links on trigger, graph reachability); 2 of those 5 are now
-implemented ([[AgentComputePiMetric]], [[AgentValidateProvenanceChain]]).
+provenance links on trigger, graph reachability); 4 of those 5 are now
+implemented ([[AgentComputePiMetric]], [[AgentValidateProvenanceChain]],
+[[AgentRecordProvEntity]], [[AgentRecordProvActivity]]).
 `rule_compute_pi_metrics` is structurally almost identical to the already
-implemented trust aggregation.
+implemented trust aggregation. `rule_auto_record_prov_entity`/
+`_activity` were, unlike `rule_choose_modality` elsewhere in this
+document, genuinely READY as labeled — every PROV-O class and relation
+they need (`concepts/provenance.scs`) already existed, fully aligned
+with W3C PROV-O.
 Numeric example: `scenario_explanation_construction.scs` — "π_proc=8/8=1.0",
 "π_dec=5/5=1.0", "π_data=12/12=1.0" — fully ready calculation with exact
 numbers, direct analog of `scenario_trust_assessment.scs`.

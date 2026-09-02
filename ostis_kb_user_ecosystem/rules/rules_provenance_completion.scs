@@ -11,7 +11,37 @@ section_rules_provenance_completion
     [Subsection. Provenance Completion Rules] (* <- lang_en;; *);
 <- atomic_section;
 <- rrel_key_sc_element: action_compute_pi_metric;
-<- rrel_key_sc_element: action_validate_provenance_chain;;
+<- rrel_key_sc_element: action_validate_provenance_chain;
+<- rrel_key_sc_element: action_record_prov_entity;
+<- rrel_key_sc_element: action_record_prov_activity;;
+
+// ---------------------------------------------------------------------
+// Классы действий для программной (C++) реализации правил ниже --
+// sc-агенты AgentRecordProvEntity и AgentRecordProvActivity
+// (ostis_ps_user_ecosystem/src/agent/agent_record_prov_entity.*,
+// agent_record_prov_activity.*). "When: new ... появляется в sc-памяти"/
+// "When: sc-агент выполняет процесс" не реализовано как автоматический
+// триггер по событию появления узла -- ни один агент проекта не
+// подписан на ScEventAfterGenerateOutgoingArc для произвольных классов
+// (тот же явный action-инициируемый паттерн, что у всех остальных
+// агентов модуля); вызывающая сторона инициирует регистрацию явно.
+// agent_of(s_a) (PROV-агент, соответствующий sc-агенту s_a) не выведена
+// формулой нигде в тексте -- AgentRecordProvActivity принимает готовый
+// concept_prov_agent отдельным аргументом, а не вычисляет отображение
+// sc-агент -> PROV-агент самостоятельно.
+// ---------------------------------------------------------------------
+
+action_record_prov_entity
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: зарегистрировать PROV Entity] (* <- lang_ru;; *);
+    [action: record PROV entity] (* <- lang_en;; *);;
+
+action_record_prov_activity
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: зарегистрировать PROV Activity] (* <- lang_ru;; *);
+    [action: record PROV activity] (* <- lang_en;; *);;
 
 rule -> rule_auto_record_prov_entity: ...
 (*

@@ -6,7 +6,7 @@ tags: [moc, trust-agents, provenance-agents]
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
 The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains
-twenty-one sc-agents: five implement the rules for updating the trust
+twenty-three sc-agents: five implement the rules for updating the trust
 vector π_tr, one — the computable part of provenance completeness
 metrics, one — detection of anomalous request frequency, one —
 resolution of result conflicts by weighted trust, three — the full life
@@ -22,7 +22,7 @@ one — gating delivery on the right-to-explanation property for
 decision/recommendation requests, one — deciding whether a provenance
 chain/result set is complex enough to require progressive disclosure,
 one — choosing an interaction modality from situational and preference
-flags.
+flags, two — populating the PROV-O provenance triad (entity/activity).
 Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 `ostis_kb_user_ecosystem/rules/`.
 
@@ -51,6 +51,8 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentValidateRightToExplanation]] | `action_validate_right_to_explanation` | indicator + integrity_violation | conditional gate check |
 | [[AgentEvaluateProgressiveDisclosure]] | `action_evaluate_progressive_disclosure` | indicator (decision, not validity) | two-threshold decision over DFS depth + count |
 | [[AgentChooseModality]] | `action_choose_modality` | chosen modality class (not numeric) | three-way branch over two new ontology flags |
+| [[AgentRecordProvEntity]] | `action_record_prov_entity` | `concept_prov_entity` + `nrel_has_provenance` | PROV-O construction |
+| [[AgentRecordProvActivity]] | `action_record_prov_activity` | `concept_prov_activity` + roles | PROV-O construction |
 
 ## How to read these notes
 
@@ -64,7 +66,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All twenty-one agents use:
+All twenty-three agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -103,7 +105,8 @@ All twenty-one agents use:
   [[AgentValidateIntegration]], [[AgentValidateProvenanceChain]],
   [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]],
   [[AgentCheckAcyclicity]], [[AgentValidateRightToExplanation]],
-  [[AgentEvaluateProgressiveDisclosure]] and [[AgentChooseModality]] are
+  [[AgentEvaluateProgressiveDisclosure]], [[AgentChooseModality]],
+  [[AgentRecordProvEntity]] and [[AgentRecordProvActivity]] are
   registered there too, despite the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
@@ -217,6 +220,25 @@ original free-text label. [[AgentChooseModality]] is also the second
 agent (after [[AgentBuildExplanation]]) whose result is a chosen
 sc-element rather than a numeric indicator — `FormResult` returns the
 selected modality class directly.
+[[AgentRecordProvEntity]] and [[AgentRecordProvActivity]] populate the
+PROV-O triad (`concept_prov_entity`/`_activity`/`_agent`,
+`concepts/provenance.scs`) that had been fully typed since before this
+implementation pass but never written to by any agent — closing
+`rule_auto_record_prov_entity`/`rule_auto_record_prov_activity`, both
+labeled READY in [[Implementation Backlog]] and, unlike
+`rule_choose_modality`, genuinely were: every class and relation they
+need already existed. Together they are what
+`rule_link_explanation_to_provenance` was blocked on (see
+[[Implementation Backlog]]'s own note on that rule — it needed a typed
+`concept_prov_activity` for the explanation act, which nothing created
+until now). [[AgentRecordProvEntity]] also surfaces a pre-existing
+tension worth noting: [[AgentRegisterPartialResult]] already creates a
+generic (non-PROV-O-typed) `concept_provenance_record` and sets it as a
+result's `nrel_has_provenance` target; since that relation is
+functional, calling [[AgentRecordProvEntity]] afterward on the same
+result replaces it with the PROV-O-specific entity. Neither the model
+text nor this implementation pass says which mechanism is canonical —
+documented as an open question, not resolved.
 
 ## Running agents standalone
 

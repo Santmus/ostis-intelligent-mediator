@@ -44,9 +44,20 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 онтологии двумя узкими подклассами (`concept_visual_perception_constraint`,
 `concept_preference_visual_modality`), формализующими ровно то, что уже
 называла проза правила, без изобретения новой семантики.
-`rules_user_adaptation.scs` теперь 2 из 6 правил.  
-Проверено: `ctest` — 82 из 82 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31708 элементов.
+`rules_user_adaptation.scs` теперь 2 из 6 правил. Добавлены также
+`AgentRecordProvEntity` (§5.15) и `AgentRecordProvActivity` (§5.16) —
+закрывают `rule_auto_record_prov_entity`/`rule_auto_record_prov_activity`
+(`rules_provenance_completion.scs`): заполнение PROV-O триады
+(`concept_prov_entity`/`_activity`/`_agent`, `concepts/provenance.scs`),
+полностью типизированной, но не заполнявшейся ни одним агентом. В
+отличие от `rule_choose_modality`, оба правила действительно были READY
+— вся нужная типизация уже существовала. Тем самым снят частный блокер
+`rule_link_explanation_to_provenance` (нужен был типизированный
+`concept_prov_activity`/`concept_prov_agent` — теперь есть чем их
+создавать), само правило по-прежнему не реализовано.
+`rules_provenance_completion.scs` теперь 4 из 6 правил.  
+Проверено: `ctest` — 88 из 88 тестов пройдены, сборка KB через
+`sc-builder` — чисто, 31746 элементов.
 
 ## 1. Цель и границы аудита
 
@@ -66,8 +77,8 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | Проверка | Результат |
 |---|---|
 | Сборка `cmake --build build` | Успешно |
-| `ctest --test-dir build --output-on-failure` | 82 из 82 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31708 элементов, без ошибок |
+| `ctest --test-dir build --output-on-failure` | 88 из 88 тестов пройдены |
+| Сборка KB (`sc-builder --clear`) | Успешно, 31746 элементов, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -94,6 +105,8 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | `AgentValidateRightToExplanation` | Гейт-проверка права пользователя на объяснение | Сделано частично (§5.12) |
 | `AgentEvaluateProgressiveDisclosure` | Решение о необходимости прогрессивного раскрытия | Сделано частично (§5.13) |
 | `AgentChooseModality` | Выбор модальности взаимодействия | Сделано частично (§5.14) |
+| `AgentRecordProvEntity` | Регистрация PROV Entity | Сделано частично (§5.15) |
+| `AgentRecordProvActivity` | Регистрация PROV Activity | Сделано частично (§5.16) |
 
 Модуль `TrustModule` для всех агентов один — реорганизация не начата (§7.6).
 
@@ -614,6 +627,74 @@ low-light — `rule_context_aware_layout`), и прочие виды польз�
 фикстура), `tests/test_agent_choose_modality.cpp` (5 тестов),
 `agents_vault/AgentChooseModality.md`.
 
+### 5.15. `AgentRecordProvEntity` — регистрация PROV Entity (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_provenance_completion.scs`, ранее "READY", не реализовано)
+
+**Проблема была:** `concepts/provenance.scs` полностью формализует
+PROV-O триаду (`concept_prov_entity`/`_activity`/`_agent` и их
+отношения, согласовано с W3C PROV-O), но ни один агент её не заполнял —
+вся типизация существовала невостребованной.
+
+**Сделано:** для результата обработки `result` создаётся
+`concept_prov_entity`, связывается с производящей деятельностью через
+`nrel_prov_was_generated_by`, с производящим агентом — через
+`nrel_prov_was_attributed_to`, и устанавливается как цель
+функционального `nrel_has_provenance` на `result`
+(`SetFunctionalRelationTarget`, а не `LinkByRelation`, чтобы корректно
+заменить существующую цель, если таковая есть).
+
+**Побочная находка:** `AgentRegisterPartialResult`
+(`rules/rules_cooperation.scs`) уже создаёт для каждого частичного
+результата собственную провенансную запись — обобщённый узел,
+классифицированный `concept_provenance_record` БЕЗ PROV-O
+специализации, тоже через `nrel_has_provenance`. Поскольку отношение
+функционально, вызов `AgentRecordProvEntity` ПОСЛЕ
+`AgentRegisterPartialResult` заменит обобщённую запись типизированной
+PROV-сущностью. Текст модели не определяет, какой из двух механизмов
+канонический — зафиксировано как открытый вопрос, не решается в рамках
+этой правки.
+
+**Осталось:** «When: new concept_processing_result(r) появляется в
+sc-памяти» не реализовано как автоматический триггер по событию — ни
+один агент проекта не подписан на такие события; вызывающая сторона
+инициирует регистрацию явно, как и везде в модуле. `activity`/`agent`
+должны существовать заранее (обычно `activity` — через
+`AgentRecordProvActivity`, §5.16), сам агент их не создаёт.
+
+Файлы: `src/agent/agent_record_prov_entity.{hpp,cpp}`,
+`src/keynodes/provenance_keynodes.hpp` (расширен полной лексикой
+PROV-O), `rules/rules_provenance_completion.scs`,
+`tests/test_agent_record_prov_entity.cpp` (3 теста),
+`agents_vault/AgentRecordProvEntity.md`.
+
+### 5.16. `AgentRecordProvActivity` — регистрация PROV Activity (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_provenance_completion.scs`, ранее "READY", не реализовано)
+
+**Проблема была:** та же, что у §5.15, для `concept_prov_activity` и
+её отношений (`nrel_prov_used`, `nrel_prov_was_associated_with`).
+
+**Сделано:** создаётся `concept_prov_activity` с ролями `rrel_actor`
+(цель `actor`) и `rrel_input` (цель `input`), связывается с `input`
+через `nrel_prov_used` и с `prov_agent` через
+`nrel_prov_was_associated_with`; необязательный `timestamp` (последний
+аргумент, тот же приём, что `rrel_construction_time` у
+`AgentBuildExplanation`, §5.6) привязывается ролью `rrel_timestamp`,
+если передан.
+
+**Осталось:** функция `agent_of(s_a)` (отображение исполняющего
+sc-агента на его PROV-агента) нигде не формализована формулой в тексте
+— `actor` и `prov_agent` передаются раздельными аргументами вместо
+вычисления одного из другого. `rrel_actor` формально объявлен как
+`concept_interaction_act -> concept_actor`
+(`relations/role_relations.scs`), тогда как овеществлённая деятельность
+здесь — `concept_prov_activity`, не обязательно `concept_interaction_act`
+— наблюдение того же класса, что и у `nrel_derived_from` в §5.8, не
+исправляется здесь. Автоматический триггер по событию исполнения
+процесса не реализован — та же причина, что у §5.15.
+
+Файлы: `src/agent/agent_record_prov_activity.{hpp,cpp}`,
+`src/keynodes/provenance_keynodes.hpp` (общий с §5.15),
+`tests/test_agent_record_prov_activity.cpp` (3 теста),
+`agents_vault/AgentRecordProvActivity.md`.
+
 ## 6. Сильные стороны реализации
 
 Раздел не менялся — актуален для всех агентов независимо от статуса выше.
@@ -692,6 +773,19 @@ AgentProvenanceCompletenessValidator → создаёт нарушение по�
 AgentProvenanceRegistrar          → создаёт стандартные записи происхождения (нет);
 AgentProvenanceRecovery           → восстанавливает пропущенный след либо маркирует unverifiable (нет).
 ```
+
+Третья строка теперь частично закрыта: `AgentRecordProvEntity`/
+`AgentRecordProvActivity` (§5.15, §5.16) создают именно «стандартные
+записи происхождения» — PROV-O триаду `concept_prov_entity`/
+`_activity`/`_agent` для результата и производящей его деятельности.
+Не хватает по-прежнему автоматического триггера (оба агента вызываются
+явно, а не по событию появления результата/исполнения процесса) и
+самой `AgentProvenanceRecovery` (`rule_fill_missing_provenance` —
+эвристика без алгоритма, остаётся PARTIAL). Единого агента с именем
+`AgentProvenanceRegistrar` в проекте нет — есть отдельные `AgentRecordProvEntity`/
+`AgentRecordProvActivity`, тот же паттерн, что и у `AgentVerifyResult`
+(§7.5): заявленная область разделена между несколькими существующими
+агентами.
 
 ### 7.3. `AgentDispatchReadySubtask` не подтверждает допустимость исполнения (было: п.6.3)
 
