@@ -6,7 +6,7 @@ tags: [moc, trust-agents, provenance-agents]
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
 The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains
-twenty-four sc-agents: five implement the rules for updating the trust
+twenty-six sc-agents: five implement the rules for updating the trust
 vector π_tr, one — the computable part of provenance completeness
 metrics, one — detection of anomalous request frequency, one —
 resolution of result conflicts by weighted trust, three — the full life
@@ -24,7 +24,10 @@ chain/result set is complex enough to require progressive disclosure,
 one — choosing an interaction modality from situational and preference
 flags, two — populating the PROV-O provenance triad (entity/activity),
 one — deciding between decomposition and an integrity violation when no
-system is an admissible executor.
+system is an admissible executor, one — detecting a night-shift/low-light
+situational trigger for context-aware layout, one — wiring an
+explanation-construction act's used-results/applied-rules role data into
+the PROV-O relations the entity/activity/agent triad already supports.
 Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 `ostis_kb_user_ecosystem/rules/`.
 
@@ -56,6 +59,8 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentRecordProvEntity]] | `action_record_prov_entity` | `concept_prov_entity` + `nrel_has_provenance` | PROV-O construction |
 | [[AgentRecordProvActivity]] | `action_record_prov_activity` | `concept_prov_activity` + roles | PROV-O construction |
 | [[AgentHandleNoAdmissibleAssignment]] | `action_handle_no_admissible_assignment` | indicator + integrity_violation | binary branch on subtask class |
+| [[AgentEvaluateContextAwareLayout]] | `action_evaluate_context_aware_layout` | indicator (decision) + strategy marker | two-flag OR gate over two new ontology flags |
+| [[AgentLinkExplanationToProvenance]] | `action_link_explanation_to_provenance` | `nrel_prov_was_derived_from`/`nrel_prov_used`/`nrel_prov_was_attributed_to` | role-to-relation wiring |
 
 ## How to read these notes
 
@@ -69,7 +74,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All twenty-four agents use:
+All twenty-six agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -87,6 +92,12 @@ All twenty-four agents use:
   same reuse pattern when a second/third consumer appeared.
   [[AgentBuildExplanation]] is the first agent to reuse `LinkByRole` for a
   five-role reification without introducing any new helper.
+  [[AgentLinkExplanationToProvenance]] adds `ForEachRoleTarget`, the
+  read-symmetric counterpart to `LinkByRole` — no prior agent needed to
+  iterate *every* target of a role from one source rather than write one
+  (`LinkByRole`) or iterate a plain group's members
+  (`LinkGroupMembersByRole`, a local helper in
+  `agent_build_explanation.cpp`, not shared).
 - `keynodes/trust_keynodes.hpp` (`TrustKeynodes`) / `keynodes/provenance_keynodes.hpp`
   (`ProvenanceKeynodes`) / `keynodes/security_keynodes.hpp`
   (`SecurityKeynodes`) / `keynodes/integration_keynodes.hpp`
@@ -110,9 +121,11 @@ All twenty-four agents use:
   [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]],
   [[AgentCheckAcyclicity]], [[AgentValidateRightToExplanation]],
   [[AgentEvaluateProgressiveDisclosure]], [[AgentChooseModality]],
-  [[AgentRecordProvEntity]], [[AgentRecordProvActivity]] and
-  [[AgentHandleNoAdmissibleAssignment]] are registered there too,
-  despite the name.
+  [[AgentRecordProvEntity]], [[AgentRecordProvActivity]],
+  [[AgentHandleNoAdmissibleAssignment]],
+  [[AgentEvaluateContextAwareLayout]] and
+  [[AgentLinkExplanationToProvenance]] are registered there too, despite
+  the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
 agents (not [[AgentComputePiMetric]]/[[AgentDetectAnomalousRequestRate]]) —
@@ -259,19 +272,58 @@ consequent via `affirmation_subtask_executability`
 (`concepts/tasks.scs`: every subtask is executable or decomposable) —
 checking `concept_subtask_composite` rather than re-deriving anything.
 Data-independent from the rest of the module.
+[[AgentEvaluateContextAwareLayout]] closes `rule_context_aware_layout`,
+the third agent for `rules_user_adaptation.scs`. Its input gap matched
+`rule_choose_modality`'s shape closely enough to reuse the same method
+— two narrow flags on `concept_user_situation_context`
+(`concept_night_shift_context`, `concept_low_light_context`) — but its
+consequent does not: "reduce the number of simultaneously shown
+elements" is genuinely unquantified in the text, the same open-ended
+gap as `cognitive_load(u)`, so only the *detection* half is closed. The
+triggered case is materialized by attaching the pre-existing
+`concept_strategy_context_aware_layout` (`concepts/adaptive_interface.scs`)
+as a single marker standing in for the whole consequent package — that
+class had named the strategy since before this implementation pass but
+had no producer until now. Data-independent from the rest of the
+module, including its two `rules_user_adaptation.scs` siblings.
+[[AgentLinkExplanationToProvenance]] closes `rule_link_explanation_to_provenance`
+— unlike every other agent added in this implementation pass, it needed
+*zero* new ontology: `nrel_prov_was_derived_from`/`nrel_prov_used`/
+`nrel_prov_was_attributed_to` and `rrel_uses_results`/`rrel_applies_rules`
+all already existed, and the rule's only real blocker (nothing had ever
+created the PROV-O entity/activity/agent nodes to wire together) was
+removed as a side effect of [[AgentRecordProvEntity]]/
+[[AgentRecordProvActivity]] the day before (2026-09-02). Reads
+`rrel_uses_results`/`rrel_applies_rules` directly off the
+`concept_explanation_construction_act` [[AgentBuildExplanation]]
+produces and writes the three named relations against caller-supplied
+PROV-O nodes, without attempting to type the used results/applied rules
+themselves as `concept_prov_entity` — the rule names them directly as
+the relation's target, and [[AgentBuildExplanation]]'s own Limitations
+had already flagged doing that typing as "introducing unverified
+ontology." Downstream of [[AgentBuildExplanation]] and, for its
+arguments to be meaningfully typed, typically of
+[[AgentRecordProvEntity]]/[[AgentRecordProvActivity]] as well — though
+it calls neither directly. `rules_provenance_completion.scs` is now
+5 of 6 rules implemented — only `rule_fill_missing_provenance` (a
+heuristic reconstruction with no algorithm in the text) remains.
 
 ## Running agents standalone
 
 `ostis_ps_user_ecosystem/scripts/run_agent.py` -- a Python script on top of
-py-sc-client (venv sc-web) for launching any of the 24 agents against a live
+py-sc-client (venv sc-web) for launching any of the 26 agents against a live
 sc-server without C++ tests and without a browser JS console; by default
-it runs demo scenarios for all 24 agents in a row using illustrative
+it runs demo scenarios for all 26 agents in a row using illustrative
 numbers from tests/test_agent_*.cpp. Launch details are in the docstring
-of the file itself. Extended to the full 24 (from an original 12) during
-the ontology/article/agent consistency check on 2026-09-02, which also
-caught `demo_aggregate_trust` computing its expected value against the
+of the file itself. Extended to 24 (from an original 12) during the
+ontology/article/agent consistency check on 2026-09-02, which also caught
+`demo_aggregate_trust` computing its expected value against the
 pre-2026-08-30 unequal trust weights instead of the current λ_k = 1/4 --
-fixed alongside the extension.
+fixed alongside that extension. Extended again to 26 on 2026-09-03 for
+[[AgentEvaluateContextAwareLayout]]/[[AgentLinkExplanationToProvenance]] —
+verified only via `py_compile`/AST introspection (26 `DEMOS` entries, 23
+`demo_` functions since `demo_trust_ema` is reused 4×), not against a
+live sc-server, same caveat as the first extension.
 
 > [!warning] Discovered sc-machine bug: do not erase the action node after InitiateAndWait
 > Erasing the sc-node of a finished action (`action_addr`, after it

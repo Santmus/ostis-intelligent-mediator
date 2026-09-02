@@ -64,7 +64,7 @@ and an overview of unimplemented candidates
 
 ## Implemented agents
 
-Twenty-four sc-agents of the `TrustModule` operationalize rules from the
+Twenty-six sc-agents of the `TrustModule` operationalize rules from the
 `concepts/sc_agents.scs` catalog:
 
 | Group | Agents | Rules file | Status |
@@ -72,14 +72,14 @@ Twenty-four sc-agents of the `TrustModule` operationalize rules from the
 | `agent_trust_evaluator` | `AgentUpdateTrustReliability`, `AgentUpdateTrustAccuracy`, `AgentUpdateTrustSecurity`, `AgentUpdateTrustTransparency`, `AgentAggregateTrust` | `rules_trust_update.scs` | complete |
 | `agent_cooperative_executor` | `AgentDispatchReadySubtask`, `AgentRegisterPartialResult`, `AgentPropagateToDependent` | `rules_cooperation.scs` | complete |
 | `agent_integrity_checker` | `AgentValidateCardinalityConstraint`, `AgentValidateProvenanceChain` | `rules_integrity_validation.scs` | complete (7 of 7 rules) |
-| `agent_provenance_registrar` | `AgentComputePiMetric`, `AgentValidateProvenanceChain`*, `AgentRecordProvEntity`, `AgentRecordProvActivity` | `rules_provenance_completion.scs` | partial (4 of 6 rules) |
+| `agent_provenance_registrar` | `AgentComputePiMetric`, `AgentValidateProvenanceChain`*, `AgentRecordProvEntity`, `AgentRecordProvActivity`, `AgentLinkExplanationToProvenance` | `rules_provenance_completion.scs` | partial (5 of 6 rules) |
 | `agent_result_integrator` | `AgentResolveByTrustWeighted`, `AgentValidateIntegration` | `rules_integration.scs` | partial (2 of 5 rules) |
 | `agent_explanation_builder` | `AgentBuildExplanation` | `rules_explanation.scs` | partial (structural core of 4 rules) |
 | `agent_coalition_reconfigurator` | `AgentExcludeFromCoalition`, `AgentReassignOnResourceExhaustion` | `rules_coalition_reconfiguration.scs` | partial (2 of 4 rules) |
 | `agent_task_decomposer` | `AgentCheckAcyclicity` | `rules_decomposition.scs` | partial (1 of 3 rules) |
 | `agent_task_allocator` | `AgentHandleNoAdmissibleAssignment` | `rules_allocation.scs` | partial (1 of 4 rules) |
 | security (no single owner) | `AgentDetectAnomalousRequestRate`, `AgentValidateRightToExplanation` | `rules_security_privacy.scs` | partial (2 of 7 rules) |
-| adaptive interface (no single owner) | `AgentEvaluateProgressiveDisclosure`, `AgentChooseModality` | `rules_user_adaptation.scs` | partial (2 of 6 rules) |
+| adaptive interface (no single owner) | `AgentEvaluateProgressiveDisclosure`, `AgentChooseModality`, `AgentEvaluateContextAwareLayout` | `rules_user_adaptation.scs` | partial (3 of 6 rules) |
 
 \* `AgentValidateProvenanceChain` implements one rule that is duplicated
 verbatim in both `rules_integrity_validation.scs`

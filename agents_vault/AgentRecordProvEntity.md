@@ -44,16 +44,16 @@ it, create a PROV entity for the result and link it via `wasGeneratedBy`/
 `wasAttributedTo`/`has_provenance`.
 
 **Value.** Turns the PROV-O subsystem from declared-but-empty into
-populated data — and, per its own Limitations, is also what
+populated data — and, per its own Limitations, was also what
 [[Implementation Backlog]] identified as the missing prerequisite for
-`rule_link_explanation_to_provenance` (which needs a typed
+`rule_link_explanation_to_provenance` (which needed a typed
 `concept_prov_activity` for the explanation act, previously blocked on
-exactly this gap).
+exactly this gap — closed the next day by [[AgentLinkExplanationToProvenance]]).
 
 **Stakeholders:** [[AgentRecordProvActivity]] (typically supplies the
-`activity` argument), any future consumer of a fully PROV-O-typed
-provenance graph (e.g., `rule_link_explanation_to_provenance`, still
-otherwise blocked — see its own note in [[Implementation Backlog]]).
+`activity` argument), [[AgentLinkExplanationToProvenance]] (consumes
+this triad's nodes as caller-supplied PROV-O arguments), any future
+consumer of a fully PROV-O-typed provenance graph.
 
 ## Competence
 

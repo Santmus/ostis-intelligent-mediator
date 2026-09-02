@@ -13,7 +13,8 @@ section_rules_provenance_completion
 <- rrel_key_sc_element: action_compute_pi_metric;
 <- rrel_key_sc_element: action_validate_provenance_chain;
 <- rrel_key_sc_element: action_record_prov_entity;
-<- rrel_key_sc_element: action_record_prov_activity;;
+<- rrel_key_sc_element: action_record_prov_activity;
+<- rrel_key_sc_element: action_link_explanation_to_provenance;;
 
 // ---------------------------------------------------------------------
 // Классы действий для программной (C++) реализации правил ниже --
@@ -129,6 +130,30 @@ rule -> rule_fill_missing_provenance: ...
             временном срезе.] (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации rule_link_explanation_to_provenance
+// -- sc-агент AgentLinkExplanationToProvenance
+// (ostis_ps_user_ecosystem/src/agent/agent_link_explanation_to_provenance.*).
+// Читает rrel_uses_results/rrel_applies_rules с уже овеществлённого
+// concept_explanation_construction_act (порождается AgentBuildExplanation,
+// rules/rules_explanation.scs) и связывает их напрямую -- через
+// nrel_prov_was_derived_from/nrel_prov_used/nrel_prov_was_attributed_to
+// (concepts/provenance.scs) -- с переданными вызывающей стороной e/
+// activity_of_e/agent_explanation_builder-как-concept_prov_agent.
+// Ни e, ни activity_of_e, ни PROV-агент не создаются и не типизируются
+// этим агентом -- та же практика "готовые PROV-O узлы передаются
+// аргументами", что и в AgentRecordProvActivity. r_i/rule_i также не
+// типизируются как concept_prov_entity (формальный домен обеих
+// PROV-O связей) -- текст правила называет целью именно их, не
+// производную сущность, поэтому агент связывает их как есть.
+// ---------------------------------------------------------------------
+
+action_link_explanation_to_provenance
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: связать объяснение с провенансом] (* <- lang_ru;; *);
+    [action: link explanation to provenance] (* <- lang_en;; *);;
 
 rule -> rule_link_explanation_to_provenance: ...
 (*

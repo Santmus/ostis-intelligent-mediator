@@ -24,9 +24,11 @@
 #include "agent/agent_record_prov_entity.hpp"
 #include "agent/agent_record_prov_activity.hpp"
 #include "agent/agent_handle_no_admissible_assignment.hpp"
+#include "agent/agent_evaluate_context_aware_layout.hpp"
+#include "agent/agent_link_explanation_to_provenance.hpp"
 
 // AgentComputePiMetric/AgentValidateProvenanceChain/AgentRecordProvEntity/
-// AgentRecordProvActivity (провенанс),
+// AgentRecordProvActivity/AgentLinkExplanationToProvenance (провенанс),
 // AgentDetectAnomalousRequestRate/AgentValidateRightToExplanation
 // (безопасность), AgentResolveByTrustWeighted/AgentValidateIntegration
 // (интеграция результатов), AgentDispatchReadySubtask/AgentRegisterPartialResult/
@@ -35,10 +37,10 @@
 // AgentBuildExplanation (объяснения), AgentExcludeFromCoalition/
 // AgentReassignOnResourceExhaustion (реконфигурация коалиции),
 // AgentCheckAcyclicity (декомпозиция запроса),
-// AgentEvaluateProgressiveDisclosure/AgentChooseModality (адаптация под
-// пользователя) и AgentHandleNoAdmissibleAssignment (распределение
-// подзадач) не о доверии, но зарегистрированы здесь же:
-// SC_MODULE_REGISTER определяет
+// AgentEvaluateProgressiveDisclosure/AgentChooseModality/
+// AgentEvaluateContextAwareLayout (адаптация под пользователя) и
+// AgentHandleNoAdmissibleAssignment (распределение подзадач) не о
+// доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
 // иначе конфликт символов. Пока агентов немного, отдельная библиотека
@@ -67,4 +69,6 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentChooseModality>()
     ->Agent<AgentRecordProvEntity>()
     ->Agent<AgentRecordProvActivity>()
-    ->Agent<AgentHandleNoAdmissibleAssignment>();
+    ->Agent<AgentHandleNoAdmissibleAssignment>()
+    ->Agent<AgentEvaluateContextAwareLayout>()
+    ->Agent<AgentLinkExplanationToProvenance>();

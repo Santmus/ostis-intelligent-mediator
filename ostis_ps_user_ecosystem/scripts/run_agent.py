@@ -9,7 +9,7 @@
 Платформа должна быть запущена (`./start.sh` в ostis-web-platform) --
 sc-server слушает ws://localhost:8090/ws_json.
 
-Без аргументов запускает демо-сценарии для всех 24 агентов по очереди.
+Без аргументов запускает демо-сценарии для всех 26 агентов по очереди.
 С аргументами -- только перечисленные (см. DEMOS в конце файла для
 списка имён, например: `run_agent.py aggregate_trust resolve_conflict`).
 
@@ -103,6 +103,23 @@ def plain_arc(src, trg) -> None:
     c = ScConstruction()
     c.generate_connector(sc_types.EDGE_ACCESS_CONST_POS_PERM, src, trg)
     client.generate_elements(c)
+
+
+def link_by_role(created: list, src, trg, role_addr) -> None:
+    """src -[ConstPermPosArc]-> trg, классифицированная роль-вым отношением
+    (rrel_*) на саму дугу -- аналог LinkByRole из common/relation_io.hpp."""
+    c = ScConstruction()
+    c.generate_connector(sc_types.EDGE_ACCESS_CONST_POS_PERM, src, trg, "arc")
+    c.generate_connector(sc_types.EDGE_ACCESS_CONST_POS_PERM, role_addr, "arc")
+    client.generate_elements(c)
+
+
+def has_plain_arc(src, trg) -> bool:
+    """src -[ConstPermPosArc]-> trg, без классификации -- аналог
+    ScAgentContext::CheckConnector(src, trg, ScType::ConstPermPosArc) из C++."""
+    tpl = ScTemplate()
+    tpl.triple(src, sc_types.EDGE_ACCESS_VAR_POS_PERM, trg)
+    return bool(client.search_by_template(tpl))
 
 
 def tag_class(node_addr, class_idtf: str) -> None:
@@ -719,6 +736,77 @@ def demo_build_explanation() -> None:
             client.erase_elements(*created)
 
 
+def demo_evaluate_context_aware_layout() -> None:
+    created: list = []
+    try:
+        situation = new_node(created)
+        tag_class(situation, "concept_night_shift_context")
+        result_level = new_node(created)
+
+        status, result = run_action(
+            "action_evaluate_context_aware_layout", [situation, result_level], created
+        )
+        report(
+            "action_evaluate_context_aware_layout (night-shift -> сработало)",
+            status,
+            first_link_value(result),
+            1.0,
+        )
+        if status == "successfully":
+            strategy_present = has_plain_arc(result_level, resolve("concept_strategy_context_aware_layout"))
+            print(f"       concept_strategy_context_aware_layout присоединена к result_level: {strategy_present}")
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
+def demo_link_explanation_to_provenance() -> None:
+    created: list = []
+    try:
+        construction_act = new_node(created)
+        tag_class(construction_act, "concept_explanation_construction_act")
+
+        rrel_uses_results = resolve("rrel_uses_results")
+        rrel_applies_rules = resolve("rrel_applies_rules")
+
+        partial_result_1 = new_node(created)
+        partial_result_2 = new_node(created)
+        link_by_role(created, construction_act, partial_result_1, rrel_uses_results)
+        link_by_role(created, construction_act, partial_result_2, rrel_uses_results)
+
+        aggregation_rule = new_node(created)
+        link_by_role(created, construction_act, aggregation_rule, rrel_applies_rules)
+
+        explanation_entity = new_node(created)
+        explanation_activity = new_node(created)
+        builder_prov_agent = new_node(created)
+
+        status, _ = run_action(
+            "action_link_explanation_to_provenance",
+            [construction_act, explanation_entity, explanation_activity, builder_prov_agent],
+            created,
+        )
+
+        nrel_prov_was_derived_from = resolve("nrel_prov_was_derived_from")
+        derived_1_ok = has_link_by_relation(explanation_entity, partial_result_1, nrel_prov_was_derived_from)
+        derived_2_ok = has_link_by_relation(explanation_entity, partial_result_2, nrel_prov_was_derived_from)
+        used_ok = has_link_by_relation(explanation_activity, aggregation_rule, resolve("nrel_prov_used"))
+        attributed_ok = has_link_by_relation(
+            explanation_entity, builder_prov_agent, resolve("nrel_prov_was_attributed_to")
+        )
+
+        ok = status == "successfully" and derived_1_ok and derived_2_ok and used_ok and attributed_ok
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_link_explanation_to_provenance: status={status} "
+            f"wasDerivedFrom(r1)={derived_1_ok} wasDerivedFrom(r2)={derived_2_ok} "
+            f"PROV_used={used_ok} wasAttributedTo={attributed_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
 DEMOS = {
     "update_trust_reliability": lambda: demo_trust_ema("action_update_trust_reliability", "alpha"),
     "update_trust_accuracy": lambda: demo_trust_ema("action_update_trust_accuracy", "beta"),
@@ -744,6 +832,8 @@ DEMOS = {
     "record_prov_entity": demo_record_prov_entity,
     "record_prov_activity": demo_record_prov_activity,
     "handle_no_admissible_assignment": demo_handle_no_admissible_assignment,
+    "evaluate_context_aware_layout": demo_evaluate_context_aware_layout,
+    "link_explanation_to_provenance": demo_link_explanation_to_provenance,
 }
 
 

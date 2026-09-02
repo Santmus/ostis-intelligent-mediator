@@ -19,7 +19,7 @@
 `rule_on_system_failure`/`rule_on_resource_exhaustion`
 (`rules_coalition_reconfiguration.scs`), первые агенты семейства
 `agent_coalition_reconfigurator`.  
-Дата этой редакции: 02 сентября 2026 г. — добавлен `AgentCheckAcyclicity`
+Дата предыдущей редакции: 02 сентября 2026 г. — добавлен `AgentCheckAcyclicity`
 (§5.11) — закрывает `rule_check_acyclicity` (`rules_decomposition.scs`),
 первый агент семейства `agent_task_decomposer`: DFS-проверка ацикличности
 над `nrel_subtask_depends_on`, ограниченная T(q) = decomposed_into(q, ·).
@@ -63,8 +63,32 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 всём `agents_vault/Implementation Backlog.md` — всё, что осталось,
 теперь PARTIAL (упирается в неопределённую формулу/таблицу) либо NO
 (LLM-задача).  
-Проверено: `ctest` — 91 из 91 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31765 элементов.
+Далее проведён отдельный проход — онтологическое проектирование
+PARTIAL-правил: среди правил, блокированных не открытой формулой, а
+узким, называемым пробелом типизации (тот же класс, что у
+`rule_choose_modality`), найдено одно подходящее —
+`rule_context_aware_layout`. Добавлен `AgentEvaluateContextAwareLayout`
+(§5.18) — закрывает гейт (условие «night-shift» ИЛИ «low-light»,
+формализовано двумя новыми подклассами `concept_user_situation_context`);
+консеквент правила частично остаётся неквантифицированным («снизить
+количество элементов» — тот же класс блокировки, что у `cognitive_load(u)`),
+поэтому закрыта только механическая часть детектирования, а не весь
+консеквент. `rules_user_adaptation.scs` теперь 3 из 6 правил.  
+Дата этой редакции: 03 сентября 2026 г. — добавлен
+`AgentLinkExplanationToProvenance` (§5.19) — закрывает
+`rule_link_explanation_to_provenance` (`rules_provenance_completion.scs`),
+последний блокер которого (нетипизированные PROV-O узлы для акта
+объяснения) сняли `AgentRecordProvEntity`/`AgentRecordProvActivity`
+(§5.15/§5.16) днём ранее. В отличие от всех правил, закрытых в этом
+проходе ранее, новой онтологии не потребовалось вовсе — только монтаж
+уже существующих отношений (`nrel_prov_was_derived_from`/
+`nrel_prov_used`/`nrel_prov_was_attributed_to`) на уже существующие
+роли (`rrel_uses_results`/`rrel_applies_rules` с
+`explanation_construction_act`, §5.6). `rules_provenance_completion.scs`
+теперь 5 из 6 правил — остался только `rule_fill_missing_provenance`
+(эвристика без алгоритма в тексте).  
+Проверено: `ctest` — 98 из 98 тестов пройдены, сборка KB через
+`sc-builder` — чисто, 31841 элемент.
 
 ## 1. Цель и границы аудита
 
@@ -84,8 +108,8 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | Проверка | Результат |
 |---|---|
 | Сборка `cmake --build build` | Успешно |
-| `ctest --test-dir build --output-on-failure` | 91 из 91 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31765 элементов, без ошибок |
+| `ctest --test-dir build --output-on-failure` | 98 из 98 тестов пройдены |
+| Сборка KB (`sc-builder --clear`) | Успешно, 31841 элемент, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -115,6 +139,8 @@ provenance-цепочки (`nrel_derived_from`) и количеству част
 | `AgentRecordProvEntity` | Регистрация PROV Entity | Сделано частично (§5.15) |
 | `AgentRecordProvActivity` | Регистрация PROV Activity | Сделано частично (§5.16) |
 | `AgentHandleNoAdmissibleAssignment` | Обработка отсутствия допустимого назначения | Сделано частично (§5.17) |
+| `AgentEvaluateContextAwareLayout` | Детектирование условия контекстно-зависимой компоновки | Сделано частично (§5.18) |
+| `AgentLinkExplanationToProvenance` | Связывание акта построения объяснения с провенансом | Сделано (§5.19) |
 
 Модуль `TrustModule` для всех агентов один — реорганизация не начата (§7.6).
 
@@ -742,6 +768,99 @@ PARTIAL (упирается в неопределённую формулу/та�
 домена), `rules/rules_allocation.scs`,
 `tests/test_agent_handle_no_admissible_assignment.cpp` (3 теста),
 `agents_vault/AgentHandleNoAdmissibleAssignment.md`.
+
+### 5.18. `AgentEvaluateContextAwareLayout` — детектирование условия контекстно-зависимой компоновки (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_user_adaptation.scs`, ранее PARTIAL, гейт закрыт по образцу §5.14)
+
+**Проблема была:** `concept_strategy_context_aware_layout`
+(`concepts/adaptive_interface.scs`) называла стратегию с самого начала
+этого прохода реализации, но ни одно из двух условий её срабатывания
+(«night-shift», «low-light») не имело типизированного представления —
+тот же класс пробела, что нашёлся и закрылся для `rule_choose_modality`
+(§5.14).
+
+**Сделано:** добавлены два узких подкласса-флага
+`concept_night_shift_context` и `concept_low_light_context`
+(`<= nrel_inclusion: concept_user_situation_context`,
+`concepts/contexts.scs`) — два отдельных, а не один общий, поскольку
+правило называет их как два самостоятельных условия. Агент проверяет
+классификацию `situation` любым из двух флагов (ИЛИ); при срабатывании
+присоединяет уже существующий `concept_strategy_context_aware_layout`
+как дочерний узел `result_level` — единый маркер на весь пакет
+последствий, поскольку ни у «тёмной темы», ни у «сокращения элементов»
+нет своего типизированного представления, а для «шрифт ×1.10» нет
+представления текущего размера шрифта, которое можно было бы умножить.
+Индикатор — decision-полярность (1.0 = сработало), тот же приём, что у
+§5.13.
+
+**Осталось:** «снизить количество одновременно показываемых элементов»
+не квантифицировано нигде в тексте — тот же класс блокировки, что у
+`cognitive_load(u)` в `rule_choose_presentation_template`; формула
+шрифта (×1.10) сама по себе не содержит неопределённости, но применять
+её не к чему без представления текущего размера шрифта в KB;
+`nrel_applies_strategy` не пишется — нет экземпляра
+`concept_adaptive_interface`, та же причина, что у §5.13/§5.14.
+
+Рассмотрены и отклонены как недостаточно узкие: `rule_enforce_consent_check`
+(нужны сразу новое отношение «покрывает согласием» И механизм
+валидности/истечения — не одна типизация); `rule_on_constraint_violation`
+(«понизить доверие» без формулы величины понижения — придумывание
+величины было бы содержательным решением модели, а не исправлением
+типизации, вне рамок); `rule_audit_log_integrity` (инвариант для
+принудительного соблюдения, а не вычисляемое значение — не укладывается
+в реактивную модель агента вообще).
+
+Файлы: `src/agent/agent_evaluate_context_aware_layout.{hpp,cpp}`,
+`src/keynodes/adaptive_interface_keynodes.hpp` (расширен),
+`concepts/contexts.scs`, `rules/rules_user_adaptation.scs`,
+`tests/test_agent_evaluate_context_aware_layout.cpp` (4 теста),
+`agents_vault/AgentEvaluateContextAwareLayout.md`.
+
+### 5.19. `AgentLinkExplanationToProvenance` — связывание акта построения объяснения с провенансом (было: не упомянуто в §6/§7 этого документа — найдено через `agents_vault/Implementation Backlog.md`, `rules_provenance_completion.scs`, ранее "READY на бумаге, PARTIAL на практике", блокер снят §5.15/§5.16)
+
+**Проблема была:** `rule_link_explanation_to_provenance` требует трёх
+PROV-O фактов для каждого `explanation_construction_act`:
+`wasDerivedFrom(e, r_i)` для каждого использованного результата,
+`PROV:used(activity_of_e, rule_i)` для каждого применённого правила,
+`wasAttributedTo(e, agent_explanation_builder)` — один раз. Все три
+отношения (`nrel_prov_was_derived_from`/`nrel_prov_used`/
+`nrel_prov_was_attributed_to`, `concepts/provenance.scs`) и обе роли
+(`rrel_uses_results`/`rrel_applies_rules`, `concepts/explanations.scs`)
+существовали с самого начала — правило было заблокировано только тем,
+что ни один агент не создавал сами PROV-O узлы (entity/activity/agent)
+для явления `e`. Этот блокер снят §5.15/§5.16 (`AgentRecordProvEntity`/
+`AgentRecordProvActivity`) днём ранее.
+
+**Сделано:** добавлен `AgentLinkExplanationToProvenance` — читает
+`rrel_uses_results`/`rrel_applies_rules` с уже овеществлённого
+`construction_act` (порождается §5.6 `AgentBuildExplanation`) и
+связывает их напрямую (без промежуточной типизации как
+`concept_prov_entity`) с переданными вызывающей стороной
+`explanation_entity`/`explanation_activity`/`builder_prov_agent` —
+готовые PROV-O узлы аргументами, тот же приём, что и `agent_of()` в
+§5.16. Единственное новое в C++: `ForEachRoleTarget`
+(`common/relation_io.hpp`) — обход *всех* целей роли из одного
+источника, читающий-симметричный аналог существовавшего `LinkByRole`.
+В отличие от §5.14/§5.18, никакой новой онтологии не потребовалось —
+чистое монтирование уже существующих отношений.
+
+**Осталось:** `r_i`/`rule_i` не типизируются этим агентом как
+`concept_prov_entity` (формальный домен обеих связей) — текст правила
+называет целью именно их, не производную PROV-сущность, поэтому
+решено связать их как есть, той же логикой "доверять вызывающей
+стороне в вопросах типизации", что и весь остальной модуль, а не
+изобретать дополнительный уровень обёрток; `agent_of(agent_explanation_builder)`
+не вычисляется — готовый `concept_prov_agent` передаётся аргументом.
+`rules_provenance_completion.scs` теперь 5 из 6 правил — остался
+только `rule_fill_missing_provenance` (эвристика без алгоритма в
+тексте).
+
+Файлы: `src/agent/agent_link_explanation_to_provenance.{hpp,cpp}`,
+`src/common/relation_io.hpp` (расширен — `ForEachRoleTarget`),
+`src/keynodes/provenance_keynodes.hpp` (расширен —
+`nrel_prov_was_derived_from`, `action_link_explanation_to_provenance`),
+`rules/rules_provenance_completion.scs`,
+`tests/test_agent_link_explanation_to_provenance.cpp` (3 теста),
+`agents_vault/AgentLinkExplanationToProvenance.md`.
 
 ## 6. Сильные стороны реализации
 

@@ -94,16 +94,12 @@ concept_user_situation_context
 => nrel_main_idtf: [user situation context] (* <- lang_en;; *);
 => nrel_idtf: [C_u];;
 
-// Подкласс-флаг: конкретный экземпляр C_u, свидетельствующий об
+// Подклассы-флаги: конкретный экземпляр C_u, свидетельствующий об
 // ограничении визуального восприятия пользователя (rules/rules_user_adaptation.scs
 // -> rule_choose_modality: "rrel_user_situation_context указывает на
 // ограничение визуального восприятия"). Прежде существовало только в
 // прозе правила; формализовано вместе с AgentChooseModality
-// (ostis_ps_user_ecosystem). Другие ситуационные индикаторы, упомянутые
-// в прозе соседних правил того же файла (mobile/on-the-go --
-// rule_choose_presentation_template; night-shift/low-light --
-// rule_context_aware_layout), остаются неформализованными -- вне
-// рамок этой правки.
+// (ostis_ps_user_ecosystem).
 concept_visual_perception_constraint
 <- sc_node_class;
 => nrel_main_idtf:
@@ -112,6 +108,28 @@ concept_visual_perception_constraint
     [user situation context with a visual perception constraint]
     (* <- lang_en;; *);;
 concept_visual_perception_constraint <= nrel_inclusion: concept_user_situation_context;;
+
+// Аналогично для rule_context_aware_layout: "rrel_user_situation_context
+// включает индикатор «night-shift» ИЛИ low-light" -- два самостоятельных
+// подкласса-флага (не один общий), поскольку правило называет их как
+// два различных условия, а не одно; формализовано вместе с
+// AgentEvaluateContextAwareLayout (ostis_ps_user_ecosystem).
+// mobile/on-the-go (rule_choose_presentation_template) остаётся
+// неформализованным -- то правило дополнительно упирается в
+// неопределённую cognitive_load(u), вне рамок этой правки.
+concept_night_shift_context
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ситуационный контекст ночной смены] (* <- lang_ru;; *);
+    [night-shift user situation context] (* <- lang_en;; *);;
+concept_night_shift_context <= nrel_inclusion: concept_user_situation_context;;
+
+concept_low_light_context
+<- sc_node_class;
+=> nrel_main_idtf:
+    [ситуационный контекст низкой освещённости] (* <- lang_ru;; *);
+    [low-light user situation context] (* <- lang_en;; *);;
+concept_low_light_context <= nrel_inclusion: concept_user_situation_context;;
 
 // ---------------------------------------------------------------------
 // Функция контекстной совместимости ctx_compat(C, s) (формула 9).

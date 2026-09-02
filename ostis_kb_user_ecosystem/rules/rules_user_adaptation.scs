@@ -12,7 +12,8 @@ section_rules_user_adaptation
     [Subsection. User Adaptation Rules (F_rule_adapt)] (* <- lang_en;; *);
 <- atomic_section;
 <- rrel_key_sc_element: action_choose_modality;
-<- rrel_key_sc_element: action_evaluate_progressive_disclosure;;
+<- rrel_key_sc_element: action_evaluate_progressive_disclosure;
+<- rrel_key_sc_element: action_evaluate_context_aware_layout;;
 
 rule -> rule_choose_presentation_template: ...
 (*
@@ -130,6 +131,32 @@ rule -> rule_user_feedback_to_user_model: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации механической части
+// правила ниже -- sc-агент AgentEvaluateContextAwareLayout
+// (ostis_ps_user_ecosystem/src/agent/agent_evaluate_context_aware_layout.*).
+// Оба условия ветвления ("night-shift", "low-light") прежде существовали
+// только в прозе -- concept_user_situation_context не имел подклассов,
+// различающих их. Формализованы вместе с этим агентом
+// (concept_night_shift_context, concept_low_light_context --
+// concepts/contexts.scs). Консеквент реализован лишь частично: "снизить
+// количество одновременно показываемых элементов" не квантифицировано
+// нигде в тексте (см. agents_vault/Implementation Backlog.md) и не
+// вычисляется; "применить тёмную тему" и "увеличить размер шрифта на
+// 10%" материализуются как единый пакет -- присоединением уже
+// существующего concept_strategy_context_aware_layout
+// (concepts/adaptive_interface.scs) под result_level, а не раздельными
+// фактами (в KB нет представления "текущий размер шрифта", которое
+// можно было бы умножить на 1.10).
+// ---------------------------------------------------------------------
+
+action_evaluate_context_aware_layout
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: оценить необходимость контекстно-зависимой компоновки]
+    (* <- lang_ru;; *);
+    [action: evaluate context-aware layout] (* <- lang_en;; *);;
 
 rule -> rule_context_aware_layout: ...
 (*

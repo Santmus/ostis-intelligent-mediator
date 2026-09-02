@@ -53,4 +53,19 @@ inline void LinkByRole(
   ScAddr const arcAddr = context.GenerateConnector(ScType::ConstPermPosArc, sourceAddr, targetAddr);
   context.GenerateConnector(ScType::ConstPermPosArc, roleAddr, arcAddr);
 }
+
+// Обходит ВСЕ цели роли roleAddr, присоединённые к sourceAddr в
+// представлении LinkByRole (в отличие от TargetOf/LinkByRelation,
+// у одной роли из одного источника может быть несколько целей --
+// например, rrel_uses_results нескольких результатов на одном
+// explanation_construction_act).
+template <typename Callback>
+inline void ForEachRoleTarget(
+    ScAgentContext & context, ScAddr const & sourceAddr, ScAddr const & roleAddr, Callback && callback)
+{
+  ScIterator5Ptr const it5 = context.CreateIterator5(
+      sourceAddr, ScType::ConstPermPosArc, ScType::Unknown, ScType::ConstPermPosArc, roleAddr);
+  while (it5->Next())
+    callback(it5->Get(2));
+}
 }  // namespace trust_utils

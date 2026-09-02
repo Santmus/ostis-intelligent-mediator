@@ -122,6 +122,45 @@ be operationalized as C++ sc-agents — by analogy with the already implemented
 > integrity violation — is resolved via
 > `affirmation_subtask_executability`'s composite/atomic split.
 
+> [!note] Update 2026-09-02 (ontology design pass over PARTIAL rules)
+> With no rules left genuinely READY, surveyed the PARTIAL rules for
+> ones whose blocker was actually a narrow, nameable *typing* gap (the
+> `rule_choose_modality` shape) rather than a genuinely open-ended
+> *formula/algorithm* gap (`match()`'s five undefined terms,
+> `cognitive_load(u)`, missing data tables). Found one:
+> `rule_context_aware_layout`'s gate ("night-shift" OR "low-light")
+> matched exactly — closed, [[AgentEvaluateContextAwareLayout]] (see its
+> corrected entry below). Its consequent, unlike `rule_choose_modality`'s,
+> still has an open-ended piece ("reduce element count"), so only the
+> gate is closed. Other candidates considered and rejected as not
+> narrow enough: `rule_enforce_consent_check` (would need a new
+> consent-covers relation AND a validity/expiry mechanism, not just a
+> flag), `rule_on_constraint_violation` ("lower trust... " with no
+> decrement formula — inventing a magnitude would be a modeling
+> decision, not a typing fix, so out of bounds), `rule_audit_log_integrity`
+> (an invariant to enforce, not a value to compute — doesn't fit the
+> reactive-agent shape at all).
+
+> [!note] Update 2026-09-03 (rule_link_explanation_to_provenance closed)
+> `rule_link_explanation_to_provenance` (`rules_provenance_completion.scs`)
+> is now implemented, [[AgentLinkExplanationToProvenance]] — unlike every
+> other rule closed this session, it needed *no* new ontology at all:
+> `nrel_prov_was_derived_from`/`nrel_prov_used`/`nrel_prov_was_attributed_to`
+> (`concepts/provenance.scs`) and `rrel_uses_results`/`rrel_applies_rules`
+> (`concepts/explanations.scs`) all already existed. Its actual blocker —
+> no agent had ever created the `concept_prov_activity`/PROV-agent nodes
+> an explanation act would need to link against — was removed the day
+> before (2026-09-02) by [[AgentRecordProvEntity]]/[[AgentRecordProvActivity]],
+> as this document's own note on that rule already anticipated. Closing
+> it was integration wiring (read `rrel_uses_results`/`rrel_applies_rules`
+> off [[AgentBuildExplanation]]'s construction act, write the three named
+> relations against caller-supplied PROV-O nodes), not ontology design —
+> a different kind of task than the `rule_choose_modality`-style closures
+> above, surfaced by re-reading this file's own corrected entry for the
+> rule (see the `rules_provenance_completion.scs` breakdown below) rather
+> than by the PARTIAL-rule survey itself. `rules_provenance_completion.scs`
+> is now 5 of 6 rules implemented.
+
 The readiness benchmark is the already implemented pattern: 2–5 numeric
 sc-links as text → explicit formula → writing the result back to sc-memory
 (see [[AgentUpdateTrustReliability]] and others).
@@ -147,7 +186,7 @@ list of the section — an internal inconsistency of the KB catalog itself.
 | **`agent_trust_evaluator`** | **trust vector update T(s,τ)** | `rules_trust_update.scs` | **✅ implemented (5 agents)** |
 | `agent_coalition_reconfigurator` | compensatory coalition recalculation | `rules_coalition_reconfiguration.scs` | **partial (2 of 4 rules — [[AgentExcludeFromCoalition]], [[AgentReassignOnResourceExhaustion]])** |
 | `agent_integrity_checker` | integrity checking (SHACL-like shapes) | `rules_integrity_validation.scs` | **✅ implemented (7 of 7 rules — [[AgentValidateCardinalityConstraint]] ×6, [[AgentValidateProvenanceChain]] ×1)** |
-| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (4 of 6 rules — [[AgentComputePiMetric]], [[AgentValidateProvenanceChain]], [[AgentRecordProvEntity]], [[AgentRecordProvActivity]])** |
+| `agent_provenance_registrar` | provenance link registration | `rules_provenance_completion.scs` | **partial (5 of 6 rules — [[AgentComputePiMetric]], [[AgentValidateProvenanceChain]], [[AgentRecordProvEntity]], [[AgentRecordProvActivity]], [[AgentLinkExplanationToProvenance]])** |
 | `agent_context_updater` | interaction context update | — (no separate file) | not implemented |
 | `agent_conflict_detector` | result conflict detection | `rules_integration.scs` (partial) | not implemented |
 
@@ -310,20 +349,22 @@ The weakest file in terms of "formula-ness" — the key operation
 ι(text,C)→goal does not reduce to reading 2–5 numeric sc-links in the spirit
 of the already implemented agents. No numeric example.
 
-### `rules_provenance_completion.scs` — agent `agent_provenance_registrar`, 6 rules — **partial (4 of 6 rules)**
+### `rules_provenance_completion.scs` — agent `agent_provenance_registrar`, 6 rules — **partial (5 of 6 rules)**
 
 - `rule_auto_record_prov_entity` — on appearance of result create prov_entity+wasGeneratedBy+wasAttributedTo — **READY** → ✅ implemented, [[AgentRecordProvEntity]]
 - `rule_auto_record_prov_activity` — on process execution create prov_activity(actor,input,timestamp) — **READY** → ✅ implemented, [[AgentRecordProvActivity]]
 - `rule_compute_pi_metrics` — `π_proc=|{π:∃prov(π)}|/|Proc|` (similarly π_dec, π_data) — **READY** → ✅ implemented, [[AgentComputePiMetric]]
 - `rule_fill_missing_provenance` — reconstruction from log/history/timestamp — **PARTIAL** (heuristic without algorithm)
-- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — was **"READY on paper, PARTIAL in practice"** because the PROV-O triad it needs (a `concept_prov_activity` for the explanation act, a `concept_prov_agent` for `agent_explanation_builder`) was not created by any agent. That specific blocker is now removed — [[AgentRecordProvEntity]]/[[AgentRecordProvActivity]] can populate exactly this triad — but the rule itself is still not implemented; closing it would mean wiring [[AgentBuildExplanation]]'s `uses_results`/`applies_rules` role data through to these two agents, a separate integration step not done here
+- `rule_link_explanation_to_provenance` — for each element of use_results/applies_rules create wasDerivedFrom/PROV:used — was **"READY on paper, PARTIAL in practice"** because the PROV-O triad it needs (a `concept_prov_activity` for the explanation act, a `concept_prov_agent` for `agent_explanation_builder`) was not created by any agent. That specific blocker was removed by [[AgentRecordProvEntity]]/[[AgentRecordProvActivity]] — **READY** → ✅ implemented, [[AgentLinkExplanationToProvenance]] — wires [[AgentBuildExplanation]]'s `rrel_uses_results`/`rrel_applies_rules` role data on the construction act into `nrel_prov_was_derived_from`/`nrel_prov_used`, plus `nrel_prov_was_attributed_to` unconditionally, against caller-supplied PROV-O nodes
 - `rule_verify_transitive_closure` — transitive_closure(derived_from,ir) to request — **READY** → ✅ implemented, [[AgentValidateProvenanceChain]] (duplicates `rule_validate_provenance_chain` in `rules_integrity_validation.scs`, same agent covers both)
 
 **The most "dense" file in terms of readiness** — 5 of 6 rules are
 deterministic (counting/ratio of fractions, building a fixed set of
-provenance links on trigger, graph reachability); 4 of those 5 are now
+provenance links on trigger, graph reachability); all 5 are now
 implemented ([[AgentComputePiMetric]], [[AgentValidateProvenanceChain]],
-[[AgentRecordProvEntity]], [[AgentRecordProvActivity]]).
+[[AgentRecordProvEntity]], [[AgentRecordProvActivity]],
+[[AgentLinkExplanationToProvenance]]) — only `rule_fill_missing_provenance`
+(a heuristic reconstruction with no algorithm in the text) remains open.
 `rule_compute_pi_metrics` is structurally almost identical to the already
 implemented trust aggregation. `rule_auto_record_prov_entity`/
 `_activity` were, unlike `rule_choose_modality` elsewhere in this
@@ -353,14 +394,14 @@ Numeric example: `scenario_security_breach_response.scs` — "5400
 req/min, exceeds baseline by 27×" — ready input for
 `rule_detect_anomalous_request_rate`.
 
-### `rules_user_adaptation.scs` — adaptive interface + `agent_explanation_builder`, 6 rules — **partial (2 of 6 rules)**
+### `rules_user_adaptation.scs` — adaptive interface + `agent_explanation_builder`, 6 rules — **partial (3 of 6 rules)**
 
 - `rule_choose_presentation_template` — cognitive_load(u)≤θ_low∧desktop ⇒ detailed; >θ_high∨mobile ⇒ summary; else ⇒ card — **PARTIAL** (cognitive_load(u) is nowhere computed explicitly)
 - `rule_choose_modality` — visual-constraint ⇒ voice; preference_visual ⇒ visual; default ⇒ text — corrected 2026-09-02 from READY to PARTIAL-on-inspection (see note below), then closed by adding the two missing typed flags → ✅ implemented, [[AgentChooseModality]]
 - `rule_progressive_disclosure` — depth(provenance)>4 ∨ \|partial_results\|>5 ⇒ executive summary — **READY** (internal graph metrics, no external dependencies) → ✅ implemented, [[AgentEvaluateProgressiveDisclosure]]
 - `rule_simplify_terminology_for_end_user` — end_user∧¬domain_expert ⇒ apply glossary — **PARTIAL** (needs a terminology table not defined here)
 - `rule_user_feedback_to_user_model` — update competence/preference/history; "recalculate cognitive_load over last 10" — **PARTIAL** (the cognitive_load formula itself is not defined)
-- `rule_context_aware_layout` — night-shift/low-light ⇒ dark theme + font ×1.10 — **PARTIAL** ("reduce number of elements" is not quantified, though font ×1.10 is a pure formula)
+- `rule_context_aware_layout` — night-shift/low-light ⇒ dark theme + font ×1.10 — **PARTIAL**, gate closed by the same method as `rule_choose_modality` (see note below) → ✅ mechanical detection implemented, [[AgentEvaluateContextAwareLayout]] (the "reduce element count" clause remains genuinely unquantified — not closable the same way)
 
 `rule_progressive_disclosure` is a pure threshold/classification rule
 without external dependencies, and is now implemented.
@@ -387,6 +428,22 @@ carries `<- concept_preference_visual_modality`.
 `rule_choose_presentation_template` remains blocked by
 `cognitive_load(u)`'s undefined formula — a different, still-open class
 of gap.
+`rule_context_aware_layout`'s gate ("night-shift" OR "low-light") had
+the exact same shape of gap as `rule_choose_modality`'s — two nameable
+flags missing from `concept_user_situation_context`, not an open-ended
+formula — closed the same way: `concept_night_shift_context` and
+`concept_low_light_context` (both `<= nrel_inclusion:
+concept_user_situation_context`, `concepts/contexts.scs`), then
+[[AgentEvaluateContextAwareLayout]] against them. Unlike
+`rule_choose_modality`, though, the rule's *consequent* also has an
+open-ended piece — "reduce the number of simultaneously shown elements"
+names no target count anywhere, the same class of gap as
+`cognitive_load(u)` — so only the gate/detection is implemented; the
+triggered case is materialized as a single marker attachment
+(`concept_strategy_context_aware_layout`, already existing in
+`concepts/adaptive_interface.scs` since before this pass but without a
+producer) standing in for the whole consequent package, not three
+separate computed effects.
 Numeric example: not found (`cognitive_load`, `θ_low/θ_high` — 0 matches across
 all 15 scenarios); `scenario_intelligent_tutoring.scs`'s `preference_ivan_visual`
 is now a typed positive fixture for `rule_choose_modality`'s preference

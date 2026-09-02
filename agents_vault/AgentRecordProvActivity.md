@@ -42,7 +42,8 @@ PROV activity with the roles/relations the rule names.
 **Value.** Together with [[AgentRecordProvEntity]], gives the PROV-O
 subsystem an actual population path — the pair is what
 `rule_link_explanation_to_provenance` was blocked on (see
-[[Implementation Backlog]]'s own note on that rule).
+[[Implementation Backlog]]'s own note on that rule), closed the next
+day by [[AgentLinkExplanationToProvenance]].
 
 **Stakeholders:** [[AgentRecordProvEntity]] (typically consumes this
 agent's output as its `activity` argument), any future consumer of a
