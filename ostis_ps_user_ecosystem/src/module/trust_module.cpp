@@ -26,6 +26,7 @@
 #include "agent/agent_handle_no_admissible_assignment.hpp"
 #include "agent/agent_evaluate_context_aware_layout.hpp"
 #include "agent/agent_link_explanation_to_provenance.hpp"
+#include "agent/agent_record_state_transition.hpp"
 
 // AgentComputePiMetric/AgentValidateProvenanceChain/AgentRecordProvEntity/
 // AgentRecordProvActivity/AgentLinkExplanationToProvenance (провенанс),
@@ -38,9 +39,11 @@
 // AgentReassignOnResourceExhaustion (реконфигурация коалиции),
 // AgentCheckAcyclicity (декомпозиция запроса),
 // AgentEvaluateProgressiveDisclosure/AgentChooseModality/
-// AgentEvaluateContextAwareLayout (адаптация под пользователя) и
-// AgentHandleNoAdmissibleAssignment (распределение подзадач) не о
-// доверии, но зарегистрированы здесь же: SC_MODULE_REGISTER определяет
+// AgentEvaluateContextAwareLayout (адаптация под пользователя),
+// AgentHandleNoAdmissibleAssignment (распределение подзадач) и
+// AgentRecordStateTransition (учёт переходов состояния конвейера
+// медиации, AGENTS_AUDIT.md §7.1, Фаза 1) не о доверии, но
+// зарегистрированы здесь же: SC_MODULE_REGISTER определяет
 // extern "C" sc_module_initialize/sc_module_shutdown -- в одной
 // разделяемой библиотеке (.dylib/.so) может быть только один модуль,
 // иначе конфликт символов. Пока агентов немного, отдельная библиотека
@@ -71,4 +74,5 @@ SC_MODULE_REGISTER(TrustModule)
     ->Agent<AgentRecordProvActivity>()
     ->Agent<AgentHandleNoAdmissibleAssignment>()
     ->Agent<AgentEvaluateContextAwareLayout>()
-    ->Agent<AgentLinkExplanationToProvenance>();
+    ->Agent<AgentLinkExplanationToProvenance>()
+    ->Agent<AgentRecordStateTransition>();

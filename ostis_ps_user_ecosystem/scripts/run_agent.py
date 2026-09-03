@@ -807,6 +807,86 @@ def demo_link_explanation_to_provenance() -> None:
             client.erase_elements(*created)
 
 
+def demo_record_state_transition() -> None:
+    """x_exec -> x_aggregate: ребро уже объявлено в реальной БЗ
+    (concepts/mediation_lifecycle.scs, nrel_transitions_to) -- демо
+    только строит свежий запрос/состояние/событие/версию плана и
+    проверяет, что агент читает существующий граф допустимости, а не
+    создаёт его сам."""
+    created: list = []
+    try:
+        concept_state_aggregation = resolve("concept_state_aggregation")
+
+        request = new_node(created)
+        old_state = new_node(created)
+        tag_class(old_state, "concept_state_execution")
+        link_by_relation(
+            created, old_state, make_float_link(created, 2.0), resolve("nrel_remaining_reassignment_budget")
+        )
+        link_by_relation(
+            created, old_state, make_float_link(created, 1.0), resolve("nrel_remaining_replanning_depth")
+        )
+        link_by_relation(created, request, old_state, resolve("nrel_has_state"))
+
+        event = new_node(created)
+        plan_version = new_node(created)
+
+        status, _ = run_action(
+            "action_record_state_transition", [request, concept_state_aggregation, event, plan_version], created
+        )
+
+        new_state = target_of(request, resolve("nrel_has_state"))
+        new_state_ok = new_state is not None and new_state != old_state and is_classified(
+            new_state, concept_state_aggregation
+        )
+        budget_after = None
+        if new_state is not None:
+            budget_link = target_of(new_state, resolve("nrel_remaining_reassignment_budget"))
+            if budget_link is not None:
+                budget_after = read_float_link(budget_link)
+        budget_ok = budget_after is not None and math.isclose(budget_after, 2.0, abs_tol=1e-3)
+
+        transition = find_source_by_role(new_state, resolve("rrel_to_state")) if new_state is not None else None
+        transition_ok = transition is not None and is_classified(transition, resolve("concept_state_transition"))
+        # rrel_from_state -- прямая (не обратная) роль-цель; отдельного
+        # forward-помощника в скрипте нет, но old_state здесь единственный
+        # узел, присоединённый к transition ролевой дугой именно к нему,
+        # поэтому голого has_plain_arc достаточно.
+        from_state_ok = transition is not None and has_plain_arc(transition, old_state)
+        caused_by_ok = transition is not None and has_link_by_relation(
+            transition, event, resolve("nrel_caused_by_event")
+        )
+        plan_version_ok = transition is not None and has_link_by_relation(
+            transition, plan_version, resolve("nrel_uses_plan_version")
+        )
+
+        audit_record = target_of(transition, resolve("nrel_transition_recorded_in")) if transition is not None else None
+        audit_ok = audit_record is not None and is_classified(
+            audit_record, resolve("concept_audit_record_transition")
+        )
+
+        ok = (
+            status == "successfully"
+            and new_state_ok
+            and budget_ok
+            and transition_ok
+            and from_state_ok
+            and caused_by_ok
+            and plan_version_ok
+            and audit_ok
+        )
+        tag = "OK" if ok else "MISMATCH"
+        print(
+            f"[{tag}] action_record_state_transition: status={status} "
+            f"new_state(x_aggregate)={new_state_ok} budget_carried_over={budget_ok} "
+            f"transition_node={transition_ok} from_state={from_state_ok} caused_by_event={caused_by_ok} "
+            f"uses_plan_version={plan_version_ok} audit_record_transition={audit_ok}"
+        )
+    finally:
+        if created:
+            client.erase_elements(*created)
+
+
 DEMOS = {
     "update_trust_reliability": lambda: demo_trust_ema("action_update_trust_reliability", "alpha"),
     "update_trust_accuracy": lambda: demo_trust_ema("action_update_trust_accuracy", "beta"),
@@ -834,6 +914,7 @@ DEMOS = {
     "handle_no_admissible_assignment": demo_handle_no_admissible_assignment,
     "evaluate_context_aware_layout": demo_evaluate_context_aware_layout,
     "link_explanation_to_provenance": demo_link_explanation_to_provenance,
+    "record_state_transition": demo_record_state_transition,
 }
 
 

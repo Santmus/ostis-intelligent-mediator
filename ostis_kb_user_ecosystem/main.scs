@@ -102,6 +102,7 @@ section_user_intelligent_ecosystem_interaction
     section_rules_integrity_validation;
     section_rules_user_adaptation;
     section_rules_provenance_completion;
+    section_rules_mediation_orchestration;
 
     // Сценарии (демонстрационные ABox-фрагменты)
     section_scenario_request_processing;

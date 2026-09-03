@@ -9,7 +9,7 @@
 //
 // Дополняет concept_sc_agents.scs: тот файл описывает 10-12 семейств
 // агентов на уровне процессов жизненного цикла (nrel_implements_process,
-// nrel_realizes_mapping) -- эта секция формализует каждый из 26 уже
+// nrel_realizes_mapping) -- эта секция формализует каждый из 27 уже
 // реализованных C++ агентов (src/agent/*.cpp, module/trust_module.cpp)
 // как конкретную platform_dependent-реализацию, видимую платформенным
 // механизмам (nrel_sc_agent_key_sc_elements, nrel_primary_initiation_condition,
@@ -41,6 +41,7 @@ section_concept_sc_agents
 <- rrel_key_sc_element: sc_agent_of_reassign_on_resource_exhaustion;
 <- rrel_key_sc_element: sc_agent_of_record_prov_activity;
 <- rrel_key_sc_element: sc_agent_of_record_prov_entity;
+<- rrel_key_sc_element: sc_agent_of_record_state_transition;
 <- rrel_key_sc_element: sc_agent_of_register_partial_result;
 <- rrel_key_sc_element: sc_agent_of_resolve_by_trust_weighted;
 <- rrel_key_sc_element: sc_agent_of_update_trust_accuracy;
@@ -806,6 +807,55 @@ sc_agent_of_record_prov_entity
 	.._action _-> rrel_1:: .._parameter_1;;
 	.._action _-> rrel_2:: .._parameter_2;;
 	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_record_state_transition
+=> nrel_main_idtf:
+	[Учёт перехода состояния запроса] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_record_state_transition_condition => ..sc_agent_of_record_state_transition_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_record_state_transition
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_record_state_transition
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_record_state_transition.hpp; syntax=cpp];
+			[path=src/agent/agent_record_state_transition.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_record_state_transition_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_record_state_transition_condition
+= [*
+	action_record_state_transition _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+..sc_agent_of_record_state_transition_result
+= [*
+	action_record_state_transition _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
 *];;
 
 sc_agent_of_register_partial_result

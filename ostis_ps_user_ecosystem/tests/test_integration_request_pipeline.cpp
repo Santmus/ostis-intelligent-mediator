@@ -9,10 +9,13 @@
 #include "agent/agent_dispatch_ready_subtask.hpp"
 #include "agent/agent_register_partial_result.hpp"
 #include "agent/agent_propagate_to_dependent.hpp"
+#include "agent/agent_validate_integration.hpp"
+#include "agent/agent_record_state_transition.hpp"
 #include "keynodes/integrity_keynodes.hpp"
 #include "keynodes/trust_keynodes.hpp"
 #include "keynodes/integration_keynodes.hpp"
 #include "keynodes/task_keynodes.hpp"
+#include "keynodes/lifecycle_keynodes.hpp"
 
 // Не отдельный агент, а сквозной тест, показывающий, что выход одного
 // уже реализованного агента корректно читается следующим -- без
@@ -43,6 +46,37 @@ float ReadValueLinkContent(ScAgentContext & ctx, ScAddr const & nodeAddr)
   std::string content;
   EXPECT_TRUE(ctx.GetLinkContent(it3->Get(2), content));
   return std::stof(content);
+}
+
+ScAddr TargetOf(ScAgentContext & ctx, ScAddr const & src, ScAddr const & relationAddr)
+{
+  ScIterator5Ptr const it5 =
+      ctx.CreateIterator5(src, ScType::ConstCommonArc, ScType::Unknown, ScType::ConstPermPosArc, relationAddr);
+  if (it5->Next())
+    return it5->Get(2);
+  return ScAddr::Empty;
+}
+
+// Цель роли roleAddr в представлении LinkByRole (common/relation_io.hpp):
+// sourceAddr -[ConstPermPosArc]-> target, дуга классифицирована roleAddr.
+ScAddr RoleTarget(ScAgentContext & ctx, ScAddr const & sourceAddr, ScAddr const & roleAddr)
+{
+  ScIterator5Ptr const it5 =
+      ctx.CreateIterator5(sourceAddr, ScType::ConstPermPosArc, ScType::Unknown, ScType::ConstPermPosArc, roleAddr);
+  if (it5->Next())
+    return it5->Get(2);
+  return ScAddr::Empty;
+}
+
+// Обратный поиск: источник, присоединивший targetAddr в роли roleAddr --
+// находит узел перехода concept_state_transition по его rrel_to_state.
+ScAddr RoleSource(ScAgentContext & ctx, ScAddr const & targetAddr, ScAddr const & roleAddr)
+{
+  ScIterator5Ptr const it5 =
+      ctx.CreateIterator5(ScType::Unknown, ScType::ConstPermPosArc, targetAddr, ScType::ConstPermPosArc, roleAddr);
+  if (it5->Next())
+    return it5->Get(0);
+  return ScAddr::Empty;
 }
 }  // namespace
 
@@ -252,4 +286,124 @@ TEST_F(IntegrationRequestPipelineTest, DispatchesRegistersAndPropagatesAlongSubt
   m_ctx->UnsubscribeAgent<AgentDispatchReadySubtask>();
   m_ctx->UnsubscribeAgent<AgentRegisterPartialResult>();
   m_ctx->UnsubscribeAgent<AgentPropagateToDependent>();
+}
+
+// Расширяет тот же участок конвейера учётом состояния запроса
+// (AGENTS_AUDIT.md §7.1, Фаза 1): после того как σ получает результат
+// (тот же фрагмент, что и в предыдущем тесте), запрос переходит
+// x_exec -> x_aggregate (AgentRecordStateTransition); интегрированный
+// результат проходит проверку (AgentValidateIntegration,
+// rule_validate_integration); затем запрос переходит x_aggregate ->
+// x_verify. Обход rrel_to_state/rrel_from_state двух узлов перехода
+// восстанавливает x_exec -> x_aggregate -> x_verify
+// (affirmation_transition_traceability) -- без единого оркестрирующего
+// агента, той же дисциплиной, что и в двух тестах выше.
+TEST_F(IntegrationRequestPipelineTest, RecordsStateTransitionsAroundIntegrationValidation)
+{
+  m_ctx->SubscribeAgent<AgentDispatchReadySubtask>();
+  m_ctx->SubscribeAgent<AgentRegisterPartialResult>();
+  m_ctx->SubscribeAgent<AgentRecordStateTransition>();
+  m_ctx->SubscribeAgent<AgentValidateIntegration>();
+
+  // --- Шаг 1: σ назначена, единственная зависимость уже завершена --
+  //     готова к диспетчеризации (тот же фрагмент, что и выше). ---
+  ScAddr const systemAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const subtaskAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(*m_ctx, subtaskAddr, systemAddr, TaskKeynodes::nrel_assigned_to);
+  LinkByRelation(
+      *m_ctx, subtaskAddr, TaskKeynodes::concept_subtask_status_proposed, TaskKeynodes::nrel_subtask_status);
+
+  ScAddr const dependencyAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(
+      *m_ctx, dependencyAddr, TaskKeynodes::concept_subtask_status_completed, TaskKeynodes::nrel_subtask_status);
+  LinkByRelation(*m_ctx, subtaskAddr, dependencyAddr, TaskKeynodes::nrel_subtask_depends_on);
+
+  ScAddr const dispatchLevelAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAction dispatchAction = m_ctx->GenerateAction(TaskKeynodes::action_dispatch_ready_subtask);
+  dispatchAction.SetArguments(subtaskAddr, dispatchLevelAddr);
+  ASSERT_TRUE(dispatchAction.InitiateAndWait(2000));
+  ASSERT_TRUE(dispatchAction.IsFinishedSuccessfully());
+
+  // --- Шаг 2: система присылает результат -- σ завершена. ---
+  ScAddr const resultAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const contextAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAction registerAction = m_ctx->GenerateAction(TaskKeynodes::action_register_partial_result);
+  registerAction.SetArguments(systemAddr, resultAddr, subtaskAddr, contextAddr);
+  ASSERT_TRUE(registerAction.InitiateAndWait(2000));
+  ASSERT_TRUE(registerAction.IsFinishedSuccessfully());
+
+  // --- Шаг 3: все результаты собраны -- запрос переходит x_exec -> x_aggregate. ---
+  ScAddr const requestAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const execStateAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  m_ctx->GenerateConnector(ScType::ConstPermPosArc, LifecycleKeynodes::concept_state_execution, execStateAddr);
+  LinkByRelation(
+      *m_ctx, execStateAddr, MakeFloatLink(*m_ctx, 2.0f), LifecycleKeynodes::nrel_remaining_reassignment_budget);
+  LinkByRelation(
+      *m_ctx, execStateAddr, MakeFloatLink(*m_ctx, 1.0f), LifecycleKeynodes::nrel_remaining_replanning_depth);
+  LinkByRelation(*m_ctx, requestAddr, execStateAddr, LifecycleKeynodes::nrel_has_state);
+  LinkByRelation(
+      *m_ctx, LifecycleKeynodes::concept_state_execution, LifecycleKeynodes::concept_state_aggregation,
+      LifecycleKeynodes::nrel_transitions_to);
+
+  ScAddr const allResultsReadyEventAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const planVersionAddr = m_ctx->GenerateNode(ScType::ConstNode);
+
+  ScAction toAggregateAction = m_ctx->GenerateAction(LifecycleKeynodes::action_record_state_transition);
+  toAggregateAction.SetArguments(
+      requestAddr, LifecycleKeynodes::concept_state_aggregation, allResultsReadyEventAddr, planVersionAddr);
+  ASSERT_TRUE(toAggregateAction.InitiateAndWait(2000));
+  ASSERT_TRUE(toAggregateAction.IsFinishedSuccessfully());
+
+  ScAddr const aggregateStateAddr = TargetOf(*m_ctx, requestAddr, LifecycleKeynodes::nrel_has_state);
+  ASSERT_TRUE(m_ctx->IsElement(aggregateStateAddr));
+
+  // --- Шаг 4: результат интегрирован и объяснён, конфликтов нет --
+  //     rule_validate_integration подтверждает валидность (типизация
+  //     concept_integrated_result агентом не проверяется, см.
+  //     agent_validate_integration.hpp). ---
+  ScAddr const integratedResultAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAddr const explanationAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  LinkByRelation(*m_ctx, integratedResultAddr, explanationAddr, IntegrationKeynodes::nrel_explained_by);
+  ScAddr const validationLevelAddr = m_ctx->GenerateNode(ScType::ConstNode);
+
+  ScAction validateIntegrationAction = m_ctx->GenerateAction(IntegrationKeynodes::action_validate_integration);
+  validateIntegrationAction.SetArguments(integratedResultAddr, validationLevelAddr);
+  ASSERT_TRUE(validateIntegrationAction.InitiateAndWait(2000));
+  ASSERT_TRUE(validateIntegrationAction.IsFinishedSuccessfully());
+  EXPECT_NEAR(ReadValueLinkContent(*m_ctx, validationLevelAddr), 1.0f, 0.0001f);
+
+  // --- Шаг 5: интеграция подтверждена -- запрос переходит x_aggregate -> x_verify. ---
+  LinkByRelation(
+      *m_ctx, LifecycleKeynodes::concept_state_aggregation, LifecycleKeynodes::concept_state_verification,
+      LifecycleKeynodes::nrel_transitions_to);
+
+  ScAddr const integrationValidEventAddr = m_ctx->GenerateNode(ScType::ConstNode);
+  ScAction toVerifyAction = m_ctx->GenerateAction(LifecycleKeynodes::action_record_state_transition);
+  toVerifyAction.SetArguments(
+      requestAddr, LifecycleKeynodes::concept_state_verification, integrationValidEventAddr, planVersionAddr);
+  ASSERT_TRUE(toVerifyAction.InitiateAndWait(2000));
+  ASSERT_TRUE(toVerifyAction.IsFinishedSuccessfully());
+
+  ScAddr const verifyStateAddr = TargetOf(*m_ctx, requestAddr, LifecycleKeynodes::nrel_has_state);
+  ASSERT_TRUE(m_ctx->IsElement(verifyStateAddr));
+  EXPECT_TRUE(
+      m_ctx
+          ->CreateIterator3(LifecycleKeynodes::concept_state_verification, ScType::ConstPermPosArc, verifyStateAddr)
+          ->Next());
+
+  // --- affirmation_transition_traceability: обход rrel_to_state/
+  //     rrel_from_state двух узлов перехода восстанавливает
+  //     x_exec -> x_aggregate -> x_verify. ---
+  ScAddr const transitionToVerifyAddr = RoleSource(*m_ctx, verifyStateAddr, LifecycleKeynodes::rrel_to_state);
+  ASSERT_TRUE(m_ctx->IsElement(transitionToVerifyAddr));
+  EXPECT_EQ(RoleTarget(*m_ctx, transitionToVerifyAddr, LifecycleKeynodes::rrel_from_state), aggregateStateAddr);
+
+  ScAddr const transitionToAggregateAddr = RoleSource(*m_ctx, aggregateStateAddr, LifecycleKeynodes::rrel_to_state);
+  ASSERT_TRUE(m_ctx->IsElement(transitionToAggregateAddr));
+  EXPECT_EQ(RoleTarget(*m_ctx, transitionToAggregateAddr, LifecycleKeynodes::rrel_from_state), execStateAddr);
+
+  m_ctx->UnsubscribeAgent<AgentDispatchReadySubtask>();
+  m_ctx->UnsubscribeAgent<AgentRegisterPartialResult>();
+  m_ctx->UnsubscribeAgent<AgentRecordStateTransition>();
+  m_ctx->UnsubscribeAgent<AgentValidateIntegration>();
 }

@@ -1,0 +1,34 @@
+// =====================================================================
+// rules/rules_mediation_orchestration.scs
+// Учёт переходов состояния запроса в конвейере медиации (жизненный цикл,
+// concepts/mediation_lifecycle.scs). В отличие от остальных подразделов
+// rules/, здесь нет отдельного rule_*-текста: единственное действие
+// операционализирует непосредственно текст ограничений
+// constraint_transition_provenance и constraint_separate_resource_decrease
+// (axioms/axioms_constraints.scs) и утверждение
+// affirmation_terminal_state_closure (concepts/mediation_lifecycle.scs).
+// =====================================================================
+
+section_rules_mediation_orchestration
+=> nrel_main_idtf:
+    [Подраздел. Правила учёта переходов состояния] (* <- lang_ru;; *);
+    [Subsection. State Transition Recording Rules] (* <- lang_en;; *);
+<- atomic_section;
+<- rrel_key_sc_element: action_record_state_transition;;
+
+// ---------------------------------------------------------------------
+// Класс действия для программной (C++) реализации -- sc-агент
+// AgentRecordStateTransition (ostis_ps_user_ecosystem/src/agent/
+// agent_record_state_transition.*). Агент не решает, КОГДА и на какое
+// состояние переходить -- целевой класс передаёт вызывающая сторона
+// (тот же принцип, что и у всех прочих 26 агентов модуля); агент
+// проверяет только допустимость ребра (nrel_transitions_to), ресурсное
+// ограничение b_rem (constraint_separate_resource_decrease) и строит
+// полный пакет перехода (constraint_transition_provenance).
+// ---------------------------------------------------------------------
+
+action_record_state_transition
+<- sc_node_class;
+=> nrel_main_idtf:
+    [действие: зафиксировать переход состояния] (* <- lang_ru;; *);
+    [action: record state transition] (* <- lang_en;; *);;

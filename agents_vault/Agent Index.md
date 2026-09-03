@@ -6,7 +6,7 @@ tags: [moc, trust-agents, provenance-agents]
 # Ontological descriptions of ostis_ps_user_ecosystem agents
 
 The `TrustModule` module ([[ostis_ps_user_ecosystem]]) contains
-twenty-six sc-agents: five implement the rules for updating the trust
+twenty-seven sc-agents: five implement the rules for updating the trust
 vector π_tr, one — the computable part of provenance completeness
 metrics, one — detection of anomalous request frequency, one —
 resolution of result conflicts by weighted trust, three — the full life
@@ -27,7 +27,9 @@ one — deciding between decomposition and an integrity violation when no
 system is an admissible executor, one — detecting a night-shift/low-light
 situational trigger for context-aware layout, one — wiring an
 explanation-construction act's used-results/applied-rules role data into
-the PROV-O relations the entity/activity/agent triad already supports.
+the PROV-O relations the entity/activity/agent triad already supports,
+and one — mechanical recording of a request's lifecycle state
+transition (Phase 1 of the orchestrator gap, AGENTS_AUDIT.md §7.1).
 Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 `ostis_kb_user_ecosystem/rules/`.
 
@@ -61,6 +63,7 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentHandleNoAdmissibleAssignment]] | `action_handle_no_admissible_assignment` | indicator + integrity_violation | binary branch on subtask class |
 | [[AgentEvaluateContextAwareLayout]] | `action_evaluate_context_aware_layout` | indicator (decision) + strategy marker | two-flag OR gate over two new ontology flags |
 | [[AgentLinkExplanationToProvenance]] | `action_link_explanation_to_provenance` | `nrel_prov_was_derived_from`/`nrel_prov_used`/`nrel_prov_was_attributed_to` | role-to-relation wiring |
+| [[AgentRecordStateTransition]] | `action_record_state_transition` | `nrel_has_state` + `concept_state_transition` + `AuditRecord`/`ProvenanceRecord` | admissibility + resource gate, mechanical bundle construction |
 
 ## How to read these notes
 
@@ -74,7 +77,7 @@ implementation, not generic statements.
 
 ## Cross-cutting dependencies
 
-All twenty-six agents use:
+All twenty-seven agents use:
 - `common/float_link_io.hpp` — shared `WriteFloatLinkContent` (and
   `ReadFloatLinkContent` — all except [[AgentComputePiMetric]], which
   only needs to know that the link exists,
@@ -98,6 +101,10 @@ All twenty-six agents use:
   (`LinkByRole`) or iterate a plain group's members
   (`LinkGroupMembersByRole`, a local helper in
   `agent_build_explanation.cpp`, not shared).
+  [[AgentRecordStateTransition]] reuses `TargetOf`/`LinkByRelation`/
+  `LinkByRole`/`SetFunctionalRelationTarget` as-is — no new shared
+  helper, the first agent since [[AgentBuildExplanation]] to need this
+  many of them at once without adding anything.
 - `keynodes/trust_keynodes.hpp` (`TrustKeynodes`) / `keynodes/provenance_keynodes.hpp`
   (`ProvenanceKeynodes`) / `keynodes/security_keynodes.hpp`
   (`SecurityKeynodes`) / `keynodes/integration_keynodes.hpp`
@@ -107,7 +114,8 @@ All twenty-six agents use:
   (`ExplanationKeynodes`) / `keynodes/coalition_keynodes.hpp`
   (`CoalitionKeynodes`) / `keynodes/adaptive_interface_keynodes.hpp`
   (`AdaptiveInterfaceKeynodes`) / `keynodes/allocation_keynodes.hpp`
-  (`AllocationKeynodes`) — key sc-elements and action classes.
+  (`AllocationKeynodes`) / `keynodes/lifecycle_keynodes.hpp`
+  (`LifecycleKeynodes`) — key sc-elements and action classes.
 - Base class `ScActionInitiatedAgent` (sc-machine) — reacts to the
   event `ScEventAfterGenerateOutgoingArc` with subscription element
   `action_initiated`.
@@ -123,8 +131,9 @@ All twenty-six agents use:
   [[AgentEvaluateProgressiveDisclosure]], [[AgentChooseModality]],
   [[AgentRecordProvEntity]], [[AgentRecordProvActivity]],
   [[AgentHandleNoAdmissibleAssignment]],
-  [[AgentEvaluateContextAwareLayout]] and
-  [[AgentLinkExplanationToProvenance]] are registered there too, despite
+  [[AgentEvaluateContextAwareLayout]],
+  [[AgentLinkExplanationToProvenance]] and
+  [[AgentRecordStateTransition]] are registered there too, despite
   the name.
 
 [[AgentAggregateTrust]] depends on the results of the other three EMA
@@ -307,23 +316,53 @@ arguments to be meaningfully typed, typically of
 it calls neither directly. `rules_provenance_completion.scs` is now
 5 of 6 rules implemented — only `rule_fill_missing_provenance` (a
 heuristic reconstruction with no algorithm in the text) remains.
+[[AgentRecordStateTransition]] is Phase 1 of AGENTS_AUDIT.md §7.1, the
+lifecycle-orchestrator gap — chosen over the other two equally-sized
+missing subsystems (an external-system bridge, an ontology-translation
+service) because its ontology already existed in full and was read by
+none of the other twenty-six agents. It is the first agent in the
+module to implement a `constraint_*`/`affirmation_*` text
+(`axioms/axioms_constraints.scs`, `concepts/mediation_lifecycle.scs`)
+rather than a `rule_*` — a new `rules/rules_mediation_orchestration.scs`
+declares `action_record_state_transition` for it, since no existing
+rules file was the right home. Deliberately mechanical, not a deciding
+orchestrator: the caller picks `to_state_class`, matching the
+project-wide rule that no agent calls another agent's action (see
+`test_integration_request_pipeline.cpp`'s third `TEST_F`, where this
+agent brackets a call to [[AgentValidateIntegration]] without either
+calling the other). Scoped to the slice of the pipeline that already
+has real agents on both sides — `x_exec`/`x_aggregate`/`x_verify` plus
+the `x_exec → x_assign` reassignment edge — so its correctness is
+demonstrable against agents that actually produce and consume those
+states today, rather than against states nothing populates yet. Reuses
+`TargetOf`/`LinkByRelation`/`LinkByRole`/`SetFunctionalRelationTarget`
+unchanged; the new `keynodes/lifecycle_keynodes.hpp` introduces no KB
+element that didn't already exist. The other nine lifecycle states, the
+replanning cycle (`d_max`), and — most importantly — anything that
+decides *when* to call this agent remain open (Phase 2, not started).
 
 ## Running agents standalone
 
 `ostis_ps_user_ecosystem/scripts/run_agent.py` -- a Python script on top of
-py-sc-client (venv sc-web) for launching any of the 26 agents against a live
+py-sc-client (venv sc-web) for launching any of the 27 agents against a live
 sc-server without C++ tests and without a browser JS console; by default
-it runs demo scenarios for all 26 agents in a row using illustrative
+it runs demo scenarios for all 27 agents in a row using illustrative
 numbers from tests/test_agent_*.cpp. Launch details are in the docstring
 of the file itself. Extended to 24 (from an original 12) during the
 ontology/article/agent consistency check on 2026-09-02, which also caught
 `demo_aggregate_trust` computing its expected value against the
 pre-2026-08-30 unequal trust weights instead of the current λ_k = 1/4 --
 fixed alongside that extension. Extended again to 26 on 2026-09-03 for
-[[AgentEvaluateContextAwareLayout]]/[[AgentLinkExplanationToProvenance]] —
-verified only via `py_compile`/AST introspection (26 `DEMOS` entries, 23
+[[AgentEvaluateContextAwareLayout]]/[[AgentLinkExplanationToProvenance]],
+then to 27 the same day for [[AgentRecordStateTransition]] — all three
+verified only via `py_compile`/AST introspection (27 `DEMOS` entries, 24
 `demo_` functions since `demo_trust_ema` is reused 4×), not against a
-live sc-server, same caveat as the first extension.
+live sc-server: `demo_record_state_transition` specifically was written
+against a `sc-server` that had already been running 4+ hours on an older
+KB/agent build, so restarting it with `--rebuild` to actually exercise
+the new demo was deliberately left to whoever next has a reason to
+restart that process, rather than done unprompted mid-session (see
+`RUNNING_AGENTS.md`'s "Известные ограничения").
 
 > [!warning] Discovered sc-machine bug: do not erase the action node after InitiateAndWait
 > Erasing the sc-node of a finished action (`action_addr`, after it
@@ -360,9 +399,23 @@ is registered, σ → `completed`) →
 [[AgentPropagateToDependent]] (σ', which depends on σ, receives r as input
 via an inform act).
 
-Both tests show that each agent's output is correctly read by the next one
-through data — without a separate orchestrator agent, which the project
-does not yet have (see above about [[AgentAggregateTrust]]).
+**`RecordsStateTransitionsAroundIntegrationValidation`** — extends the
+same subtask-chain fragment as the previous test
+([[AgentDispatchReadySubtask]] → [[AgentRegisterPartialResult]]) with
+lifecycle bookkeeping around an integration check:
+[[AgentRecordStateTransition]] (`x_exec → x_aggregate`) →
+[[AgentValidateIntegration]] (the integrated result is explained and
+conflict-free) → [[AgentRecordStateTransition]] (`x_aggregate →
+x_verify`). Walking `rrel_to_state`/`rrel_from_state` back across both
+transition nodes reconstructs `x_exec → x_aggregate → x_verify` —
+`affirmation_transition_traceability` (`concepts/mediation_lifecycle.scs`)
+demonstrated directly, not just asserted per-transition.
+
+All three tests show that each agent's output is correctly read by the
+next one through data — without a separate orchestrator agent, which the
+project does not yet have (see above about [[AgentAggregateTrust]]);
+[[AgentRecordStateTransition]] itself is not that orchestrator either,
+by design (see its own note above).
 
 ## Ontological agent declarations
 
@@ -380,15 +433,19 @@ agent worked only through the C++ `ScActionInitiatedAgent` subscription,
 invisible to anything that discovers agents through the ontology itself
 (a platform tool, or a scp-agent searching for `abstract_sc_agent`).
 
-Each of the 26 gets a `sc_agent_of_<name>` node with the full required
-relation set; argument positions in the condition/result templates use
-`rrel_1..rrel_N` (N taken from that agent's own `GetArguments<N>()`),
-matching how `ScAction::SetArgument` actually resolves argument index to
-`ScKeynodes::GetRrelIndex(idx)`. This is pure formalization — no agent's
-behavior changed, no new domain semantics — and it complements rather
-than replaces `concepts/sc_agents.scs` (that file models the ~10-12
-agent *families* at the lifecycle-process level; this one registers all
-26 concrete *realizations* at the platform level).
+Each of the (now 27) agents gets a `sc_agent_of_<name>` node with the
+full required relation set; argument positions in the condition/result
+templates use `rrel_1..rrel_N` (N taken from that agent's own
+`GetArguments<N>()`), matching how `ScAction::SetArgument` actually
+resolves argument index to `ScKeynodes::GetRrelIndex(idx)`. This is pure
+formalization — no agent's behavior changed, no new domain semantics —
+and it complements rather than replaces `concepts/sc_agents.scs` (that
+file models the ~10-12 agent *families* at the lifecycle-process level;
+this one registers all concrete *realizations* at the platform level).
+Extended same-day (2026-09-03) for `sc_agent_of_record_state_transition`
+when [[AgentRecordStateTransition]] was added a few hours later — the
+27th realization, alphabetically between
+`sc_agent_of_record_prov_entity` and `sc_agent_of_register_partial_result`.
 
 ## What's next
 
@@ -407,3 +464,15 @@ subsystem, `agent_result_integrator`/`agent_conflict_detector`,
 `agent_task_decomposer`, `agent_task_allocator` and the F_rule_adapt
 adaptive-interface rules (no single owner in the catalog) are partially
 implemented, with a readiness assessment for each rule.
+
+Lifecycle orchestrator, Phase 1 — applied 2026-09-03
+([[AgentRecordStateTransition]], AGENTS_AUDIT.md §5.20/§7.1). A plan
+session comparing three equally-sized missing subsystems (orchestrator,
+external-system bridge, ontology-translation service) picked the
+orchestrator first since its ontology already existed and nothing read
+it. Phase 2 — not started — is the nine fully-missing §7.5 agents
+(`AgentInterpretRequest`, `AgentBuildPlan`, `AgentAllocateSubtasks`, and
+others) plus the `x_replan`/`d_max` cycle; each is a task of comparable
+size to this one. Phase 3 (external-system bridge) and Phase 4
+(ontology-translation service) remain unstarted and undesigned beyond
+their KB class declarations.
