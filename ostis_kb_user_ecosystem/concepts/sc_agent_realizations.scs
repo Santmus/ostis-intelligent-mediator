@@ -1,0 +1,1284 @@
+// =====================================================================
+// concepts/sc_agent_realizations.scs
+// Формальные объявления sc-агентов интеллектуального посредника по
+// каноническому паттерну OSTIS (abstract_sc_agent /
+// platform_dependent_abstract_sc_agent), подтверждённому по реальным
+// образцам из ims.ostis.kb:
+//   ims/ostis_tech/lib_ostis/sectn_lib_reusable_comp_kpm/reusable_sc_agents/
+//   lib_c_agents/{erase_elements,search_of_all_input_arcs}/*.scs
+//
+// Дополняет concept_sc_agents.scs: тот файл описывает 10-12 семейств
+// агентов на уровне процессов жизненного цикла (nrel_implements_process,
+// nrel_realizes_mapping) -- эта секция формализует каждый из 26 уже
+// реализованных C++ агентов (src/agent/*.cpp, module/trust_module.cpp)
+// как конкретную platform_dependent-реализацию, видимую платформенным
+// механизмам (nrel_sc_agent_key_sc_elements, nrel_primary_initiation_condition,
+// nrel_initiation_condition_and_result) -- до этого файла ни один из 26
+// агентов не был объявлен этим способом; они работали только через
+// C++-подписку ScActionInitiatedAgent, минуя онтологический уровень.
+//
+// Аргументы в блоках initiation_condition/result привязаны позиционно
+// через rrel_1..rrel_N -- это соответствует тому, как sc-machine
+// ScAction::SetArgument(size_t idx, ...) резолвит idx в ScKeynodes::
+// GetRrelIndex(idx), т.е. ровно тому же механизму, которым каждый
+// агент реально читает свои аргументы через action.GetArguments<N>().
+// =====================================================================
+
+section_concept_sc_agents
+<- rrel_key_sc_element: sc_agent_of_aggregate_trust;
+<- rrel_key_sc_element: sc_agent_of_build_explanation;
+<- rrel_key_sc_element: sc_agent_of_check_acyclicity;
+<- rrel_key_sc_element: sc_agent_of_choose_modality;
+<- rrel_key_sc_element: sc_agent_of_compute_pi_metric;
+<- rrel_key_sc_element: sc_agent_of_detect_anomalous_request_rate;
+<- rrel_key_sc_element: sc_agent_of_dispatch_ready_subtask;
+<- rrel_key_sc_element: sc_agent_of_evaluate_context_aware_layout;
+<- rrel_key_sc_element: sc_agent_of_evaluate_progressive_disclosure;
+<- rrel_key_sc_element: sc_agent_of_exclude_from_coalition;
+<- rrel_key_sc_element: sc_agent_of_handle_no_admissible_assignment;
+<- rrel_key_sc_element: sc_agent_of_link_explanation_to_provenance;
+<- rrel_key_sc_element: sc_agent_of_propagate_to_dependent;
+<- rrel_key_sc_element: sc_agent_of_reassign_on_resource_exhaustion;
+<- rrel_key_sc_element: sc_agent_of_record_prov_activity;
+<- rrel_key_sc_element: sc_agent_of_record_prov_entity;
+<- rrel_key_sc_element: sc_agent_of_register_partial_result;
+<- rrel_key_sc_element: sc_agent_of_resolve_by_trust_weighted;
+<- rrel_key_sc_element: sc_agent_of_update_trust_accuracy;
+<- rrel_key_sc_element: sc_agent_of_update_trust_reliability;
+<- rrel_key_sc_element: sc_agent_of_update_trust_security;
+<- rrel_key_sc_element: sc_agent_of_update_trust_transparency;
+<- rrel_key_sc_element: sc_agent_of_validate_cardinality_constraint;
+<- rrel_key_sc_element: sc_agent_of_validate_integration;
+<- rrel_key_sc_element: sc_agent_of_validate_provenance_chain;
+<- rrel_key_sc_element: sc_agent_of_validate_right_to_explanation;;
+
+sc_agent_of_aggregate_trust
+=> nrel_main_idtf:
+	[Взвешенная агрегация доверия] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_aggregate_trust_condition => ..sc_agent_of_aggregate_trust_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_aggregate_trust
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_aggregate_trust
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_aggregate_trust.hpp; syntax=cpp];
+			[path=src/agent/agent_aggregate_trust.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_aggregate_trust_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_aggregate_trust_condition
+= [*
+	action_aggregate_trust _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+*];;
+
+..sc_agent_of_aggregate_trust_result
+= [*
+	action_aggregate_trust _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+*];;
+
+sc_agent_of_build_explanation
+=> nrel_main_idtf:
+	[Реификация акта построения объяснения] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_build_explanation_condition => ..sc_agent_of_build_explanation_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_build_explanation
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_build_explanation
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_build_explanation.hpp; syntax=cpp];
+			[path=src/agent/agent_build_explanation.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_build_explanation_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_build_explanation_condition
+= [*
+	action_build_explanation _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+	.._action _-> rrel_6:: .._parameter_6;;
+*];;
+
+..sc_agent_of_build_explanation_result
+= [*
+	action_build_explanation _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+	.._action _-> rrel_6:: .._parameter_6;;
+*];;
+
+sc_agent_of_check_acyclicity
+=> nrel_main_idtf:
+	[Проверка ацикличности графа зависимостей подзадач] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_check_acyclicity_condition => ..sc_agent_of_check_acyclicity_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_check_acyclicity
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_check_acyclicity
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_check_acyclicity.hpp; syntax=cpp];
+			[path=src/agent/agent_check_acyclicity.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_check_acyclicity_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_check_acyclicity_condition
+= [*
+	action_check_acyclicity _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_check_acyclicity_result
+= [*
+	action_check_acyclicity _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_choose_modality
+=> nrel_main_idtf:
+	[Выбор модальности взаимодействия] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_choose_modality_condition => ..sc_agent_of_choose_modality_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_choose_modality
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_choose_modality
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_choose_modality.hpp; syntax=cpp];
+			[path=src/agent/agent_choose_modality.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_choose_modality_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_choose_modality_condition
+= [*
+	action_choose_modality _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_choose_modality_result
+= [*
+	action_choose_modality _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_compute_pi_metric
+=> nrel_main_idtf:
+	[Расчёт полноты провенанса] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_compute_pi_metric_condition => ..sc_agent_of_compute_pi_metric_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_compute_pi_metric
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_compute_pi_metric
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_compute_pi_metric.hpp; syntax=cpp];
+			[path=src/agent/agent_compute_pi_metric.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_compute_pi_metric_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_compute_pi_metric_condition
+= [*
+	action_compute_pi_metric _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_compute_pi_metric_result
+= [*
+	action_compute_pi_metric _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_detect_anomalous_request_rate
+=> nrel_main_idtf:
+	[Детектирование аномальной частоты запросов] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_detect_anomalous_request_rate_condition => ..sc_agent_of_detect_anomalous_request_rate_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_detect_anomalous_request_rate
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_detect_anomalous_request_rate
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_detect_anomalous_request_rate.hpp; syntax=cpp];
+			[path=src/agent/agent_detect_anomalous_request_rate.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_detect_anomalous_request_rate_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_detect_anomalous_request_rate_condition
+= [*
+	action_detect_anomalous_request_rate _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+..sc_agent_of_detect_anomalous_request_rate_result
+= [*
+	action_detect_anomalous_request_rate _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+sc_agent_of_dispatch_ready_subtask
+=> nrel_main_idtf:
+	[Перевод готовой подзадачи к исполнению] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_dispatch_ready_subtask_condition => ..sc_agent_of_dispatch_ready_subtask_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_dispatch_ready_subtask
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_dispatch_ready_subtask
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_dispatch_ready_subtask.hpp; syntax=cpp];
+			[path=src/agent/agent_dispatch_ready_subtask.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_dispatch_ready_subtask_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_dispatch_ready_subtask_condition
+= [*
+	action_dispatch_ready_subtask _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_dispatch_ready_subtask_result
+= [*
+	action_dispatch_ready_subtask _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_evaluate_context_aware_layout
+=> nrel_main_idtf:
+	[Детектирование условия контекстно-зависимой компоновки] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_evaluate_context_aware_layout_condition => ..sc_agent_of_evaluate_context_aware_layout_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_evaluate_context_aware_layout
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_evaluate_context_aware_layout
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_evaluate_context_aware_layout.hpp; syntax=cpp];
+			[path=src/agent/agent_evaluate_context_aware_layout.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_evaluate_context_aware_layout_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_evaluate_context_aware_layout_condition
+= [*
+	action_evaluate_context_aware_layout _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_evaluate_context_aware_layout_result
+= [*
+	action_evaluate_context_aware_layout _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_evaluate_progressive_disclosure
+=> nrel_main_idtf:
+	[Решение о необходимости прогрессивного раскрытия] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_evaluate_progressive_disclosure_condition => ..sc_agent_of_evaluate_progressive_disclosure_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_evaluate_progressive_disclosure
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_evaluate_progressive_disclosure
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_evaluate_progressive_disclosure.hpp; syntax=cpp];
+			[path=src/agent/agent_evaluate_progressive_disclosure.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_evaluate_progressive_disclosure_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_evaluate_progressive_disclosure_condition
+= [*
+	action_evaluate_progressive_disclosure _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_evaluate_progressive_disclosure_result
+= [*
+	action_evaluate_progressive_disclosure _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_exclude_from_coalition
+=> nrel_main_idtf:
+	[Исключение отказавшей системы из коалиции] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_exclude_from_coalition_condition => ..sc_agent_of_exclude_from_coalition_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_exclude_from_coalition
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_exclude_from_coalition
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_exclude_from_coalition.hpp; syntax=cpp];
+			[path=src/agent/agent_exclude_from_coalition.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_exclude_from_coalition_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_exclude_from_coalition_condition
+= [*
+	action_exclude_from_coalition _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_exclude_from_coalition_result
+= [*
+	action_exclude_from_coalition _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_handle_no_admissible_assignment
+=> nrel_main_idtf:
+	[Обработка отсутствия допустимого назначения] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_handle_no_admissible_assignment_condition => ..sc_agent_of_handle_no_admissible_assignment_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_handle_no_admissible_assignment
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_handle_no_admissible_assignment
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_handle_no_admissible_assignment.hpp; syntax=cpp];
+			[path=src/agent/agent_handle_no_admissible_assignment.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_handle_no_admissible_assignment_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_handle_no_admissible_assignment_condition
+= [*
+	action_handle_no_admissible_assignment _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_handle_no_admissible_assignment_result
+= [*
+	action_handle_no_admissible_assignment _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_link_explanation_to_provenance
+=> nrel_main_idtf:
+	[Связывание акта построения объяснения с провенансом] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_link_explanation_to_provenance_condition => ..sc_agent_of_link_explanation_to_provenance_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_link_explanation_to_provenance
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_link_explanation_to_provenance
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_link_explanation_to_provenance.hpp; syntax=cpp];
+			[path=src/agent/agent_link_explanation_to_provenance.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_link_explanation_to_provenance_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_link_explanation_to_provenance_condition
+= [*
+	action_link_explanation_to_provenance _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+..sc_agent_of_link_explanation_to_provenance_result
+= [*
+	action_link_explanation_to_provenance _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+sc_agent_of_propagate_to_dependent
+=> nrel_main_idtf:
+	[Передача результата зависимой подзадаче] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_propagate_to_dependent_condition => ..sc_agent_of_propagate_to_dependent_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_propagate_to_dependent
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_propagate_to_dependent
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_propagate_to_dependent.hpp; syntax=cpp];
+			[path=src/agent/agent_propagate_to_dependent.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_propagate_to_dependent_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_propagate_to_dependent_condition
+= [*
+	action_propagate_to_dependent _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_propagate_to_dependent_result
+= [*
+	action_propagate_to_dependent _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_reassign_on_resource_exhaustion
+=> nrel_main_idtf:
+	[Массовое переназначение подзадач при истощении ресурса] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_reassign_on_resource_exhaustion_condition => ..sc_agent_of_reassign_on_resource_exhaustion_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_reassign_on_resource_exhaustion
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_reassign_on_resource_exhaustion
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_reassign_on_resource_exhaustion.hpp; syntax=cpp];
+			[path=src/agent/agent_reassign_on_resource_exhaustion.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_reassign_on_resource_exhaustion_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_reassign_on_resource_exhaustion_condition
+= [*
+	action_reassign_on_resource_exhaustion _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_reassign_on_resource_exhaustion_result
+= [*
+	action_reassign_on_resource_exhaustion _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_record_prov_activity
+=> nrel_main_idtf:
+	[Регистрация PROV Activity] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_record_prov_activity_condition => ..sc_agent_of_record_prov_activity_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_record_prov_activity
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_record_prov_activity
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_record_prov_activity.hpp; syntax=cpp];
+			[path=src/agent/agent_record_prov_activity.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_record_prov_activity_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_record_prov_activity_condition
+= [*
+	action_record_prov_activity _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+..sc_agent_of_record_prov_activity_result
+= [*
+	action_record_prov_activity _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+sc_agent_of_record_prov_entity
+=> nrel_main_idtf:
+	[Регистрация PROV Entity] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_record_prov_entity_condition => ..sc_agent_of_record_prov_entity_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_record_prov_entity
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_record_prov_entity
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_record_prov_entity.hpp; syntax=cpp];
+			[path=src/agent/agent_record_prov_entity.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_record_prov_entity_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_record_prov_entity_condition
+= [*
+	action_record_prov_entity _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_record_prov_entity_result
+= [*
+	action_record_prov_entity _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_register_partial_result
+=> nrel_main_idtf:
+	[Регистрация частичного результата] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_register_partial_result_condition => ..sc_agent_of_register_partial_result_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_register_partial_result
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_register_partial_result
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_register_partial_result.hpp; syntax=cpp];
+			[path=src/agent/agent_register_partial_result.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_register_partial_result_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_register_partial_result_condition
+= [*
+	action_register_partial_result _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+..sc_agent_of_register_partial_result_result
+= [*
+	action_register_partial_result _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+*];;
+
+sc_agent_of_resolve_by_trust_weighted
+=> nrel_main_idtf:
+	[Выбор результата с максимальным доверием] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_resolve_by_trust_weighted_condition => ..sc_agent_of_resolve_by_trust_weighted_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_resolve_by_trust_weighted
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_resolve_by_trust_weighted
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_resolve_by_trust_weighted.hpp; syntax=cpp];
+			[path=src/agent/agent_resolve_by_trust_weighted.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_resolve_by_trust_weighted_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_resolve_by_trust_weighted_condition
+= [*
+	action_resolve_by_trust_weighted _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_resolve_by_trust_weighted_result
+= [*
+	action_resolve_by_trust_weighted _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_update_trust_accuracy
+=> nrel_main_idtf:
+	[EMA-обновление t_acc] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_update_trust_accuracy_condition => ..sc_agent_of_update_trust_accuracy_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_update_trust_accuracy
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_update_trust_accuracy
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_update_trust_accuracy.hpp; syntax=cpp];
+			[path=src/agent/agent_update_trust_accuracy.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_update_trust_accuracy_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_update_trust_accuracy_condition
+= [*
+	action_update_trust_accuracy _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_update_trust_accuracy_result
+= [*
+	action_update_trust_accuracy _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_update_trust_reliability
+=> nrel_main_idtf:
+	[EMA-обновление t_rel] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_update_trust_reliability_condition => ..sc_agent_of_update_trust_reliability_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_update_trust_reliability
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_update_trust_reliability
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_update_trust_reliability.hpp; syntax=cpp];
+			[path=src/agent/agent_update_trust_reliability.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_update_trust_reliability_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_update_trust_reliability_condition
+= [*
+	action_update_trust_reliability _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_update_trust_reliability_result
+= [*
+	action_update_trust_reliability _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_update_trust_security
+=> nrel_main_idtf:
+	[EMA-обновление t_sec] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_update_trust_security_condition => ..sc_agent_of_update_trust_security_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_update_trust_security
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_update_trust_security
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_update_trust_security.hpp; syntax=cpp];
+			[path=src/agent/agent_update_trust_security.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_update_trust_security_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_update_trust_security_condition
+= [*
+	action_update_trust_security _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_update_trust_security_result
+= [*
+	action_update_trust_security _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_update_trust_transparency
+=> nrel_main_idtf:
+	[EMA-обновление t_tr] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_update_trust_transparency_condition => ..sc_agent_of_update_trust_transparency_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_update_trust_transparency
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_update_trust_transparency
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_update_trust_transparency.hpp; syntax=cpp];
+			[path=src/agent/agent_update_trust_transparency.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_update_trust_transparency_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_update_trust_transparency_condition
+= [*
+	action_update_trust_transparency _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_update_trust_transparency_result
+= [*
+	action_update_trust_transparency _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+sc_agent_of_validate_cardinality_constraint
+=> nrel_main_idtf:
+	[Кардинальная проверка SC-графа] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_validate_cardinality_constraint_condition => ..sc_agent_of_validate_cardinality_constraint_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_validate_cardinality_constraint
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_validate_cardinality_constraint
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_validate_cardinality_constraint.hpp; syntax=cpp];
+			[path=src/agent/agent_validate_cardinality_constraint.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_validate_cardinality_constraint_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_validate_cardinality_constraint_condition
+= [*
+	action_validate_cardinality_constraint _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+	.._action _-> rrel_6:: .._parameter_6;;
+	.._action _-> rrel_7:: .._parameter_7;;
+*];;
+
+..sc_agent_of_validate_cardinality_constraint_result
+= [*
+	action_validate_cardinality_constraint _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+	.._action _-> rrel_4:: .._parameter_4;;
+	.._action _-> rrel_5:: .._parameter_5;;
+	.._action _-> rrel_6:: .._parameter_6;;
+	.._action _-> rrel_7:: .._parameter_7;;
+*];;
+
+sc_agent_of_validate_integration
+=> nrel_main_idtf:
+	[Валидация интегрированного результата (explanation + conflicts)] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_validate_integration_condition => ..sc_agent_of_validate_integration_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_validate_integration
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_validate_integration
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_validate_integration.hpp; syntax=cpp];
+			[path=src/agent/agent_validate_integration.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_validate_integration_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_validate_integration_condition
+= [*
+	action_validate_integration _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_validate_integration_result
+= [*
+	action_validate_integration _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_validate_provenance_chain
+=> nrel_main_idtf:
+	[Достижимость запроса по цепочке nrel_derived_from] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_validate_provenance_chain_condition => ..sc_agent_of_validate_provenance_chain_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_validate_provenance_chain
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_validate_provenance_chain
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_validate_provenance_chain.hpp; syntax=cpp];
+			[path=src/agent/agent_validate_provenance_chain.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_validate_provenance_chain_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_validate_provenance_chain_condition
+= [*
+	action_validate_provenance_chain _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+..sc_agent_of_validate_provenance_chain_result
+= [*
+	action_validate_provenance_chain _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+*];;
+
+sc_agent_of_validate_right_to_explanation
+=> nrel_main_idtf:
+	[Гейт-проверка права пользователя на объяснение] (* <- lang_ru;; *);
+<- abstract_sc_agent;
+=> nrel_primary_initiation_condition: (sc_event_after_generate_outgoing_arc => action_initiated);
+=> nrel_initiation_condition_and_result: (..sc_agent_of_validate_right_to_explanation_condition => ..sc_agent_of_validate_right_to_explanation_result);
+<= nrel_sc_agent_key_sc_elements:
+	{
+		action_initiated;
+		action;
+		action_validate_right_to_explanation
+	};
+
+=> nrel_inclusion:
+	.c_realization_of_agent_of_validate_right_to_explanation
+	(*
+		<- platform_dependent_abstract_sc_agent;;
+		<= nrel_sc_agent_program:
+		{
+			[path=src/agent/agent_validate_right_to_explanation.hpp; syntax=cpp];
+			[path=src/agent/agent_validate_right_to_explanation.cpp; syntax=cpp]
+		};;
+
+		-> sc_agent_of_validate_right_to_explanation_active_c (* <- active_sc_agent;; *);;
+	*);;
+
+..sc_agent_of_validate_right_to_explanation_condition
+= [*
+	action_validate_right_to_explanation _-> .._action;;
+	action_initiated _-> .._action;;
+	action _-> .._action;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+
+..sc_agent_of_validate_right_to_explanation_result
+= [*
+	action_validate_right_to_explanation _-> .._action;;
+	action_finished _-> .._action;;
+	action _-> .._action;;
+	.._action _=> nrel_result:: .._answer;;
+	.._action _-> rrel_1:: .._parameter_1;;
+	.._action _-> rrel_2:: .._parameter_2;;
+	.._action _-> rrel_3:: .._parameter_3;;
+*];;
+

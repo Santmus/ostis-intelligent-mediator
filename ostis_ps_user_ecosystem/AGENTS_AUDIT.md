@@ -96,8 +96,39 @@ PARTIAL-правил: среди правил, блокированных не �
 сравнением общего счётчика элементов KB против отдельно собираемого
 `tools/kb_baseline_counter.cpp`. Единственный из десяти пунктов §7.7, не
 зависящий от отсутствующего агента-оркестратора жизненного цикла (§7.1).  
+Дата этой редакции (продолжение): 03 сентября 2026 г. — по итогам
+сравнительного изучения `ostis-web-platform`/`ims.ostis.kb` добавлен §4.4:
+все 26 агентов формально объявлены по каноническому паттерну OSTIS
+(`abstract_sc_agent`/`platform_dependent_abstract_sc_agent`,
+`concepts/sc_agent_realizations.scs`) — до этого ни один из них не был
+виден платформенным механизмам поиска агентов по онтологии, только через
+C++-подписку `ScActionInitiatedAgent`.  
+Дата этой редакции (продолжение): 03 сентября 2026 г. — сквозная
+механическая проверка онтологии (все `nrel_*`/`rrel_*` объявлены как
+отношения; все 94 секции `main.scs` имеют содержимое; все
+`concept_*`/`rule_*`/`affirmation_*`/`definition_*`/`axiom_*` объявлены
+хотя бы одной из двух форм — subject-старт или target лейбловой дуги)
+нашла 4 реальные проблемы: два висячих класса
+(`concept_aggregation_rule` в `scenario_explanation_construction.scs`,
+не объявлен нигде — заменён на `concept_sc_rule`, базовый класс всех
+остальных правил; `concept_trust_for_task` в `example_trust.scs`,
+избыточное и ошибочное дополнительное типирование `trust_level_energy`,
+который уже корректно типизирован `concept_trust_level` — удалено) и
+два неподключённых «осиротевших» блока-черновика
+(`section_assignment_example` в `scenario_medical_diagnostics.scs` —
+дублировал назначение `subtask_image_segmentation`, но другому
+исполнителю (`intelligent_system_image_analyzer`), который даже не
+входит в `community_medical_diagnostic`, то есть прямо противоречил
+основному сценарию; `section_explanation_example` в
+`scenario_explanation_construction.scs` — дублировал
+«реифицированный акт построения объяснения» под другими именами
+(`explanation_77` вместо `explanation_act_001`)). Оба блока не были
+нигде подключены (ни в декомпозиции `main.scs`, ни как
+`rrel_key_sc_element` чего-либо), все их идентификаторы больше нигде в
+KB не встречались — удалены целиком.  
 Проверено: `ctest` — 99 из 99 тестов пройдены, сборка KB через
-`sc-builder` — чисто, 31841 элемент (продакшен `repo/` не тронут —
+`sc-builder` — чисто, 34579 элементов (было 31841 до §4.4, 34820 после
+§4.4, минус удалённые осиротевшие блоки; продакшен `repo/` не тронут —
 контрольная сумма директории идентична до и после).
 
 ## 1. Цель и границы аудита
@@ -119,7 +150,7 @@ PARTIAL-правил: среди правил, блокированных не �
 |---|---|
 | Сборка `cmake --build build` | Успешно |
 | `ctest --test-dir build --output-on-failure` | 99 из 99 тестов пройдены |
-| Сборка KB (`sc-builder --clear`) | Успешно, 31841 элемент, без ошибок |
+| Сборка KB (`sc-builder --clear`) | Успешно, 34579 элементов, без ошибок |
 
 ## 3. Состав агентов — сводка
 
@@ -201,6 +232,108 @@ Security/Transparency`) отклоняют значение вне `[0,1]` че�
 Файлы: `src/agent/agent_propagate_to_dependent.{hpp,cpp}`,
 `tests/test_agent_propagate_to_dependent.cpp` (4 теста),
 `agents_vault/AgentPropagateToDependent.md`.
+
+### 4.4. Формальное объявление агентов по паттерну OSTIS (было: не упомянуто в исходном аудите — найдено сравнительным изучением `ostis-web-platform`/`ims.ostis.kb` 03.09.2026)
+
+**Проблема была:** ни один из 26 агентов проекта не был объявлен
+принятым в OSTIS каноническим способом — узлом `<- abstract_sc_agent`
+со связями `nrel_primary_initiation_condition` (условие первичной
+активации по событию), `nrel_initiation_condition_and_result`
+(шаблоны условия/результата) и `nrel_sc_agent_key_sc_elements`
+(ключевые sc-элементы действия), реализация которого помечена
+`<- platform_dependent_abstract_sc_agent`. Проверено по 90+ реальным
+образцам в `ims.ostis.kb` (в т.ч.
+`.../lib_c_agents/{erase_elements,search_of_all_input_arcs}/*.scs` —
+готовые C++-реализации, структурно идентичные нашим). Без этого агенты
+работали только через C++-подписку `ScActionInitiatedAgent` на
+`action_initiated`, минуя онтологический уровень: ни один платформенный
+механизм или scp-агент, ищущий `abstract_sc_agent`, не находил ни
+одного из наших 26.
+
+**Сделано:** добавлен `concepts/sc_agent_realizations.scs` — для
+каждого из 26 агентов узел `sc_agent_of_<name>` с полным набором
+обязательных связей (`nrel_sc_agent_key_sc_elements`,
+`nrel_primary_initiation_condition`, `nrel_initiation_condition_and_result`,
+`nrel_inclusion` → реализация `<- platform_dependent_abstract_sc_agent`
+с `nrel_sc_agent_program`, указывающим на реальные `src/agent/*.{hpp,cpp}`).
+Аргументы в шаблонах условия/результата привязаны позиционно через
+`rrel_1..rrel_N` — ровно так, как `ScAction::SetArgument(size_t idx, ...)`
+в реальности резолвит `idx` в `ScKeynodes::GetRrelIndex(idx)` (арность
+`N` для каждого агента взята из его `GetArguments<N>()` в исходном коде,
+не придумана). `nrel_sc_agent_action_class` сознательно не использована —
+проверено по `section_subjdomain_of_sc_agents_content.scs`: в список
+`rrel_explored_relation` (канонический/обязательный набор) она не входит,
+а во всех реальных `lib_c_agents`-образцах класс действия просто
+перечислен в `nrel_sc_agent_key_sc_elements` — этому и следует новый файл.
+
+Это не правка ни одного из 26 агентов и не новая доменная семантика —
+только формализация уже существующего поведения на онтологическом
+уровне; выбор коллизий с существующими идентификаторами исключён
+(проверено `grep` по всей KB перед добавлением). Дополняет, а не
+заменяет `concepts/sc_agents.scs`: тот файл описывает 10-12 семейств
+агентов на уровне процессов жизненного цикла
+(`nrel_implements_process`), этот — 26 конкретных реализаций на уровне
+платформенной регистрации.
+
+Проверено: сборка KB через `sc-builder --clear` — чисто (34820
+элементов, было 31841); `ctest` — 99 из 99, включая
+`LoadRealKbTest.EveryProjectKeynodeResolvesAgainstExistingKbElements`
+(§7.7, п.1) — подтверждает отсутствие коллизий с существующими
+project keynodes.
+
+Файлы: `ostis_kb_user_ecosystem/concepts/sc_agent_realizations.scs`.
+
+### 4.5. Сквозная проверка ссылочной целостности онтологии (было: не упомянуто в исходном аудите — найдено 03.09.2026)
+
+**Проблема была:** ни разу за время ведения `ostis_kb_user_ecosystem` не
+проводилась механическая проверка того, что каждый идентификатор,
+используемый как класс/тип, где-то реально объявлен. Без такой
+проверки `sc-builder` тихо резолвит отсутствующий идентификатор по
+схеме find-OR-CREATE — не выдавая ошибки, просто создавая
+нетипизированный узел (тот же класс проблемы, что решает
+`LoadRealKbTest` для C++ keynodes, только внутри самой онтологии).
+
+**Сделано:** прогнан скрипт-аудит по всем 96 файлам `.scs` в трёх
+разрезах — (1) каждый `nrel_*`/`rrel_*`, используемый где-либо, имеет
+объявление `<- sc_node_(non_)role_relation`; (2) каждая из 94 секций в
+дереве декомпозиции `main.scs` содержательно объявлена; (3) каждый
+`concept_*`/`agent_*`/`action_*`/`rule_*`/`affirmation_*`/`definition_*`/
+`axiom_*`/`scenario_*`/`example_*` объявлен хотя бы одной из двух форм
+(subject-старт `X\n<- ...;` или target лейбловой дуги `-> X: (*...*);;`,
+второй формой в KB типизируется большинство `definition_*`/`axiom_*`/
+`affirmation_*`/`rule_*`). Найдено и исправлено:
+
+- `concept_aggregation_rule` (`scenarios/scenario_explanation_construction.scs`) —
+  нигде не объявленный класс; заменён на `concept_sc_rule`, базовый
+  класс, которым типизируются все остальные правила проекта.
+- `concept_trust_for_task` (`examples/example_trust.scs`) — нигде не
+  объявленный класс, избыточно и ошибочно дополнительно типизировал
+  `trust_level_energy`, уже корректно типизированный `concept_trust_level`
+  двумя строками выше; строка удалена.
+- `section_assignment_example` (`scenarios/scenario_medical_diagnostics.scs`,
+  52 строки) — неподключённый нигде черновой фрагмент, дублирующий
+  назначение `subtask_image_segmentation`, но другому исполнителю
+  (`intelligent_system_image_analyzer`), не входящему в
+  `community_medical_diagnostic` — прямо противоречил основному
+  сценарию файла. Удалён целиком.
+- `section_explanation_example` (`scenarios/scenario_explanation_construction.scs`,
+  55 строк) — неподключённый нигде черновой дубликат «реифицированного
+  акта построения объяснения» под другими именами. Удалён целиком.
+
+Оба удалённых блока проверены на изоляцию: ни один из их
+идентификаторов (`assignment_42`, `high_priority`,
+`intelligent_system_image_analyzer`, `interaction_context_med_diagnostics`,
+`explanation_77`, `integrated_result_19` и др.) нигде больше в KB не
+встречается — удаление ничего не сломало.
+
+Проверено: сборка KB через `sc-builder --clear` — чисто, 34579
+элементов (34820 после §4.4, минус удалённые блоки); `ctest` — 99 из
+99; повторный прогон всех трёх проверок — новых находок нет; продакшен
+`repo/` не тронут (контрольная сумма идентична до и после).
+
+Файлы: `ostis_kb_user_ecosystem/scenarios/scenario_explanation_construction.scs`,
+`ostis_kb_user_ecosystem/scenarios/scenario_medical_diagnostics.scs`,
+`ostis_kb_user_ecosystem/examples/example_trust.scs`.
 
 ## 5. Сделано частично
 

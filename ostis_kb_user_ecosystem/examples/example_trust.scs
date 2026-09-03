@@ -21,7 +21,6 @@ trust_level_energy <- concept_trust_level;;
 trust_level_energy => nrel_main_idtf:
     [Уровень доверия energy_model: 0.91 на основе истории 90 дней
      (50 завершённых подзадач, 47 одобрены пользователями)] (* <- lang_ru;; *);;
-trust_level_energy <- concept_trust_for_task;;
 
 trust_level_route_planner <- concept_trust_level;;
 trust_level_route_planner => nrel_main_idtf:

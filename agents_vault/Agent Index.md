@@ -364,6 +364,32 @@ Both tests show that each agent's output is correctly read by the next one
 through data — without a separate orchestrator agent, which the project
 does not yet have (see above about [[AgentAggregateTrust]]).
 
+## Ontological agent declarations
+
+`ostis_kb_user_ecosystem/concepts/sc_agent_realizations.scs` — added
+2026-09-03, after a comparative study of `ostis-web-platform`/`ims.ostis.kb`
+found that none of the 26 agents were declared the way OSTIS itself
+expects: a node `<- abstract_sc_agent` carrying
+`nrel_primary_initiation_condition`, `nrel_initiation_condition_and_result`
+and `nrel_sc_agent_key_sc_elements`, with a realization
+`<- platform_dependent_abstract_sc_agent` pointing at the actual source.
+Verified against 90+ real examples in `ims.ostis.kb`, most directly
+`.../lib_c_agents/{erase_elements,search_of_all_input_arcs}/*.scs` —
+structurally identical C++-realization agents. Before this file, every
+agent worked only through the C++ `ScActionInitiatedAgent` subscription,
+invisible to anything that discovers agents through the ontology itself
+(a platform tool, or a scp-agent searching for `abstract_sc_agent`).
+
+Each of the 26 gets a `sc_agent_of_<name>` node with the full required
+relation set; argument positions in the condition/result templates use
+`rrel_1..rrel_N` (N taken from that agent's own `GetArguments<N>()`),
+matching how `ScAction::SetArgument` actually resolves argument index to
+`ScKeynodes::GetRrelIndex(idx)`. This is pure formalization — no agent's
+behavior changed, no new domain semantics — and it complements rather
+than replaces `concepts/sc_agents.scs` (that file models the ~10-12
+agent *families* at the lifecycle-process level; this one registers all
+26 concrete *realizations* at the platform level).
+
 ## What's next
 
 Chapter 2 alignment — applied 2026-08-30. The implementation was frozen 2026-08-22, chapter 2
