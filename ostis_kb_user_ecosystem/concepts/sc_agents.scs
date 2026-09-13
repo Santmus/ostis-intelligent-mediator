@@ -112,7 +112,7 @@ agent_task_allocator
     [появление concept_subtask без отношения nrel_assigned_to];
 => nrel_agent_input:
     [подзадачи, профили возможностей Cap(s), доверие trust(s,τ,h)];
-=> nrel_agent_output: [распределение χ : T(q) → S, удовлетворяющее (12), (13)];;
+=> nrel_agent_output: [распределение χ : T(q) → P(S) ∖ {∅}, |χ(σ)| = k(σ), удовлетворяющее (12), (13)];;
 
 agent_cooperative_executor
 <- sc_node_class;

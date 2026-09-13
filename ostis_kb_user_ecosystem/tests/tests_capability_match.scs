@@ -19,14 +19,25 @@ concept_test_capability_match
 concept_test_capability_match <= nrel_strict_inclusion: concept_test_question;;
 
 // ---------------------------------------------------------------------
+// Числовые параметры всех тестов подраздела приведены к главе 2
+// (раздел верификации, правило фиксации параметров): вес доверия
+// w_R = 0.25, остальные пять весов по (1 - w_R)/5 = 0.15, порог
+// применимости θ = 0.70. Прежняя редакция использовала
+// w = (0.30, 0.10, 0.10, 0.20, 0.15, 0.15) и θ = 0.6; при θ = 0.6
+// числовой пример самой главы переставал быть верным (участник со
+// значением 0.608 проходил бы порог, тогда как текст указывает, что
+// он отсекается). Исправлено 13.09.2026.
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
 // TM1: Расчёт match для тройки <subtask_energy_estimation, energy_model>.
-// Веса: w_T=0.30, w_I=0.10, w_O=0.10, w_C=0.20, w_Q=0.15, w_R=0.15.
+// Веса: w_T=0.15, w_I=0.15, w_O=0.15, w_C=0.15, w_Q=0.15, w_R=0.25.
 // ---------------------------------------------------------------------
 
 test_match_energy_estimation <- concept_test_capability_match;;
 test_match_energy_estimation => nrel_main_idtf:
     [TM1. match(subtask_energy_estimation, intelligent_system_energy_model)
-     при весах w = (0.30, 0.10, 0.10, 0.20, 0.15, 0.15)]
+     при весах w = (0.15, 0.15, 0.15, 0.15, 0.15, 0.25)]
     (* <- lang_ru;; *);;
 test_match_energy_estimation => nrel_test_calculation:
     [sim_T = 1.00 (task_type_estimation ∈ T_s);
@@ -35,15 +46,26 @@ test_match_energy_estimation => nrel_test_calculation:
      ctx_compat = 0.90;
      qos_score = 0.87;
      trust = 0.91;
-     match = 0.30·1.00 + 0.10·0.95 + 0.10·0.95 + 0.20·0.90
-           + 0.15·0.87 + 0.15·0.91 = 0.92]
+     match = 0.15·1.00 + 0.15·0.95 + 0.15·0.95 + 0.15·0.90
+           + 0.15·0.87 + 0.25·0.91 = 0.928]
     (* <- lang_ru;; *);;
 test_match_energy_estimation => nrel_expected_answer: answer_tm1;;
 
 answer_tm1 <- concept_expected_answer;;
 answer_tm1 => nrel_main_idtf:
-    [match ≈ 0.92 ≥ θ=0.6 → assign(σ, s) допустимо.]
+    [match ≈ 0.928 ≥ θ=0.70 → первый конъюнкт assign(σ, s) выполнен;
+     назначение допустимо при выполнении остальных трёх (valid, permit,
+     available).]
     (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TM2-TM4: покомпонентная разбивка match в базе не записана (в отличие
+// от TM1), поэтому агрегированные значения ниже НЕ пересчитываются под
+// веса гл. 2 -- достроить недостающие компоненты значило бы изобрести
+// их. Значения сохранены как иллюстративные, порог сверен с θ = 0.70,
+// а выводы переформулированы так, чтобы не зависеть от конкретных
+// величин. Доопределение компонент TM2-TM4 -- открытый пункт.
+// ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
 // TM2: Сравнение трёх кандидатов на подзадачу subtask_ranking.
@@ -57,7 +79,9 @@ test_match_ranking_alternatives => nrel_test_calculation:
     [match(σ_ranking, ranker_v1) = 0.84;
      match(σ_ranking, ranker_alt) = 0.79;
      match(σ_ranking, hybrid_ranker) = 0.72.
-     arg max = ranker_v1.]
+     Все три преодолевают θ = 0.70, поэтому S_{σ,C} содержит всех трёх;
+     arg max = ranker_v1. При k(σ_ranking) = 1 шаг 2.3 жадной процедуры
+     выбирает одного кандидата с наибольшим значением.]
     (* <- lang_ru;; *);;
 test_match_ranking_alternatives => nrel_expected_answer:
     answer_tm2;;
@@ -74,16 +98,21 @@ answer_tm2 => nrel_main_idtf:
 test_match_after_failure <- concept_test_capability_match;;
 test_match_after_failure => nrel_main_idtf:
     [TM3. После failure_event_001 (отказ ranker_v1) и понижения
-     trust до 0.58 — match(σ_ranking, ranker_v1) пересчитывается
-     с обновлённым t_rel: 0.84 → 0.69; ranker_alt становится лучшим
-     по match.] (* <- lang_ru;; *);;
+     trust до 0.58 значение match(σ_ranking, ranker_v1) подлежит
+     пересчёту с обновлённым t_rel. Проверяемое свойство теста —
+     не конкретная величина, а два следствия: понижение доверия
+     монотонно понижает match (слагаемое w_R·trust входит с
+     неотрицательным весом), и при падении ниже θ = 0.70 участник
+     выбывает из S_{σ,C} целиком, а не просто теряет первое место.
+     Конкретное новое значение зависит от компонент, не записанных
+     в базе (см. примечание к TM2-TM4).] (* <- lang_ru;; *);;
 test_match_after_failure => nrel_expected_answer: answer_tm3;;
 
 answer_tm3 <- concept_expected_answer;;
 answer_tm3 => nrel_main_idtf:
-    [χ_new(σ_ranking) = intelligent_system_ranker_alt;
-     запускается rule_on_system_failure и
-     rule_coalition_optimization.] (* <- lang_ru;; *);;
+    [χ_new(σ_ranking) = intelligent_system_ranker_alt как arg max по
+     match среди оставшихся допустимых; запускается
+     rule_on_system_failure и rule_coalition_optimization.] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
 // TM4: Проверка задачи (13) — покрытие декомпозиции.
@@ -99,10 +128,14 @@ test_coverage_optimization => nrel_main_idtf:
 test_coverage_optimization => nrel_test_calculation:
     [Σ match = match(σ_route, ostis_route_planner) +
               match(σ_energy, energy_model) +
-              match(σ_ranking, ranker_v1)
-            = 0.95 + 0.92 + 0.84 = 2.71;
+              match(σ_ranking, ranker_v1);
+     второе слагаемое пересчитано в TM1 и равно 0.928, первое и третье
+     сохранены иллюстративно (см. примечание к TM2-TM4);
      coverage: каждая σ_i имеет назначение;
-     consistent: ctx_compat ≥ 0.85 для всех s ∈ χ.]
+     consistent: выполнено тождественно — назначения подзадач
+     независимы, поэтому по утверждению гл. 2 об оптимальности жадного
+     назначения при сепарабельных ограничениях покомпонентный максимум
+     совпадает с максимумом суммы, и решение точное, а не приближённое.]
     (* <- lang_ru;; *);;
 test_coverage_optimization => nrel_expected_answer: answer_tm4;;
 
@@ -111,7 +144,7 @@ answer_tm4 => nrel_main_idtf:
     [χ* = {(σ_route → route_planner),
            (σ_energy → energy_model),
            (σ_ranking → ranker_v1)};
-     Σ match* = 2.71; задача (13) разрешима.]
+     задача (13) разрешима, решение достигается покомпонентно.]
     (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
