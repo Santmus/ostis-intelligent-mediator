@@ -60,6 +60,7 @@ Code: `ostis_ps_user_ecosystem/src/agent/`. Rule ontology:
 | [[AgentChooseModality]] | `action_choose_modality` | chosen modality class (not numeric) | three-way branch over two new ontology flags |
 | [[AgentRecordProvEntity]] | `action_record_prov_entity` | `concept_prov_entity` + `nrel_has_provenance` | PROV-O construction |
 | [[AgentRecordProvActivity]] | `action_record_prov_activity` | `concept_prov_activity` + roles | PROV-O construction |
+| [[AgentAllocateSubtasks]] | `action_allocate_subtasks` | `nrel_assigned_to` + reified `concept_process_allocation` acts | 3-of-4 admissibility gate + top-k selection (step 2.3) |
 | [[AgentHandleNoAdmissibleAssignment]] | `action_handle_no_admissible_assignment` | indicator + integrity_violation | binary branch on subtask class |
 | [[AgentEvaluateContextAwareLayout]] | `action_evaluate_context_aware_layout` | indicator (decision) + strategy marker | two-flag OR gate over two new ontology flags |
 | [[AgentLinkExplanationToProvenance]] | `action_link_explanation_to_provenance` | `nrel_prov_was_derived_from`/`nrel_prov_used`/`nrel_prov_was_attributed_to` | role-to-relation wiring |
@@ -470,9 +471,16 @@ Lifecycle orchestrator, Phase 1 — applied 2026-09-03
 session comparing three equally-sized missing subsystems (orchestrator,
 external-system bridge, ontology-translation service) picked the
 orchestrator first since its ontology already existed and nothing read
-it. Phase 2 — not started — is the nine fully-missing §7.5 agents
-(`AgentInterpretRequest`, `AgentBuildPlan`, `AgentAllocateSubtasks`, and
-others) plus the `x_replan`/`d_max` cycle; each is a task of comparable
-size to this one. Phase 3 (external-system bridge) and Phase 4
+it. Phase 2 — started 2026-09-13 with [[AgentAllocateSubtasks]], the §7.5
+agent the audit singled out as unblocking both §7.3 and §7.4; it was
+designed through a five-seat commission rather than unilaterally
+(protocol: [[AgentAllocateSubtasks Commission]]). The remaining
+fully-missing §7.5 agents (`AgentInterpretRequest`, `AgentBuildPlan`,
+`AgentExecutionMonitor`, and others) plus the `x_replan`/`d_max` cycle
+are still open; each is a task of comparable size. The ratified next
+item is `AgentComputeSimType` — the Wu–Palmer `sim_T` measure
+(`eq:sim_type`), the only term of `match` formalized closely enough in
+chapter 2 to implement without inventing a formula, and absent from the
+KB entirely. Phase 3 (external-system bridge) and Phase 4
 (ontology-translation service) remain unstarted and undesigned beyond
 their KB class declarations.

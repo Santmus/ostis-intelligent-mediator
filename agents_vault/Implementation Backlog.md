@@ -179,7 +179,7 @@ list of the section — an internal inconsistency of the KB catalog itself.
 |---|---|---|---|
 | `agent_request_interpreter` | request interpretation ι: Q_ext×C → Q_form | `rules_interpretation.scs` | not implemented |
 | `agent_task_decomposer` | request decomposition δ: Q_form → 2^T | `rules_decomposition.scs` | **partial (1 of 3 rules — [[AgentCheckAcyclicity]])** |
-| `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | **partial (1 of 4 rules — [[AgentHandleNoAdmissibleAssignment]])** |
+| `agent_task_allocator` | subtask allocation via match(σ,s) | `rules_allocation.scs` | **partial (2 of 4 rules — [[AgentAllocateSubtasks]], [[AgentHandleNoAdmissibleAssignment]])** |
 | `agent_cooperative_executor` | cooperative execution (FIPA-ACL) | `rules_cooperation.scs` | **✅ implemented (3 agents)** |
 | `agent_result_integrator` | result integration ρ: 2^Y×C → Y_int | `rules_integration.scs` | **partial (2 of 5 rules — [[AgentResolveByTrustWeighted]], [[AgentValidateIntegration]])** |
 | `agent_explanation_builder` | building explanations/provenance chains | `rules_explanation.scs` | **partial (structural core of 4 rules — [[AgentBuildExplanation]])** |
@@ -203,18 +203,34 @@ attached to "security sc-agents" and to the adaptive interface +
 
 ## File-by-File Breakdown
 
-### `rules_allocation.scs` — agent `agent_task_allocator`, 4 rules — **partial (1 of 4 rules)**
+### `rules_allocation.scs` — agent `agent_task_allocator`, 4 rules — **partial (2 of 4 rules)**
 
 - `rule_compute_match_function` — `match(σ,s)=w_T·sim_T+w_I·sim_I+w_O·sim_O+w_C·ctx_compat+w_Q·qos_score+w_R·trust(s,τ,h)` — **PARTIAL**
-- `rule_assignment_admissibility` — `assign(σ,s) ← match(σ,s)≥θ ∧ valid(C,L_s)` — **PARTIAL**
+- `rule_assignment_admissibility` — `assign(σ,s) ← match(σ,s|C)≥θ ∧ valid(C,L_s) ∧ permit(view(C,s),s,C) ∧ available(s,C)` — **PARTIAL** → ✅ three of the four conjuncts implemented, [[AgentAllocateSubtasks]] (`match` value and `valid` are taken as given; the KB text itself carried a stale two-conjunct edition until 2026-09-13)
 - `rule_coalition_optimization` — `χ*=arg max Σ match(σ,χ(σ))` under coverage∧consistent — **PARTIAL**
 - `rule_handle_no_admissible_assignment` — IF no admissible s THEN recursive decomposition/integrity_violation — **READY** → ✅ mechanical part implemented, [[AgentHandleNoAdmissibleAssignment]] (the "no admissible executor" premise itself is trusted from the caller, not recomputed — match() remains undefined; see below)
 
-The match() formula is explicit, but of the 6 terms only the `trust(s,τ,h)`
-term is ready (already implemented via [[AgentAggregateTrust]]) — the other five
-(sim_T, sim_I, sim_O, ctx_compat, qos_score) are not defined in the text.
-`rule_coalition_optimization` is a combinatorial assignment problem without
-a specified solution algorithm. `rule_handle_no_admissible_assignment`'s own
+The match() formula is explicit, but most terms are still undefined.
+**Corrected 2026-09-13** (this entry previously said five of six were
+undefined, which the current edition of chapter 2 no longer supports):
+`trust(s,τ,h)` is ready (implemented via [[AgentAggregateTrust]]) **and
+`sim_T` is now fully formalized** — chapter 2 pins it to the normalized
+Wu–Palmer measure over the ontology taxonomy (`eq:sim_type`,
+`2·depth(lcs(τ_σ,τ_s)) / (depth(τ_σ)+depth(τ_s))`, max over `T_s`), and
+the text explicitly notes this "removes one free function". That measure
+is absent from the KB entirely (zero matches for Wu/Palmer/lcs) and is
+the ratified next backlog item, `AgentComputeSimType`. The remaining
+four — `sim_I`, `sim_O`, `qos_score`, and the five `sim_k` inside
+`ctx_compat` (whose *structure* is fixed by `eq:context_compatibility`
+but whose components are not) — are still undefined.
+`rule_coalition_optimization` is a combinatorial assignment problem, but
+**not** one without a specified algorithm: chapter 2's greedy allocation
+listing gives the procedure step by step, and its statement on optimality
+under separable constraints shows step 2.3 is exact rather than
+approximate. Step 2.3 is implemented in [[AgentAllocateSubtasks]];
+steps 2.2a (re-decomposition) and 2.5 (`b_q` reassignment) are not, and
+the binding constraint `consistent(C,χ)` — which is what actually makes
+the problem hard — remains out of scope. `rule_handle_no_admissible_assignment`'s own
 premise depends on the same undefined `match()`, but its *consequent* — decide
 between the decomposition path and an integrity violation, via
 `affirmation_subtask_executability`'s composite/atomic split

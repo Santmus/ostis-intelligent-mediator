@@ -162,6 +162,19 @@ nrel_applies_to
 => nrel_first_domain: concept_capability_profile;
 => nrel_second_domain: concept_task_type;;
 
+// Значение функции применимости match(σ, s | C) для реифицированной
+// пары (concept_match_assessment, concepts/capabilities.scs).
+// Функциональное: у одной оценки ровно одно значение.
+nrel_match_value
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [значение_применимости*] (* <- lang_ru;; *);
+    [match_value*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_match_assessment;;
+
 nrel_describes
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
