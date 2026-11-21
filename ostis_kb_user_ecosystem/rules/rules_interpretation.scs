@@ -27,14 +27,20 @@ rule -> rule_interpret_request: ...
         [Прав.(интерпретация запроса)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [If: concept_user_request(q) ∧ ¬∃g. has_goal(q, g)
-                ∧ active_context(u, C) ∧ formulates(u, q),
-            Then: agent_request_interpreter создаёт
-                  goal_g = ι(q.text, C), has_goal(q, g),
-                  has_context(q, C),
-                  устанавливает тип запроса на основе анализа
-                  естественно-языкового содержимого и
-                  предметной онтологии.] (* <- lang_ru;; *);;
+        -> [If: concept_valid_user_request(q) ∧ formulates(u, q)
+                ∧ request_user_model_snapshot(q, U_t) ∧ active_context(u, C),
+            Then: agent_request_interpreter строит гипотезы намерения
+                  параметризованным отображением ι_(U_t,C): Q ⇀ J
+                  и устанавливает has_context(q, C).
+            Если выделено однозначное либо подтверждённое пользователем
+            намерение j, создаются interprets(q, j), intent_goal(j, g)
+            и компоненты j = <g, o, a, Γ, y, ρ>; запрос q относится
+            к concept_resolved_user_request.
+            Если однозначная интерпретация отсутствует, произвольная
+            гипотеза не выбирается: формируется q_clar класса
+            concept_clarification_request, текущий цикл завершается
+            состоянием x_clar без декомпозиции.]
+           (* <- lang_ru;; *);;
     *);;
 *);;
 

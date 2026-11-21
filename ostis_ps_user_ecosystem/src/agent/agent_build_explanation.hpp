@@ -11,8 +11,8 @@
 // сторона аргументом, а не сам агент.
 //
 // Аргументы sc-действия action_build_explanation:
-//   1) explanandum            -- объясняемый экземпляр concept_processing_result
-//                                 (либо его подкласса, напр. concept_integrated_result);
+//   1) explanandum            -- объясняемый экземпляр concept_result
+//                                 (ProcessingResult либо IntegratedResult);
 //                                 обязателен
 //   2) explanation_type       -- класс создаваемого объяснения
 //                                 (concept_explanation_local/global/contrastive/
@@ -32,10 +32,10 @@
 //
 // Результат: создаётся новый узел объяснения (explanation), типизированный
 // переданным explanation_type, и связывается с explanandum через
-// nrel_supported_by_explanation (домен -- concept_processing_result,
+// nrel_supported_by_explanation (домен -- concept_result,
 // relations/relations_provenance.scs). Если explanandum уже классифицирован
 // как concept_integrated_result -- дополнительно устанавливается
-// nrel_explained_by (домен -- concept_integrated_result), как в
+// nrel_explained_by (домен -- concept_result), как в
 // scenarios/scenario_explanation_construction.scs. Одновременно порождается
 // овеществлённый concept_explanation_construction_act со всеми пятью
 // ролевыми связями шаблона prov_template_explanation (rrel_explanandum,

@@ -54,12 +54,12 @@ definition -> definition_mediation_state: ...
     <= nrel_sc_text_translation: ...
     (*
         -> [Состояние обработки x ∈ X — элемент множества состояний
-            автомата посредника. Каждое состояние связано с обрабатываемым
-            запросом, действующей версией плана, контекстом взаимодействия
-            и остатками ресурсов восстановления b_rem и d_rem. Переход
-            между состояниями описывается функцией δ: X × E × C → X × A
-            и обязан быть зафиксирован записью аудита и провенансной
-            записью.] (* <- lang_ru;; *);;
+            автомата посредника. Каждое состояние связано с запросом,
+            версией плана, контекстом, остатками b_rem и d_rem,
+            остатком раундов уточнения n_clar_rem и остатком серии
+            служебных переходов N_ph. Переход описывается функцией
+            δ: X × E × C → X × A и фиксируется записью аудита
+            и provenance.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -215,7 +215,7 @@ concept_transition_event
     [lifecycle transition event] (* <- lang_en;; *);
 => nrel_idtf: [E];;
 
-concept_transition_event <= nrel_inclusion: concept_entity_group_context;;
+concept_transition_event <= nrel_inclusion: concept_entity_group_process;;
 
 concept_transition_event <= nrel_subdividing: ...
 (*

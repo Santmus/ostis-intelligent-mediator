@@ -11,5 +11,7 @@ section_definitions_capabilities
 <- non_atomic_section;
 <- rrel_key_sc_element: definition_capability_profile;
 <- rrel_key_sc_element: definition_capability_match;
+<- rrel_key_sc_element: definition_task_type_similarity;
 <- rrel_key_sc_element: affirmation_assign_admissibility;
-<- rrel_key_sc_element: affirmation_coalition_optimization;;
+<- rrel_key_sc_element: affirmation_coalition_optimization;
+<- rrel_key_sc_element: affirmation_greedy_allocation_conditions;;

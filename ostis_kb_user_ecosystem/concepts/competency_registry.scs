@@ -177,7 +177,48 @@ nrel_entry_version
     [entry_version*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_registry_entry;;
+
+concept_participant_state
+<- sc_node_class;
+=> nrel_main_idtf:
+    [состояние участника] (* <- lang_ru;; *);
+    [participant state] (* <- lang_en;; *);;
+concept_registry_entry_status <= nrel_inclusion: concept_participant_state;;
+
+nrel_has_participant_state
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [имеет_состояние_участника*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_participant_state;;
+
+nrel_registered_in
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [зарегистрирован_в_реестре*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_competency_registry;;
+
+affirmation -> affirmation_registered_in_derivation: ...
+(*
+    -> rrel_key_sc_element: nrel_registered_in;;
+    => nrel_main_idtf: [Утв.(выводимость регистрации участника)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [registered_in(s, K) эквивалентно наличию записи e такой,
+            что registry_entry(K, e) ∧ entry_participant(e, s).
+            Функциональность означает одну актуальную регистрацию
+            участника; исторические версии записей сохраняются.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
 
 // ---------------------------------------------------------------------
 // Ограничение: допустимо назначение подзадачи только участнику

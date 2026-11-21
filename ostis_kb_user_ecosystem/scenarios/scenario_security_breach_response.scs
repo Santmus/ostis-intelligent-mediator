@@ -29,6 +29,8 @@ user_security_officer => nrel_main_idtf:
     [Офицер безопасности экосистемы] (* <- lang_ru;; *);;
 
 request_incident_response <- concept_user_request;;
+request_incident_response <- concept_valid_user_request;;
+request_incident_response <- concept_resolved_user_request;;
 request_incident_response <- concept_request_decision_support;;
 request_incident_response => nrel_main_idtf:
     [Запрос: диагностировать инцидент, оценить риск
@@ -36,13 +38,15 @@ request_incident_response => nrel_main_idtf:
     (* <- lang_ru;; *);;
 user_security_officer => nrel_formulates: request_incident_response;;
 
+intent_incident_response <- concept_intent;;
+request_incident_response => nrel_interprets: intent_incident_response;;
 goal_contain_incident <- concept_goal;;
 goal_contain_incident <- concept_goal_decisional;;
 goal_contain_incident => nrel_main_idtf:
     [Цель: остановить распространение инцидента
      и сохранить доступность ключевых сервисов]
     (* <- lang_ru;; *);;
-request_incident_response => nrel_has_goal: goal_contain_incident;;
+intent_incident_response => nrel_intent_goal: goal_contain_incident;;
 
 // Контекст.
 interaction_context_security <- concept_interaction_context;;
@@ -58,7 +62,11 @@ domain_security => nrel_main_idtf:
     [Предметная область: кибербезопасность интеллектуальных систем]
     (* <- lang_ru;; *);;
 
-interaction_context_security -> rrel_goal_context: goal_contain_incident;;
+interaction_context_security => nrel_context_version: [1];;
+interaction_context_security => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_security <- concept_goal_context;;
+goal_context_security => nrel_contains: goal_contain_incident;;
+interaction_context_security -> rrel_goal_context: goal_context_security;;
 interaction_context_security -> rrel_system_context: state_security_environment;;
 interaction_context_security -> rrel_domain_context: domain_security;;
 interaction_context_security -> rrel_history_context: history_security_incidents;;
@@ -161,6 +169,11 @@ system_privacy_auditor => nrel_produces: result_privacy_audit;;
 
 // Коллективное решение.
 collective_response_decision <- concept_collective_decision;;
+collective_response_decision => nrel_generated_in_context:
+    interaction_context_security;;
+collective_response_decision => nrel_has_provenance:
+    prov_collective_response_decision;;
+prov_collective_response_decision <- concept_provenance_record;;
 collective_response_decision => nrel_main_idtf:
     [Реагирование: rate-limit + горячая замена energy_model;
      PII не затронуты, нотификация GDPR не требуется]

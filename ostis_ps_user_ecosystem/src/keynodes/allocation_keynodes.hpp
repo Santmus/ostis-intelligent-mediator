@@ -68,10 +68,9 @@ public:
   // элемент онтологии с nrel_implements_process:
   // concept_process_allocation, то есть ровно тот, кому этот акт
   // принадлежит по модели. Отдельная запись concept_provenance_record
-  // НЕ создаётся: nrel_has_provenance объявлено с доменом
-  // concept_processing_result u concept_audit_record
-  // (relations/relations_provenance.scs), акт назначения в него не
-  // входит, а prov_template_assignment (axioms/axioms_provenance.scs)
+  // НЕ создаётся: акт назначения не входит в объявленный домен
+  // nrel_has_provenance (relations/relations_provenance.scs), а
+  // prov_template_assignment (axioms/axioms_provenance.scs)
   // прямо говорит, что провенансом акта назначения служит сама его
   // реификация. Навешивать сюда nrel_has_provenance значило бы ломать
   // уже зафиксированный домен -- ровно то, от чего отказался §7.4

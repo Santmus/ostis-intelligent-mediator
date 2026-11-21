@@ -49,7 +49,10 @@ ecosystem_state_002 <- concept_system_context;;
 ecosystem_state_002 => nrel_main_idtf:
     [Системный контекст: 1 ИС временно недоступна, нагрузка 67%]
     (* <- lang_ru;; *);;
-interaction_context_002 -> rrel_goal_context: goal_optimal_route;;
+interaction_context_002 <- concept_context_hypothesis;;
+interaction_context_002 => nrel_context_version: [2];;
+interaction_context_002 => nrel_context_timestamp: [2025-09-12T14:14:21Z];;
+interaction_context_002 -> rrel_goal_context: goal_context_route_planning;;
 interaction_context_002 -> rrel_history_context: history_alice_001;;
 interaction_context_002 -> rrel_domain_context: domain_logistics;;
 interaction_context_002 -> rrel_user_situation_context:

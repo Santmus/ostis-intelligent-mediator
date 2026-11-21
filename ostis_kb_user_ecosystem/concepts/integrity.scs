@@ -1,7 +1,7 @@
 // =====================================================================
 // concepts/integrity.scs
 // Подраздел: ограничения целостности модели и их нарушения.
-// Концептуально соотносится с подходом SHACL [28].
+// Концептуально соотносится с подходом SHACL.
 // =====================================================================
 
 section_concept_integrity
@@ -162,20 +162,23 @@ concept_shacl_property_shape
 => nrel_main_idtf: [PropertyShape] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// Ключевые интегральные ограничения корректности модели (формулы 4-7).
+// Ключевые интегральные ограничения корректности модели.
 // ---------------------------------------------------------------------
 
-affirmation -> affirmation_formula_4_request_authorship: ...
+affirmation -> affirmation_request_authorship_and_resolution: ...
 (*
     -> rrel_key_sc_element: concept_user_request;;
     => nrel_main_idtf:
-        [Утв.(4): авторство и цель запроса] (* <- lang_ru;; *);;
+        [Утв.(авторство запроса и разрешение намерения)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [∀q ∈ Request. ∃! u ∈ User. formulates(u, q)
-            ∧ ∃g ∈ Goal. has_goal(q, g).
-            Каждому пользовательскому запросу сопоставлен ровно один
-            автор-пользователь и хотя бы одна декларативная цель.]
+        -> [∀q ∈ Request. ∃!u ∈ User. formulates(u, q).
+            ∀q ∈ ResolvedUserRequest. ∃!j ∈ Intent.
+            interprets(q, j) ∧ ∃g ∈ Goal. intent_goal(j, g).
+            У каждого запроса ровно один автор. Цель обязательна
+            как компонент Intent только для разрешённого запроса;
+            допустимый неоднозначный запрос может завершиться
+            уточнением без Intent и декомпозиции.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -184,7 +187,7 @@ affirmation -> affirmation_formula_5_decomposition_acyclicity: ...
 (*
     -> rrel_key_sc_element: concept_subtask;;
     => nrel_main_idtf:
-        [Утв.(5): ацикличность декомпозиции] (* <- lang_ru;; *);;
+        [Утв.(ацикличность декомпозиции)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [acyclic(depends_on) ∧
@@ -199,7 +202,7 @@ affirmation -> affirmation_formula_6_result_provenance: ...
 (*
     -> rrel_key_sc_element: concept_processing_result;;
     => nrel_main_idtf:
-        [Утв.(6): провенанс результата обработки] (* <- lang_ru;; *);;
+        [Утв.(провенанс результата обработки)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [∀r ∈ ProcessingResult. ∃is, ctx, p.
@@ -215,13 +218,15 @@ affirmation -> affirmation_formula_7_integrated_result: ...
 (*
     -> rrel_key_sc_element: concept_integrated_result;;
     => nrel_main_idtf:
-        [Утв.(7): корректность интегрированного результата] (* <- lang_ru;; *);;
+        [Утв.(корректность интегрированного результата)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [∀ir ∈ IntegratedResult. (∃e. explained_by(ir, e))
-            ∧ ¬∃c. conflicts_with(ir, c).
-            Каждый интегрированный результат сопровождается объяснением
-            и не должен находиться в неразрешённом конфликте.]
-           (* <- lang_ru;; *);;
+        -> [∀ir ∈ IntegratedResult. ∃ctx, p, e.
+            generated_in_context(ir, ctx) ∧ has_provenance(ir, p)
+            ∧ explained_by(ir, e) ∧ ¬has_unresolved_conflict(ir).
+            Интегрированный результат имеет контекст, provenance
+            и объяснение. Разрешённый конфликт сохраняется в графе;
+            отдельный ExecutionAct для интегрированного результата
+            не требуется.] (* <- lang_ru;; *);;
     *);;
 *);;

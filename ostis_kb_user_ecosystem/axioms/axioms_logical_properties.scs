@@ -30,6 +30,11 @@ symmetric_relation
 => nrel_main_idtf: [симметричное_отношение] (* <- lang_ru;; *);
 => nrel_main_idtf: [symmetric_relation] (* <- lang_en;; *);;
 
+antisymmetric_relation
+<- sc_node_class;
+=> nrel_main_idtf: [антисимметричное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [antisymmetric_relation] (* <- lang_en;; *);;
+
 reflexive_relation
 <- sc_node_class;
 => nrel_main_idtf: [рефлексивное_отношение] (* <- lang_ru;; *);
@@ -50,20 +55,25 @@ functional_relation
 => nrel_main_idtf: [функциональное_отношение] (* <- lang_ru;; *);
 => nrel_main_idtf: [functional_relation] (* <- lang_en;; *);;
 
+inverse_functional_relation
+<- sc_node_class;
+=> nrel_main_idtf: [обратно_функциональное_отношение] (* <- lang_ru;; *);
+=> nrel_main_idtf: [inverse_functional_relation] (* <- lang_en;; *);;
+
 // ---------------------------------------------------------------------
 // Сводный список логических свойств основных отношений модели.
 // ---------------------------------------------------------------------
 
-axiom -> axiom_formulates_functional: ...
+axiom -> axiom_formulates_inverse_functional: ...
 (*
     => nrel_main_idtf:
-        [Акс.(функциональность formulates)] (* <- lang_ru;; *);;
+        [Акс.(обратная функциональность formulates)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Funct(formulates): каждому пользователю в данном временном
-            срезе сопоставляется не более одного активного запроса
-            (исторически — последовательность запросов с уникальной
-            принадлежностью каждого).] (* <- lang_ru;; *);;
+        -> [Funct(formulates⁻): у каждого запроса не более одного автора.
+            Само отношение formulates не функционально: один пользователь
+            может формулировать произвольное число запросов.]
+           (* <- lang_ru;; *);;
     *);;
 *);;
 

@@ -32,7 +32,7 @@ public:
       "action_detect_anomalous_request_rate", ScType::NodeConstClass};
 
   // rule_right_to_explanation: delivered_to(ir,u) -- условие гейта
-  // (relations/relations_execution.scs, concept_processing_result ->
+  // (relations/relations_execution.scs, concept_integrated_result ->
   // concept_user).
   static inline ScKeynode const nrel_delivered_to{"nrel_delivered_to", ScType::ConstNodeNonRole};
 

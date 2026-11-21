@@ -12,9 +12,15 @@ section_definitions_users
     [Subsection. User-Related Definitions] (* <- lang_en;; *);
 <- non_atomic_section;
 <- rrel_key_sc_element: definition_user;
+<- rrel_key_sc_element: definition_usage_context_model;
 <- rrel_key_sc_element: definition_user_model;
+<- rrel_key_sc_element: definition_user_domain_role;
+<- rrel_key_sc_element: definition_user_interaction_history;
+<- rrel_key_sc_element: definition_user_interaction_event;
 <- rrel_key_sc_element: affirmation_user_model_uniqueness;
-<- rrel_key_sc_element: affirmation_user_model_has_goal;;
+<- rrel_key_sc_element: affirmation_user_model_cold_start;
+<- rrel_key_sc_element: affirmation_user_model_version_provenance;
+<- rrel_key_sc_element: affirmation_user_assertion_metadata;;
 
 // ---------------------------------------------------------------------
 // Дополнительное мета-определение для агрегированного класса.
@@ -27,13 +33,12 @@ definition -> definition_user_subsystem: ...
         [Опр.(подсистема пользователей экосистемы)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Подсистема пользователей экосистемы — структурный фрагмент
-            модели M_int, включающий классы concept_user,
-            concept_user_model, concept_user_goal, concept_user_preference,
-            concept_user_competence, concept_user_interaction_history,
-            concept_user_feedback и связанные с ними отношения
-            nrel_formulates, nrel_has_user_model, nrel_has_goal,
-            nrel_provides_feedback. Подсистема покрывает интенциональную
-            и обратносвязевую части модели.] (* <- lang_ru;; *);;
+        -> [Подсистема пользователей экосистемы включает M_UC и её
+            компоненты M_U, M_UA, M_E, M_D; семь компонентов U(u);
+            версии и provenance модели пользователя; события
+            UserInteractionEvent; утверждения о пользователе и обратную
+            связь. Устойчивые цели G_u отделены от цели конкретного
+            намерения, а роли R_u — от ParticipantRole.]
+           (* <- lang_ru;; *);;
     *);;
 *);;

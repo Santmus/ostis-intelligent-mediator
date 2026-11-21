@@ -162,12 +162,82 @@ definition -> definition_user_request: ...
     => nrel_main_idtf: [Опр.(пользовательский запрос)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Пользовательский запрос — формализованное описание задачи
-            или информационной потребности пользователя, инициирующее
-            процесс коллективной обработки в сообществе интеллектуальных
-            систем; характеризуется семантическим типом, требованиями
-            к достоверности, ассоциированной целью и контекстом.]
-           (* <- lang_ru;; *);;
+        -> [Пользовательский запрос — исходное обращение пользователя,
+            сохраняющее форму и содержание задачи для последующей
+            интерпретации и аудита. Запрос не отождествляется ни
+            с намерением, ни с целью; он может характеризоваться
+            семантическим типом, требованиями к достоверности
+            и контекстом.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_valid_user_request
+<- sc_node_class;
+=> nrel_main_idtf:
+    [допустимый пользовательский запрос] (* <- lang_ru;; *);
+    [valid user request] (* <- lang_en;; *);
+=> nrel_idtf: [Q_valid];;
+concept_valid_user_request <= nrel_inclusion: concept_user_request;;
+
+definition -> definition_valid_user_request: ...
+(*
+    -> rrel_key_sc_element: concept_valid_user_request;;
+    => nrel_main_idtf: [Опр.(допустимый запрос)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Допустимый запрос q ∈ Q_valid одновременно удовлетворяет
+            четырём условиям: содержит хотя бы одну содержательную
+            единицу; синтаксически разбираем и допускает построение
+            гипотезы намерения либо обоснованный вывод о неоднозначности;
+            имеет идентифицируемого инициатора с моделью пользователя
+            и применимыми политиками; не запрещён политикой доступа
+            на этапе приёма. Неоднозначный, но разбираемый запрос
+            остаётся допустимым.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_resolved_user_request
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешённый пользовательский запрос] (* <- lang_ru;; *);
+    [resolved user request] (* <- lang_en;; *);
+=> nrel_idtf: [Q_resolved];;
+concept_resolved_user_request <= nrel_inclusion: concept_valid_user_request;;
+
+definition -> definition_resolved_user_request: ...
+(*
+    -> rrel_key_sc_element: concept_resolved_user_request;;
+    => nrel_main_idtf: [Опр.(разрешённый запрос)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Q_resolved ⊆ Q_valid включает запросы, для которых при
+            текущих версиях модели пользователя и контекста построено
+            однозначное либо подтверждённое пользователем намерение.
+            Только для таких запросов строятся план и декомпозиция.
+            Для q ∈ Q_valid ∖ Q_resolved исходом текущего цикла
+            является x_clar.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_clarification_request
+<- sc_node_class;
+=> nrel_main_idtf:
+    [запрос уточнения намерения] (* <- lang_ru;; *);
+    [intent clarification request] (* <- lang_en;; *);
+=> nrel_idtf: [Q_clar];;
+concept_clarification_request <= nrel_inclusion: concept_user_request;;
+
+definition -> definition_clarification_request: ...
+(*
+    -> rrel_key_sc_element: concept_clarification_request;;
+    => nrel_main_idtf: [Опр.(запрос уточнения)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Запрос q_clar ∈ Q_clar возвращается посредником при
+            недостатке сведений или наличии нескольких несовместимых
+            интерпретаций. Он завершает текущий экземпляр жизненного
+            цикла состоянием x_clar; ответ пользователя инициирует
+            связанный новый экземпляр обработки.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -210,7 +280,7 @@ concept_request_education
 // ---------------------------------------------------------------------
 // Намерение (Intent) — интерпретация запроса в понятиях онтологии,
 // отличная и от исходной формулировки запроса, и от цели: семантическая
-// гипотеза j = <g, o, a, Γ, y, π>, проверяемая по контексту и при
+// гипотеза j = <g, o, a, Γ, y, ρ>, проверяемая по контексту и при
 // необходимости подтверждаемая пользователем; основание декомпозиции
 // на подзадачи и выбора компетенций.
 // ---------------------------------------------------------------------
@@ -229,17 +299,17 @@ definition -> definition_intent: ...
     => nrel_main_idtf: [Опр.(намерение)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Намерение j = <g, o, a, Γ, y, π> — интерпретация
+        -> [Намерение j = <g, o, a, Γ, y, ρ> — интерпретация
             пользовательского запроса в понятиях онтологии предметной
             области, где g — цель, o — объект предметной области,
             a — требуемое действие, Γ — ограничения и условия
-            допустимости, y — требуемый тип результата, а π — приоритет
+            допустимости, y — требуемый тип результата, а ρ — приоритет
             или режим обработки. Намерение отличается как от исходной
             формулировки запроса (сохраняющей форму обращения
             пользователя), так и от цели (задающей требуемое состояние
             и критерий приемлемости): оно является семантической
             гипотезой, формируемой частичным отображением
-            ι: Q × U_t × C ⇀ J и уточняемой по контексту вплоть до
+            ι_(U_t,C): Q ⇀ J и уточняемой по контексту вплоть до
             запроса на уточнение при недостатке сведений или
             наличии нескольких несовместимых интерпретаций.]
            (* <- lang_ru;; *);;
@@ -320,19 +390,39 @@ concept_expected_result_type
 // Результат обработки и интегрированный результат.
 // ---------------------------------------------------------------------
 
+concept_result
+<- sc_node_class;
+=> nrel_main_idtf:
+    [результат] (* <- lang_ru;; *);
+    [result] (* <- lang_en;; *);;
+concept_result <= nrel_inclusion: concept_interaction_entity;;
+concept_result <= nrel_inclusion: concept_result_class_group;;
+
+definition -> definition_result: ...
+(*
+    -> rrel_key_sc_element: concept_result;;
+    => nrel_main_idtf: [Опр.(результат)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Result — абстрактный надкласс частичных и интегрированных
+            результатов. Он задаёт общую область отношений происхождения,
+            контекста и объяснения, но не смешивает условия порождения
+            частичного и итогового результата.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
 concept_processing_result
 <- sc_node_class;
 => nrel_main_idtf:
     [результат обработки] (* <- lang_ru;; *);
     [processing result] (* <- lang_en;; *);;
-concept_processing_result <= nrel_inclusion: concept_interaction_entity;;
-concept_processing_result <= nrel_inclusion: concept_result_class_group;;
+concept_processing_result <= nrel_inclusion: concept_result;;
+concept_processing_result <= nrel_disjoint_with: concept_integrated_result;;
 
 concept_processing_result <= nrel_subdividing: ...
 (*
     -> concept_partial_result;
        concept_intermediate_result;
-       concept_final_result;
        concept_alternative_result;;
 *);;
 
@@ -342,9 +432,6 @@ concept_partial_result
 concept_intermediate_result
 <- sc_node_class;
 => nrel_main_idtf: [промежуточный результат] (* <- lang_ru;; *);;
-concept_final_result
-<- sc_node_class;
-=> nrel_main_idtf: [итоговый результат] (* <- lang_ru;; *);;
 concept_alternative_result
 <- sc_node_class;
 => nrel_main_idtf: [альтернативный результат] (* <- lang_ru;; *);;
@@ -354,7 +441,13 @@ concept_integrated_result
 => nrel_main_idtf:
     [интегрированный результат] (* <- lang_ru;; *);
     [integrated result] (* <- lang_en;; *);;
-concept_integrated_result <= nrel_inclusion: concept_processing_result;;
+concept_integrated_result <= nrel_inclusion: concept_result;;
+concept_integrated_result <= nrel_disjoint_with: concept_result_conflict;;
+
+concept_final_result
+<- sc_node_class;
+=> nrel_main_idtf: [итоговый результат] (* <- lang_ru;; *);;
+concept_final_result <= nrel_inclusion: concept_integrated_result;;
 
 // ---------------------------------------------------------------------
 // Конфликт результатов и его виды.
@@ -527,7 +620,7 @@ affirmation -> affirmation_conflict_type_resolution: ...
 *);;
 
 // ---------------------------------------------------------------------
-// Условие конфликтности результатов (формула 14).
+// Условие конфликтности результатов (eq:result_conflict).
 // ---------------------------------------------------------------------
 
 affirmation -> affirmation_conflict_condition: ...

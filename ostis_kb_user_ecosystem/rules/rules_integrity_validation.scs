@@ -151,6 +151,8 @@ rule -> rule_validate_integrated_result_shape: ...
         -> [targetClass concept_integrated_result;
             property nrel_explained_by — minCount 1;
             property nrel_validated_by — minCount 1;
+            property nrel_has_provenance — minCount 1;
+            property nrel_generated_in_context — minCount 1;
             property nrel_has_unresolved_conflict — maxCount 0.
             Запрещается только НЕРАЗРЕШЁННЫЙ конфликт: разрешённый
             остаётся связанным с результатом отношениями

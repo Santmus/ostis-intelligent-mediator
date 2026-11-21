@@ -1,7 +1,7 @@
 // =====================================================================
 // tests/tests_decomposition_coverage.scs
 // Тесты покрытия декомпозиции запроса сообществом ИС и проверки
-// согласованности назначений (формула 13).
+// согласованности назначений при формировании коалиции.
 // =====================================================================
 
 section_tests_decomposition_coverage
@@ -96,7 +96,7 @@ test_coverage_after_reconfiguration => nrel_expected_answer: answer_td4;;
 answer_td4 <- concept_expected_answer;;
 answer_td4 => nrel_main_idtf:
     [После замены ranker_v1 → ranker_alt:
-     coverage(χ_new, T(request_001)) выполнено;
+     cover(χ_new, T(request_001)) = 1;
      consistent(C_002, χ_new) выполнено (ctx_compat для всех s ≥ 0.85);
-     задача (13) разрешима с новым Σ match = 2.65.]
+     задача формирования коалиции разрешима с новым Σ match = 2.65.]
     (* <- lang_ru;; *);;

@@ -24,10 +24,16 @@ failure_event_001 => nrel_main_idtf:
 subtask_ranking => nrel_subtask_status: concept_subtask_status_failed;;
 
 // Понижение доверия к отказавшей ИС.
+trust_level_ranker_initial <- concept_trust_level;;
+trust_level_ranker_initial => nrel_main_idtf:
+    [Исходный уровень доверия intelligent_system_ranker: 0.71]
+    (* <- lang_ru;; *);;
 trust_level_ranker_degraded <- concept_trust_level;;
 trust_level_ranker_degraded => nrel_main_idtf:
     [Понижение доверия к intelligent_system_ranker: 0.71 → 0.58]
     (* <- lang_ru;; *);;
+trust_level_ranker_degraded => nrel_previous_trust_level:
+    trust_level_ranker_initial;;
 intelligent_system_ranker => nrel_has_trust_level:
     trust_level_ranker_degraded;;
 

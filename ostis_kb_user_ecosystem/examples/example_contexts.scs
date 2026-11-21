@@ -52,6 +52,9 @@ interaction_context_001 => nrel_context_compatibility:
 // ---------------------------------------------------------------------
 
 interaction_context_003 <- concept_interaction_context;;
+interaction_context_003 <- concept_context_hypothesis;;
+interaction_context_003 => nrel_context_version: [3];;
+interaction_context_003 => nrel_context_timestamp: [2025-09-12T14:20:00Z];;
 interaction_context_003 => nrel_main_idtf:
     [Контекст 003: после прибытия к промежуточной точке] (* <- lang_ru;; *);;
 interaction_context_003 => nrel_context_inherits_from: interaction_context_002;;
@@ -62,3 +65,37 @@ event_intermediate_point => nrel_main_idtf:
     (* <- lang_ru;; *);;
 interaction_context_003 => nrel_context_updated_by_event:
     event_intermediate_point;;
+
+
+interaction_context_reference => nrel_context_version: [1];;
+interaction_context_reference => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+
+
+// Явные пять компонентов эталонного и унаследованного контекстов.
+reference_goal <- concept_goal;;
+reference_goal_context <- concept_goal_context;;
+reference_goal_context => nrel_contains: reference_goal;;
+reference_history_context <- concept_history_context;;
+reference_system_context <- concept_system_context;;
+reference_domain_context <- concept_domain_context;;
+reference_user_situation_context <- concept_user_situation_context;;
+interaction_context_reference -> rrel_goal_context: reference_goal_context;;
+interaction_context_reference -> rrel_history_context:
+    reference_history_context;;
+interaction_context_reference -> rrel_system_context:
+    reference_system_context;;
+interaction_context_reference -> rrel_domain_context:
+    reference_domain_context;;
+interaction_context_reference -> rrel_user_situation_context:
+    reference_user_situation_context;;
+
+ecosystem_state_003 <- concept_system_context;;
+ecosystem_state_003 => nrel_main_idtf:
+    [Системный контекст после прибытия к промежуточной точке]
+    (* <- lang_ru;; *);;
+interaction_context_003 -> rrel_goal_context: goal_context_route_planning;;
+interaction_context_003 -> rrel_history_context: history_alice_001;;
+interaction_context_003 -> rrel_system_context: ecosystem_state_003;;
+interaction_context_003 -> rrel_domain_context: domain_logistics;;
+interaction_context_003 -> rrel_user_situation_context:
+    situation_alice_mobile_ru;;

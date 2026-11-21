@@ -10,4 +10,9 @@ section_definitions_context
 <- non_atomic_section;
 <- rrel_key_sc_element: definition_interaction_context;
 <- rrel_key_sc_element: definition_ctx_compat;
+<- rrel_key_sc_element: affirmation_ctx_compat_monotonicity;
+<- rrel_key_sc_element: definition_user_model_projection;
+<- rrel_key_sc_element: definition_context_projection;
+<- rrel_key_sc_element: definition_semantic_contract;
+<- rrel_key_sc_element: affirmation_context_view_minimization;
 <- rrel_key_sc_element: affirmation_context_completeness;;

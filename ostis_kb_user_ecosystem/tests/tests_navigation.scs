@@ -73,13 +73,13 @@ answer_q1 => nrel_main_idtf:
 question_where_defined_user => nrel_expected_answer: answer_q1;;
 
 // ---------------------------------------------------------------------
-// Q2: Перечислите 8 процессов жизненного цикла π.
+// Q2: Основные и вспомогательные процессы жизненного цикла π.
 // ---------------------------------------------------------------------
 
 question_enumerate_lifecycle_processes <- concept_test_question;;
 question_enumerate_lifecycle_processes => nrel_main_idtf:
-    [Q2. Перечислите 8 процессов жизненного цикла π и
-     соответствующие им sc-агенты посредника.]
+    [Q2. Перечислите восемь основных и два вспомогательных процесса
+     жизненного цикла π и соответствующие им sc-агенты посредника.]
     (* <- lang_ru;; *);;
 question_enumerate_lifecycle_processes => nrel_question_subject:
     concept_lifecycle_process;;
@@ -93,7 +93,10 @@ answer_q2 => nrel_main_idtf:
      (π_intg, agent_result_integrator),
      (π_exp, agent_explanation_builder),
      (π_tr, agent_trust_evaluator),
-     (π_rec, agent_coalition_reconfigurator)]
+     (π_rec, agent_coalition_reconfigurator),
+     (LifecycleMonitoring, сбор событий UserInteractionEvent),
+     (UserModelActualization, agent_user_model_updater —
+      онтологическая спецификация без программной реализации)]
     (* <- lang_ru;; *);;
 question_enumerate_lifecycle_processes => nrel_expected_answer: answer_q2;;
 
@@ -216,26 +219,24 @@ answer_q8 => nrel_main_idtf:
 question_lifecycle_states => nrel_expected_answer: answer_q8;;
 
 // ---------------------------------------------------------------------
-// Q9: Циклические переходы и два ресурса восстановления.
+// Q9: Ресурсы восстановления и ограничения завершаемости.
 // ---------------------------------------------------------------------
 
 question_recovery_resources <- concept_test_question;;
 question_recovery_resources => nrel_main_idtf:
-    [Q9. Чем различаются бюджет переназначений b_q и предельная
-     глубина перепланирования d_max, и какие переходы их расходуют?]
+    [Q9. Как связаны b_q, d_max, n_clar и N_ph с потенциалом Φ?]
     (* <- lang_ru;; *);;
 question_recovery_resources => nrel_question_subject:
-    concept_reassignment_budget;;
+    concept_termination_potential;;
 
 answer_q9 <- concept_expected_answer;;
 answer_q9 => nrel_main_idtf:
-    [b_q ограничивает перебор исполнителей ПРИ НЕИЗМЕННОЙ структуре
-     задачи и расходуется переходом x_exec → x_assign (переназначение);
-     d_max ограничивает перестроение самой структуры графа подзадач
-     и расходуется переходом x_* → x_replan → x_plan
-     (перепланирование, порождающее новую версию плана).
-     Потенциал Φ(x) = <d_rem, n_pend + b_rem> убывает
-     лексикографически при каждом нетерминальном переходе.]
+    [b_q расходуется переназначением, d_max — перепланированием.
+     Новый связанный цикл после x_clar уменьшает n_clar_rem.
+     N_ph ограничивает серию служебных переходов без убывания.
+     Φ(x) = <n_clar_rem, d_rem, n_pend + b_rem>: на ресурсных
+     переходах строго убывает, на служебных — не возрастает.
+     Терминальный исход не требует нулевого потенциала.]
     (* <- lang_ru;; *);;
 question_recovery_resources => nrel_expected_answer: answer_q9;;
 

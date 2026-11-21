@@ -35,6 +35,8 @@ user_boris <- concept_end_user;;
 user_boris => nrel_main_idtf: [Борис] (* <- lang_ru;; *);;
 
 request_rec_001 <- concept_user_request;;
+request_rec_001 <- concept_valid_user_request;;
+request_rec_001 <- concept_resolved_user_request;;
 request_rec_001 => nrel_main_idtf:
     [Запрос: рассчитать сводный прогноз спроса по трём складам]
     (* <- lang_ru;; *);;
@@ -51,6 +53,11 @@ intent_rec_001 => nrel_main_idtf:
     [Намерение: рассчитать сводный прогноз спроса по трём складам]
     (* <- lang_ru;; *);;
 request_rec_001 => nrel_interprets: intent_rec_001;;
+goal_rec_forecast <- concept_goal;;
+goal_rec_forecast => nrel_main_idtf:
+    [Цель: получить сводный прогноз спроса по трём складам]
+    (* <- lang_ru;; *);;
+intent_rec_001 => nrel_intent_goal: goal_rec_forecast;;
 
 plan_rec_001 <- concept_processing_plan;;
 plan_rec_001 => nrel_main_idtf:
@@ -82,6 +89,8 @@ system_forecaster_c => nrel_main_idtf: [Прогнозист C] (* <- lang_ru;; 
 state_rec_exec_1 <- concept_state_execution;;
 state_rec_exec_1 => nrel_remaining_reassignment_budget: [2];;
 state_rec_exec_1 => nrel_remaining_replanning_depth: [1];;
+state_rec_exec_1 => nrel_remaining_clarification_rounds: [2];;
+state_rec_exec_1 => nrel_remaining_phase_transitions: [4];;
 
 subtask_forecast => nrel_assigned_to: system_forecaster_a;;
 
@@ -231,8 +240,8 @@ audit_rec_replan => nrel_has_provenance: prov_rec_replan;;
 prov_rec_replan <- concept_provenance_record;;
 
 // ---------------------------------------------------------------------
-// Такт 5. Оба ресурса исчерпаны (Φ(x) = <0, 0> при непустом множестве
-// незавершённых подзадач) → терминальный отказ x_refuse.
+// Такт 5. Ресурсы маршрута исчерпаны при n_clar_rem = 2.
+// Терминальный отказ не требует нулевого потенциала.
 // ---------------------------------------------------------------------
 
 depth_exhausted_rec <- concept_event_depth_exhausted;;
@@ -242,6 +251,8 @@ depth_exhausted_rec => nrel_main_idtf:
 state_rec_refusal <- concept_state_refusal;;
 state_rec_refusal => nrel_remaining_reassignment_budget: [0];;
 state_rec_refusal => nrel_remaining_replanning_depth: [0];;
+state_rec_refusal => nrel_remaining_clarification_rounds: [2];;
+state_rec_refusal => nrel_remaining_phase_transitions: [4];;
 
 transition_rec_refuse
 <- concept_state_transition;
@@ -297,6 +308,7 @@ failure_rec_001 => nrel_failure_audit_record: audit_rec_refusal;;
 // ---------------------------------------------------------------------
 
 request_rec_002 <- concept_user_request;;
+request_rec_002 <- concept_valid_user_request;;
 request_rec_002 => nrel_main_idtf:
     [Повторный запрос: прогноз спроса по одному складу]
     (* <- lang_ru;; *);;
@@ -306,3 +318,57 @@ request_rec_002 => nrel_has_state: state_rec_002_accepted;;
 state_rec_002_accepted <- concept_state_accepted;;
 state_rec_002_accepted => nrel_remaining_reassignment_budget: [2];;
 state_rec_002_accepted => nrel_remaining_replanning_depth: [1];;
+
+
+state_rec_002_accepted => nrel_remaining_clarification_rounds: [2];;
+state_rec_002_accepted => nrel_remaining_phase_transitions: [4];;
+
+// ---------------------------------------------------------------------
+// Связанные циклы уточнения: x_clar завершает текущий цикл, а новый
+// связанный запрос уменьшает n_clar_rem с 2 до 1.
+// ---------------------------------------------------------------------
+
+request_clar_001 <- concept_user_request;;
+request_clar_001 <- concept_valid_user_request;;
+request_clar_001 => nrel_main_idtf:
+    [Запрос с неоднозначным намерением: первый цикл уточнения]
+    (* <- lang_ru;; *);;
+user_boris => nrel_formulates: request_clar_001;;
+request_clar_001 => nrel_has_state: state_clar_001;;
+state_clar_001 <- concept_state_clarification;;
+state_clar_001 => nrel_remaining_clarification_rounds: [2];;
+state_clar_001 => nrel_remaining_reassignment_budget: [2];;
+state_clar_001 => nrel_remaining_replanning_depth: [1];;
+state_clar_001 => nrel_remaining_phase_transitions: [4];;
+
+request_clar_002 <- concept_user_request;;
+request_clar_002 <- concept_valid_user_request;;
+request_clar_002 => nrel_main_idtf:
+    [Новый связанный запрос после ответа пользователя]
+    (* <- lang_ru;; *);;
+user_boris => nrel_formulates: request_clar_002;;
+request_clar_002 => nrel_continues_request: request_clar_001;;
+request_clar_002 => nrel_has_state: state_clar_002_accepted;;
+state_clar_002_accepted <- concept_state_accepted;;
+state_clar_002_accepted => nrel_remaining_clarification_rounds: [1];;
+state_clar_002_accepted => nrel_remaining_reassignment_budget: [2];;
+state_clar_002_accepted => nrel_remaining_replanning_depth: [1];;
+state_clar_002_accepted => nrel_remaining_phase_transitions: [4];;
+
+
+context_rec_001 => nrel_context_version: [1];;
+context_rec_001 => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+
+
+// Пять компонентов контекста восстановления маршрута.
+goal_context_rec <- concept_goal_context;;
+goal_context_rec => nrel_contains: goal_rec_forecast;;
+history_context_rec <- concept_history_context;;
+system_context_rec <- concept_system_context;;
+domain_context_rec <- concept_domain_context;;
+situation_context_rec <- concept_user_situation_context;;
+context_rec_001 -> rrel_goal_context: goal_context_rec;;
+context_rec_001 -> rrel_history_context: history_context_rec;;
+context_rec_001 -> rrel_system_context: system_context_rec;;
+context_rec_001 -> rrel_domain_context: domain_context_rec;;
+context_rec_001 -> rrel_user_situation_context: situation_context_rec;;

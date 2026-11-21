@@ -28,6 +28,15 @@ user_model_ivan <- concept_user_model;;
 profile_student_ivan <- concept_user_profile;;
 profile_student_ivan => nrel_main_idtf:
     [Профиль: 11 класс, школа № 5, профиль физмат] (* <- lang_ru;; *);;
+role_student_ivan <- concept_user_domain_role;;
+role_student_ivan => nrel_main_idtf:
+    [Предметная роль: учащийся] (* <- lang_ru;; *);;
+user_model_ivan => nrel_has_identification: profile_student_ivan;;
+user_model_ivan => nrel_has_user_domain_role: role_student_ivan;;
+user_model_ivan => nrel_user_model_version: [1];;
+user_model_ivan => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_ivan => nrel_has_provenance: prov_user_model_ivan;;
+prov_user_model_ivan <- concept_provenance_record;;
 competence_ivan_algebra <- concept_user_competence;;
 competence_ivan_algebra => nrel_main_idtf:
     [Компетенция: алгебра 10 кл — освоено 78%]
@@ -50,6 +59,8 @@ user_model_ivan => nrel_has_preference: preference_ivan_visual;;
 // ---------------------------------------------------------------------
 
 request_learning_path <- concept_user_request;;
+request_learning_path <- concept_valid_user_request;;
+request_learning_path <- concept_resolved_user_request;;
 request_learning_path <- concept_request_education;;
 request_learning_path => nrel_main_idtf:
     [Запрос: построить персональную траекторию подготовки
@@ -57,12 +68,14 @@ request_learning_path => nrel_main_idtf:
     (* <- lang_ru;; *);;
 user_student_ivan => nrel_formulates: request_learning_path;;
 
+intent_learning_path <- concept_intent;;
+request_learning_path => nrel_interprets: intent_learning_path;;
 goal_pass_exam <- concept_goal;;
 goal_pass_exam <- concept_goal_educational;;
 goal_pass_exam => nrel_main_idtf:
     [Цель: сдать ЕГЭ по математике на ≥ 75 баллов]
     (* <- lang_ru;; *);;
-request_learning_path => nrel_has_goal: goal_pass_exam;;
+intent_learning_path => nrel_intent_goal: goal_pass_exam;;
 
 // ---------------------------------------------------------------------
 // Контекст обучения.
@@ -88,7 +101,12 @@ history_ivan_tests => nrel_main_idtf:
     [История: 24 пройденных диагностических теста за 3 месяца]
     (* <- lang_ru;; *);;
 
-interaction_context_tutoring -> rrel_goal_context: goal_pass_exam;;
+interaction_context_tutoring => nrel_context_version: [1];;
+interaction_context_tutoring => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_tutoring <- concept_goal_context;;
+goal_context_tutoring => nrel_contains: goal_pass_exam;;
+goal_context_tutoring => nrel_contains: preference_ivan_visual;;
+interaction_context_tutoring -> rrel_goal_context: goal_context_tutoring;;
 interaction_context_tutoring -> rrel_history_context: history_ivan_tests;;
 interaction_context_tutoring -> rrel_system_context: system_context_tutoring;;
 interaction_context_tutoring -> rrel_domain_context: domain_secondary_math;;
@@ -200,6 +218,11 @@ result_path_explanation => nrel_main_idtf:
 system_explanation_generator => nrel_produces: result_path_explanation;;
 
 integrated_learning_path_001 <- concept_integrated_result;;
+integrated_learning_path_001 => nrel_generated_in_context:
+    interaction_context_tutoring;;
+integrated_learning_path_001 => nrel_has_provenance:
+    prov_integrated_learning_path_001;;
+prov_integrated_learning_path_001 <- concept_provenance_record;;
 integrated_learning_path_001 => nrel_main_idtf:
     [Интегрированная учебная траектория для Ивана] (* <- lang_ru;; *);;
 result_diagnosis        => nrel_integrated_in: integrated_learning_path_001;;

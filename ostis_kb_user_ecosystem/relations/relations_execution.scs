@@ -79,6 +79,7 @@ nrel_produced_by
     [produced_by*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_processing_result;
 => nrel_second_domain: concept_intelligent_system;;
 
@@ -125,6 +126,7 @@ nrel_integrated_in
     [integrated_in*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_processing_result;
 => nrel_second_domain: concept_integrated_result;;
 
@@ -135,7 +137,8 @@ nrel_delivered_to
     [delivered_to*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_processing_result;
+<- functional_relation;
+=> nrel_first_domain: concept_integrated_result;
 => nrel_second_domain: concept_user;;
 
 // ---------------------------------------------------------------------
@@ -149,6 +152,7 @@ nrel_has_capability_profile
     [has_capability_profile*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_intelligent_system;
 => nrel_second_domain: concept_capability_profile;;
 

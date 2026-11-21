@@ -29,7 +29,7 @@ trust_scalar_initial => nrel_main_idtf:
     [trust_initial = (0.82 + 0.78 + 0.95 + 0.70) / 4 = 0.8125]
     (* <- lang_ru;; *);;
 
-intelligent_system_energy_model => nrel_has_trust_level: trust_scalar_initial;;
+trust_scalar_initial => nrel_previous_trust_level: trust_level_energy_updated;;
 
 // После успешного взаимодействия: ν_rel=1, q_res=0.94, ν_sec=1, ν_tr=1
 // при едином коэффициенте сглаживания η=0.10.
@@ -55,6 +55,7 @@ trust_assessment_act_001
 -> rrel_timestamp: [2025-09-12T14:11:05Z];;
 
 intelligent_system_energy_model => nrel_has_trust_level: trust_scalar_after;;
+trust_scalar_after => nrel_previous_trust_level: trust_scalar_initial;;
 trust_scalar_after => nrel_trust_updated_by_feedback: feedback_alice_001;;
 
 // Иллюстрация эффекта самонастройки: инцидент безопасности

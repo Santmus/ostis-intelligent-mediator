@@ -34,6 +34,8 @@ user_traffic_operator => nrel_main_idtf:
     (* <- lang_ru;; *);;
 
 request_traffic_optimization <- concept_user_request;;
+request_traffic_optimization <- concept_valid_user_request;;
+request_traffic_optimization <- concept_resolved_user_request;;
 request_traffic_optimization <- concept_request_optimization;;
 request_traffic_optimization => nrel_main_idtf:
     [Запрос: минимизировать средний tau (время в пути)
@@ -42,12 +44,14 @@ request_traffic_optimization => nrel_main_idtf:
     (* <- lang_ru;; *);;
 user_traffic_operator => nrel_formulates: request_traffic_optimization;;
 
+intent_traffic_optimization <- concept_intent;;
+request_traffic_optimization => nrel_interprets: intent_traffic_optimization;;
 goal_minimize_avg_tau <- concept_goal;;
 goal_minimize_avg_tau <- concept_goal_optimizational;;
 goal_minimize_avg_tau => nrel_main_idtf:
     [Цель: min E при ограничении безопасности]
     (* <- lang_ru;; *);;
-request_traffic_optimization => nrel_has_goal: goal_minimize_avg_tau;;
+intent_traffic_optimization => nrel_intent_goal: goal_minimize_avg_tau;;
 
 // ---------------------------------------------------------------------
 // Контекст (с акцентом на C_s — состояние городской среды).
@@ -64,7 +68,11 @@ state_smart_city => nrel_main_idtf:
      342 датчика загруженности; среднее заполнение 78%]
     (* <- lang_ru;; *);;
 
-interaction_context_smart_city -> rrel_goal_context: goal_minimize_avg_tau;;
+interaction_context_smart_city => nrel_context_version: [1];;
+interaction_context_smart_city => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_smart_city <- concept_goal_context;;
+goal_context_smart_city => nrel_contains: goal_minimize_avg_tau;;
+interaction_context_smart_city -> rrel_goal_context: goal_context_smart_city;;
 interaction_context_smart_city -> rrel_system_context: state_smart_city;;
 interaction_context_smart_city -> rrel_domain_context: domain_urban_traffic;;
 interaction_context_smart_city -> rrel_history_context: history_traffic_30d;;
@@ -182,6 +190,10 @@ conflict_safety_vs_speed => nrel_main_idtf:
 result_aggressive_plan => nrel_conflicts_with: result_safety_objection;;
 
 collective_traffic_decision <- concept_collective_decision;;
+collective_traffic_decision => nrel_generated_in_context:
+    interaction_context_smart_city;;
+collective_traffic_decision => nrel_has_provenance: prov_collective_traffic_decision;;
+prov_collective_traffic_decision <- concept_provenance_record;;
 collective_traffic_decision => nrel_main_idtf:
     [Решение: альтернативный план B (сохранение пешеходной фазы,
      оптимизация фазы поворота на ул. Сурганова, объезд для 12%

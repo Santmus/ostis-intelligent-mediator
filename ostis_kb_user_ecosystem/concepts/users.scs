@@ -1,8 +1,7 @@
 // =====================================================================
 // concepts/users.scs
-// Подраздел: пользователи интеллектуальной экосистемы и их
-// онтологические модели. Расширяет интенциональную группу классов
-// E_user, E_goal модели M_int. Учитывает [4; 26].
+// Пользователи, канонический контекст использования M_UC, версионируемая
+// модель пользователя U(u), события и утверждения о пользователе.
 // =====================================================================
 
 section_concept_users
@@ -11,18 +10,23 @@ section_concept_users
     [Subsection. Users of an Intelligent Ecosystem] (* <- lang_en;; *);
 <- atomic_section;
 <- rrel_key_sc_element: concept_user;
+<- rrel_key_sc_element: concept_usage_context_model;
 <- rrel_key_sc_element: concept_user_model;
+<- rrel_key_sc_element: concept_user_action_model;
+<- rrel_key_sc_element: concept_environment_model;
+<- rrel_key_sc_element: concept_device_model;
 <- rrel_key_sc_element: concept_user_goal;
 <- rrel_key_sc_element: concept_user_preference;
 <- rrel_key_sc_element: concept_user_competence;
 <- rrel_key_sc_element: concept_user_interaction_history;
+<- rrel_key_sc_element: concept_user_interaction_event;
 <- rrel_key_sc_element: concept_user_profile;
 <- rrel_key_sc_element: concept_user_persona;
 <- rrel_key_sc_element: concept_cognitive_load_estimate;
 <- rrel_key_sc_element: concept_user_feedback;;
 
 // ---------------------------------------------------------------------
-// concept_user — субъект взаимодействия с экосистемой.
+// Пользователь — субъект взаимодействия, а не контейнер полного профиля.
 // ---------------------------------------------------------------------
 
 concept_user
@@ -31,11 +35,8 @@ concept_user
     [пользователь] (* <- lang_ru;; *);
     [user] (* <- lang_en;; *);
 => nrel_idtf: [E_user];;
-
-concept_user
-<= nrel_inclusion: concept_interaction_participant;;
-concept_user
-<= nrel_inclusion: concept_intentional_class_group;;
+concept_user <= nrel_inclusion: concept_interaction_participant;;
+concept_user <= nrel_inclusion: concept_entity_group_subject;;
 
 definition -> definition_user: ...
 (*
@@ -44,20 +45,13 @@ definition -> definition_user: ...
     <= nrel_sc_text_translation: ...
     (*
         -> [Пользователь — субъект взаимодействия с интеллектуальной
-            экосистемой, обладающий идентифицируемым множеством целей,
-            предпочтений, компетенций и историей взаимодействий,
-            представленных в виде онтологической модели пользователя
-            в общей семантической памяти.] (* <- lang_ru;; *);;
+            экосистемой, связанный с версионируемой моделью пользователя.
+            Полный профиль и история относятся к UserModel, а не включаются
+            непосредственно в класс User.] (* <- lang_ru;; *);;
         -> [User is a subject of interaction with an intelligent ecosystem
-            characterised by an identifiable set of goals, preferences,
-            competencies and an interaction history represented as an
-            ontological user model.] (* <- lang_en;; *);;
+            linked to a versioned user model.] (* <- lang_en;; *);;
     *);;
 *);;
-
-// ---------------------------------------------------------------------
-// Разбиение пользователей по ролям.
-// ---------------------------------------------------------------------
 
 concept_user <= nrel_subdividing: ...
 (*
@@ -108,17 +102,82 @@ concept_anonymous_user
 => nrel_main_idtf: [anonymous user] (* <- lang_en;; *);;
 
 // ---------------------------------------------------------------------
-// concept_user_model — онтологическая модель пользователя.
+// Канонический контекст использования M_UC. Локальные идентификаторы
+// задают структурное соответствие существующей OSTIS-основе, а не
+// независимую параллельную онтологию или завершённое машинное слияние.
+// ---------------------------------------------------------------------
+
+concept_usage_context_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модель контекста использования] (* <- lang_ru;; *);
+    [usage context model] (* <- lang_en;; *);
+=> nrel_idtf: [M_UC];;
+concept_usage_context_model <= nrel_inclusion: concept_ontological_artifact;;
+
+concept_usage_context_model <= nrel_subdividing: ...
+(*
+    => nrel_main_idtf: [M_UC = {M_U, M_UA, M_E, M_D}]
+       (* <- lang_ru;; *);;
+    -> concept_user_model;
+       concept_user_action_model;
+       concept_environment_model;
+       concept_device_model;;
+*);;
+
+definition -> definition_usage_context_model: ...
+(*
+    -> rrel_key_sc_element: concept_usage_context_model;;
+    => nrel_main_idtf: [Опр.(модель контекста использования)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [M_UC = {M_U, M_UA, M_E, M_D}, где M_U — модель пользователя,
+            M_UA — модель действий пользователя, M_E — модель окружающей
+            среды, M_D — модель устройства. Это каноническая OSTIS-основа,
+            структурно используемая предлагаемой моделью посредничества.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_user_action_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модель действий пользователя] (* <- lang_ru;; *);
+    [user action model] (* <- lang_en;; *);
+=> nrel_idtf: [M_UA];;
+concept_user_action_model <= nrel_inclusion: concept_ontological_artifact;;
+
+concept_environment_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модель окружающей среды] (* <- lang_ru;; *);
+    [environment model] (* <- lang_en;; *);
+=> nrel_idtf: [M_E];;
+concept_environment_model <= nrel_inclusion: concept_ontological_artifact;;
+concept_environment_model <= nrel_inclusion: concept_entity_group_context;;
+
+concept_device_model
+<- sc_node_class;
+=> nrel_main_idtf:
+    [модель устройства] (* <- lang_ru;; *);
+    [device model] (* <- lang_en;; *);
+=> nrel_idtf: [M_D];;
+concept_device_model <= nrel_inclusion: concept_ontological_artifact;;
+concept_device_model <= nrel_inclusion: concept_entity_group_context;;
+
+// ---------------------------------------------------------------------
+// Версионируемая модель пользователя U(u).
 // ---------------------------------------------------------------------
 
 concept_user_model
 <- sc_node_class;
 => nrel_main_idtf:
     [модель пользователя] (* <- lang_ru;; *);
-    [user model] (* <- lang_en;; *);;
-
-concept_user_model
-<= nrel_inclusion: concept_ontological_artifact;;
+    [user model] (* <- lang_en;; *);
+=> nrel_idtf: [M_U];
+=> nrel_idtf: [U(u)];;
+concept_user_model <= nrel_inclusion: concept_ontological_artifact;;
+concept_user_model <= nrel_inclusion: concept_entity_group_subject;;
 
 definition -> definition_user_model: ...
 (*
@@ -126,12 +185,17 @@ definition -> definition_user_model: ...
     => nrel_main_idtf: [Опр.(модель пользователя)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Модель пользователя — онтологическое представление целей,
-            предпочтений, компетенций, истории взаимодействий и
-            ситуационных характеристик пользователя, используемое
-            интеллектуальными системами экосистемы для адаптивной
-            обработки запросов и формирования персональных
-            рекомендаций.] (* <- lang_ru;; *);;
+        -> [Модель пользователя U(u) = <I_u, R_u, G_u, P_u, K_u, S_u, H_u>
+            — версионируемая онтологическая спецификация устойчивых
+            и текущих характеристик пользователя и производной истории.
+            I_u — идентификационные и медленно изменяющиеся сведения;
+            R_u — социальные и предметные роли; G_u — устойчивые цели;
+            P_u — предпочтения и явно заданные ограничения;
+            K_u — способности, компетенции и устойчивые возможности;
+            S_u — текущее ситуационное состояние; H_u — производная
+            история взаимодействий. U_t(u) — неизменяемый снимок,
+            фиксируемый на один цикл обработки запроса. Каждая версия
+            имеет время и происхождение.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -141,51 +205,65 @@ concept_ontological_artifact
     [онтологический артефакт] (* <- lang_ru;; *);
     [ontological artifact] (* <- lang_en;; *);;
 
-// ---------------------------------------------------------------------
-// Композиция модели пользователя (атрибутный уровень).
-// ---------------------------------------------------------------------
-
 concept_user_model <= nrel_subdividing: ...
 (*
-    => nrel_main_idtf: [Композиционное разбиение модели пользователя]
+    => nrel_main_idtf: [U(u) = <I_u, R_u, G_u, P_u, K_u, S_u, H_u>]
        (* <- lang_ru;; *);;
-    -> concept_user_profile;
+    -> concept_user_identification;
+       concept_user_domain_role;
        concept_user_goal;
        concept_user_preference;
        concept_user_competence;
-       concept_user_interaction_history;
-       concept_user_persona;
-       concept_cognitive_load_estimate;
-       concept_user_consent_record;;
+       concept_user_situation_state;
+       concept_user_interaction_history;;
+*);;
+
+concept_user_identification
+<- sc_node_class;
+=> nrel_main_idtf:
+    [идентификационные сведения пользователя] (* <- lang_ru;; *);
+    [user identification information] (* <- lang_en;; *);
+=> nrel_idtf: [I_u];;
+
+concept_user_domain_role
+<- sc_node_class;
+=> nrel_main_idtf:
+    [социальная или предметная роль пользователя] (* <- lang_ru;; *);
+    [social or domain user role] (* <- lang_en;; *);
+=> nrel_idtf: [R_u];;
+
+definition -> definition_user_domain_role: ...
+(*
+    -> rrel_key_sc_element: concept_user_domain_role;;
+    => nrel_main_idtf: [Опр.(роль пользователя)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [R_u характеризует пользователя в социальной или предметной
+            области и не отождествляется с ParticipantRole — ролью
+            участника в конкретном акте коллективной обработки.]
+           (* <- lang_ru;; *);;
+    *);;
 *);;
 
 concept_user_profile
 <- sc_node_class;
 => nrel_main_idtf: [профиль пользователя] (* <- lang_ru;; *);
 => nrel_main_idtf: [user profile] (* <- lang_en;; *);;
+concept_user_profile <= nrel_inclusion: concept_user_identification;;
 
 concept_user_goal
 <- sc_node_class;
-=> nrel_main_idtf: [цель пользователя] (* <- lang_ru;; *);
-=> nrel_main_idtf: [user goal] (* <- lang_en;; *);;
+=> nrel_main_idtf: [устойчивая цель пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [persistent user goal] (* <- lang_en;; *);
+=> nrel_idtf: [G_u];;
 concept_user_goal <= nrel_inclusion: concept_goal;;
 
 concept_user_preference
 <- sc_node_class;
 => nrel_main_idtf: [пользовательское предпочтение] (* <- lang_ru;; *);
-=> nrel_main_idtf: [user preference] (* <- lang_en;; *);;
+=> nrel_main_idtf: [user preference] (* <- lang_en;; *);
+=> nrel_idtf: [P_u];;
 
-// Подкласс-флаг: предпочтение визуальной модальности представления
-// (rules/rules_user_adaptation.scs -> rule_choose_modality:
-// "пользователь предпочитает визуальные объяснения (preference_visual)").
-// Прежде существовало только как свободнотекстовая метка nrel_main_idtf
-// у экземпляров вроде preference_ivan_visual
-// (scenarios/scenario_intelligent_tutoring.scs), без типизированного
-// признака; формализовано вместе с AgentChooseModality
-// (ostis_ps_user_ecosystem). concept_user_preference остаётся плоским
-// классом за пределами этого единственного подкласса -- другие виды
-// предпочтений (например, preference_low_energy,
-// scenarios/scenario_request_processing.scs) не типизированы.
 concept_preference_visual_modality
 <- sc_node_class;
 => nrel_main_idtf:
@@ -196,35 +274,108 @@ concept_preference_visual_modality <= nrel_inclusion: concept_user_preference;;
 concept_user_competence
 <- sc_node_class;
 => nrel_main_idtf: [компетенция пользователя] (* <- lang_ru;; *);
-=> nrel_main_idtf: [user competence] (* <- lang_en;; *);;
+=> nrel_main_idtf: [user competence] (* <- lang_en;; *);
+=> nrel_idtf: [K_u];;
 
-concept_user_interaction_history
+concept_user_situation_state
 <- sc_node_class;
 => nrel_main_idtf:
-    [история взаимодействия пользователя] (* <- lang_ru;; *);
-    [user interaction history] (* <- lang_en;; *);;
-concept_user_interaction_history
-<= nrel_inclusion: concept_provenance_record;;
-
-concept_user_persona
-<- sc_node_class;
-=> nrel_main_idtf: [персона пользователя] (* <- lang_ru;; *);
-=> nrel_main_idtf: [user persona] (* <- lang_en;; *);;
+    [текущее ситуационное состояние пользователя] (* <- lang_ru;; *);
+    [current user situation state] (* <- lang_en;; *);
+=> nrel_idtf: [S_u];;
 
 concept_cognitive_load_estimate
 <- sc_node_class;
 => nrel_main_idtf:
     [оценка когнитивной нагрузки пользователя] (* <- lang_ru;; *);
     [cognitive load estimate] (* <- lang_en;; *);;
+concept_cognitive_load_estimate <= nrel_inclusion: concept_user_situation_state;;
 
-concept_user_consent_record
+concept_user_interaction_history
 <- sc_node_class;
 => nrel_main_idtf:
-    [запись согласия пользователя на обработку данных] (* <- lang_ru;; *);
-    [user consent record] (* <- lang_en;; *);;
+    [производная история взаимодействия пользователя] (* <- lang_ru;; *);
+    [derived user interaction history] (* <- lang_en;; *);
+=> nrel_idtf: [H_u];;
+
+definition -> definition_user_interaction_history: ...
+(*
+    -> rrel_key_sc_element: concept_user_interaction_history;;
+    => nrel_main_idtf: [Опр.(история взаимодействия пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [H_u^(t) = hist(E_UA^(t)(u)) — производное представление
+            известных к версии t событий пользователя, типизированных
+            средствами M_UA. История включает события и связанные с ними
+            provenance-записи, но не является одной ProvenanceRecord
+            или параллельной копией модели действий пользователя.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_user_interaction_event
+<- sc_node_class;
+=> nrel_main_idtf:
+    [событие взаимодействия пользователя] (* <- lang_ru;; *);
+    [user interaction event] (* <- lang_en;; *);;
+concept_user_interaction_event <= nrel_inclusion: concept_interaction_event;;
+concept_user_interaction_event <= nrel_inclusion: concept_event_user_action;;
+concept_user_interaction_event <= nrel_inclusion: concept_entity_group_process;;
+
+definition -> definition_user_interaction_event: ...
+(*
+    -> rrel_key_sc_element: concept_user_interaction_event;;
+    => nrel_main_idtf: [Опр.(событие взаимодействия пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Событие UserInteractionEvent — экземпляр действия пользователя,
+            типизированный средствами M_UA. Оно связывает субъекта,
+            действие, время, контекст, результат или обратную связь
+            и provenance. Отдельное событие не заменяет всю модель
+            действий пользователя.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_user_persona
+<- sc_node_class;
+=> nrel_main_idtf: [персона пользователя] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user persona] (* <- lang_en;; *);;
+
+// Согласие — связанная управляющая сущность, а не восьмой компонент U(u).
+concept_user_consent_record
+<- sc_node_class;
+=> nrel_main_idtf: [запись согласия пользователя на обработку данных] (* <- lang_ru;; *);
+=> nrel_main_idtf: [user consent record] (* <- lang_en;; *);;
 
 // ---------------------------------------------------------------------
-// Обратная связь пользователя как первоклассная сущность.
+// Утверждения о пользователе и их метаданные.
+// ---------------------------------------------------------------------
+
+concept_user_assertion
+<- sc_node_class;
+=> nrel_main_idtf:
+    [утверждение о пользователе] (* <- lang_ru;; *);
+    [user assertion] (* <- lang_en;; *);;
+
+concept_dynamic_user_assertion
+<- sc_node_class;
+=> nrel_main_idtf: [динамическое утверждение о пользователе] (* <- lang_ru;; *);;
+concept_dynamic_user_assertion <= nrel_inclusion: concept_user_assertion;;
+
+concept_inferred_user_assertion
+<- sc_node_class;
+=> nrel_main_idtf: [выведенное утверждение о пользователе] (* <- lang_ru;; *);;
+concept_inferred_user_assertion <= nrel_inclusion: concept_user_assertion;;
+
+concept_confirmed_user_assertion
+<- sc_node_class;
+=> nrel_main_idtf: [подтверждённое пользователем утверждение] (* <- lang_ru;; *);;
+concept_confirmed_user_assertion <= nrel_inclusion: concept_user_assertion;;
+
+// ---------------------------------------------------------------------
+// Обратная связь пользователя.
 // ---------------------------------------------------------------------
 
 concept_user_feedback
@@ -255,40 +406,67 @@ concept_feedback_complaint
 => nrel_main_idtf: [жалоба пользователя] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// Ограничение: каждому пользователю сопоставлена ровно одна модель.
+// Ограничения версионирования, холодного старта и метаданных.
 // ---------------------------------------------------------------------
 
 affirmation -> affirmation_user_model_uniqueness: ...
 (*
     -> rrel_key_sc_element: concept_user;;
-    => nrel_main_idtf: [Утв.(пользователь, единственность модели пользователя)]
+    => nrel_main_idtf: [Утв.(единственность актуальной модели пользователя)]
        (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Каждому экземпляру класса «пользователь» сопоставлен ровно
-            один экземпляр класса «модель пользователя» посредством
-            функционального отношения nrel_has_user_model. Нарушение
-            требования рассматривается как нарушение целостности
-            (concept_integrity_violation) и обрабатывается sc-агентом
-            проверки согласованности.] (* <- lang_ru;; *);;
+        -> [Каждому пользователю посредством nrel_has_user_model сопоставлен
+            ровно один актуальный снимок UserModel. Предыдущие версии
+            сохраняются отдельными экземплярами и связываются отношением
+            nrel_previous_user_model_version; ограничение актуальности
+            не запрещает цепочку версий.] (* <- lang_ru;; *);;
     *);;
 *);;
 
-// ---------------------------------------------------------------------
-// Ограничение: модель пользователя должна содержать как минимум один
-// зафиксированный пользовательский цель.
-// ---------------------------------------------------------------------
-
-affirmation -> affirmation_user_model_has_goal: ...
+affirmation -> affirmation_user_model_version_provenance: ...
 (*
     -> rrel_key_sc_element: concept_user_model;;
-    => nrel_main_idtf: [Утв.(модель пользователя, наличие цели)]
+    => nrel_main_idtf: [Утв.(версия и происхождение модели пользователя)]
        (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Модель пользователя содержит хотя бы один экземпляр класса
-            «цель пользователя»; в противном случае модель считается
-            неполной и не может использоваться функцией match(σ, s)
-            при выборе исполнителя подзадачи.] (* <- lang_ru;; *);;
+        -> [Каждый экземпляр UserModel имеет версию, временную метку
+            и ровно одну ProvenanceRecord. Отношение преемственности
+            версий функционально и ациклично. Снимок U_t(u) не изменяется
+            внутри цикла обработки запроса.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_user_model_cold_start: ...
+(*
+    -> rrel_key_sc_element: concept_user_model;;
+    => nrel_main_idtf: [Утв.(допустимость холодного старта модели пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [G_u и H_u могут быть пустыми. Отсутствие устойчивой цели
+            или истории не делает модель пользователя недопустимой
+            и не блокирует вычисление match(σ, s | C). История является
+            необязательной производной компонентой при холодном старте.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_user_assertion_metadata: ...
+(*
+    -> rrel_key_sc_element: concept_user_assertion;;
+    => nrel_main_idtf: [Утв.(метаданные утверждений о пользователе)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Для каждого динамического или выведенного утверждения a
+            определены источник src_a, время ts_a, достоверность cf_a
+            от 0 до 1 и происхождение prov_a. Для динамического
+            утверждения дополнительно задаётся validUntil_a.
+            Подтверждённые пользователем цели, ограничения и критерии
+            приемлемости автоматически не изменяются. Достоверность
+            утверждения о пользователе не смешивается с TrustLevel
+            интеллектуальной системы.] (* <- lang_ru;; *);;
     *);;
 *);;

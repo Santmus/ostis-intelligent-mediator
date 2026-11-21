@@ -60,24 +60,28 @@ answer_tc2 => nrel_main_idtf:
      interaction_context_001.] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// TC3: Наследование контекста по nrel_context_inherits_from.
+// TC3: Транзитивное ациклическое наследование контекста.
 // ---------------------------------------------------------------------
 
 test_context_inheritance <- concept_test_context_evolution;;
 test_context_inheritance => nrel_main_idtf:
-    [TC3. Цепочка наследования контекстов:
-     context_003 inherits_from context_002 inherits_from context_001
-     — антирефлексивна, ацикличность сохранена?] (* <- lang_ru;; *);;
+    [TC3. Цепочка context_003 → context_002 → context_001:
+     транзитивность, иррефлексивность и ацикличность сохранены?]
+    (* <- lang_ru;; *);;
+test_context_inheritance => nrel_test_against_constraint:
+    constraint_context_inheritance_acyclic;;
 test_context_inheritance => nrel_test_outcome: concept_test_outcome_pass;;
 test_context_inheritance => nrel_expected_answer: answer_tc3;;
 
 answer_tc3 <- concept_expected_answer;;
 answer_tc3 => nrel_main_idtf:
-    [Выполнено: nrel_context_inherits_from — антирефлексивно,
-     ориентированно; цикл не образуется.] (* <- lang_ru;; *);;
+    [Выполнено: транзитивное замыкание содержит
+     inherits_from(context_003, context_001); обратной дуги и цикла нет.
+     Контексты имеют последовательные версии 1, 2, 3.]
+    (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// TC4: ctx_compat при дрейфе контекста — триггер реконфигурации.
+// TC4: Произвольное обновление контекста может снизить ctx_compat.
 // ---------------------------------------------------------------------
 
 test_context_drift_triggers_reconf <- concept_test_context_evolution;;
@@ -97,6 +101,57 @@ test_context_drift_triggers_reconf => nrel_expected_answer: answer_tc4;;
 
 answer_tc4 <- concept_expected_answer;;
 answer_tc4 => nrel_main_idtf:
-    [Реконфигурация выполнена: ranker_v1 заменён на ranker_alt
-     с ctx_compat(C_002, ranker_alt) = 0.91 ≥ θ_ctx.]
+    [Реконфигурация выполнена. C_002 отражает недоступность системы
+     и не является покомпонентным уточнением C_001, поэтому снижение
+     ctx_compat не нарушает утверждение о монотонности.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TC5: Монотонность при покомпонентном уточнении.
+// ---------------------------------------------------------------------
+
+test_ctx_compat_monotonicity <- concept_test_context_evolution;;
+test_ctx_compat_monotonicity => nrel_main_idtf:
+    [TC5. При C_k ⊆ C'_k и монотонных sim_k контекстная совместимость
+     не уменьшается.] (* <- lang_ru;; *);;
+test_ctx_compat_monotonicity => nrel_test_against_constraint:
+    affirmation_ctx_compat_monotonicity;;
+test_ctx_compat_monotonicity => nrel_test_calculation:
+    [Для профиля B = {g1,g2}: cov({g1}, B) = 0.5,
+     cov({g1,g2}, B) = 1.0. Остальные компоненты неизменны,
+     веса неотрицательны, следовательно свёртка не уменьшается.]
+    (* <- lang_ru;; *);;
+test_ctx_compat_monotonicity => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_ctx_compat_monotonicity => nrel_expected_answer: answer_tc5;;
+
+answer_tc5 <- concept_expected_answer;;
+answer_tc5 => nrel_main_idtf:
+    [Выполнено: монотонность доказана покомпонентно и сохраняется
+     взвешенной суммой. Коэффициент Жаккара не используется как
+     обязательная мера, поскольку условию не удовлетворяет.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// TC6: Тип GoalContext и версионирование обновления по событию.
+// ---------------------------------------------------------------------
+
+test_goal_context_signature <- concept_test_context_evolution;;
+test_goal_context_signature => nrel_main_idtf:
+    [TC6. rrel_goal_context ведёт к GoalContext, а updatedByEvent
+     связывает версии контекста 1 → 2 → 3 с событиями.]
+    (* <- lang_ru;; *);;
+test_goal_context_signature => nrel_test_against_constraint:
+    constraint_context_dominance_acyclic;;
+test_goal_context_signature => nrel_question_subject: interaction_context_002;;
+test_goal_context_signature => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_goal_context_signature => nrel_expected_answer: answer_tc6;;
+
+answer_tc6 <- concept_expected_answer;;
+answer_tc6 => nrel_main_idtf:
+    [Выполнено: goal_context_route_planning — экземпляр GoalContext,
+     содержащий цель и предпочтения. interaction_context_002 имеет
+     версию 2 и событие event_battery_low; interaction_context_003 —
+     версию 3 и событие event_intermediate_point.]
     (* <- lang_ru;; *);;

@@ -23,21 +23,22 @@ section_scenario_request_processing
 user_alice <- concept_end_user;;
 user_alice => nrel_main_idtf:
     [Алиса] (* <- lang_ru;; *);;
-user_alice => nrel_has_user_model: user_model_alice;;
+user_alice => nrel_has_user_model: user_model_alice_v2;;
 user_model_alice <- concept_user_model;;
-user_model_alice => nrel_has_goal: goal_optimal_route;;
+user_model_alice => nrel_has_persistent_goal: goal_optimal_route;;
 user_model_alice => nrel_has_preference: preference_low_energy;;
 preference_low_energy <- concept_user_preference;;
 preference_low_energy => nrel_main_idtf:
     [Предпочтение: минимизация энергозатрат] (* <- lang_ru;; *);;
 
 request_001 <- concept_user_request;;
+request_001 <- concept_valid_user_request;;
+request_001 <- concept_resolved_user_request;;
 request_001 <- concept_request_recommendation;;
 request_001 => nrel_main_idtf:
     [Запрос: подобрать оптимальный маршрут с учётом расхода энергии]
     (* <- lang_ru;; *);;
 user_alice => nrel_formulates: request_001;;
-request_001 => nrel_has_goal: goal_optimal_route;;
 request_001 => nrel_has_context: interaction_context_001;;
 
 goal_optimal_route <- concept_goal;;
@@ -51,7 +52,14 @@ goal_optimal_route => nrel_main_idtf:
 // ---------------------------------------------------------------------
 
 interaction_context_001 <- concept_interaction_context;;
-interaction_context_001 -> rrel_goal_context: goal_optimal_route;;
+interaction_context_001 <- concept_context_hypothesis;;
+interaction_context_001 => nrel_context_version: [1];;
+interaction_context_001 => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_route_planning <- concept_goal_context;;
+goal_context_route_planning => nrel_contains: goal_optimal_route;;
+goal_context_route_planning => nrel_contains: preference_low_energy;;
+goal_context_route_planning => nrel_contains: preference_alice_safety;;
+interaction_context_001 -> rrel_goal_context: goal_context_route_planning;;
 interaction_context_001 -> rrel_history_context: history_alice_001;;
 interaction_context_001 -> rrel_system_context: ecosystem_state_001;;
 interaction_context_001 -> rrel_domain_context: domain_logistics;;
@@ -97,6 +105,8 @@ plan_001 => nrel_has_plan_version: plan_version_001_v1;;
 state_001_accepted <- concept_state_accepted;;
 state_001_accepted => nrel_remaining_reassignment_budget: [3];;
 state_001_accepted => nrel_remaining_replanning_depth: [2];;
+state_001_accepted => nrel_remaining_clarification_rounds: [2];;
+state_001_accepted => nrel_remaining_phase_transitions: [4];;
 
 state_001_interpretation <- concept_state_interpretation;;
 state_001_planning       <- concept_state_planning;;
@@ -287,6 +297,7 @@ result_ranking => nrel_has_provenance: prov_record_result_ranking;;
 // ---------------------------------------------------------------------
 
 integrated_result_001 <- concept_integrated_result;;
+integrated_result_001 => nrel_generated_in_context: interaction_context_001;;
 integrated_result_001 => nrel_main_idtf:
     [Интегрированный результат: упорядоченный список маршрутов с оценками]
     (* <- lang_ru;; *);;
@@ -306,8 +317,7 @@ integrated_result_001 => nrel_supported_by_explanation: explanation_001;;
 integrated_result_001 => nrel_aggregates: result_routes;;
 integrated_result_001 => nrel_aggregates: result_energy;;
 integrated_result_001 => nrel_aggregates: result_ranking;;
-integrated_result_001 => nrel_has_provenance: prov_record_integrated_001;;
-prov_record_integrated_001 <- concept_provenance_record;;
+integrated_result_001 => nrel_has_provenance: prov_record_integration_001;;
 
 // Верификация посредником: verifies ≡ validated_by⁻¹.
 mediator_001 => nrel_verifies: integrated_result_001;;
@@ -363,7 +373,6 @@ trust_level_energy_updated <- concept_trust_level;;
 trust_level_energy_updated => nrel_main_idtf:
     [Обновлённый уровень доверия системы оценки энергопотребления: 0.89]
     (* <- lang_ru;; *);;
-intelligent_system_energy_model => nrel_has_trust_level:
-    trust_level_energy_updated;;
+trust_level_energy_updated => nrel_previous_trust_level: trust_level_energy;;
 trust_level_energy_updated => nrel_trust_updated_by_feedback:
     feedback_alice_001;;

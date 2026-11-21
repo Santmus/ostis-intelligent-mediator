@@ -119,15 +119,18 @@ rule -> rule_user_feedback_to_user_model: ...
 (*
     <- concept_sc_rule;;
     => nrel_main_idtf:
-        [Прав.(обновление модели пользователя по обратной связи)]
+        [Прав.(регистрация обратной связи для актуализации модели)]
        (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [If: provides_feedback(u, f) ∧ feedback_targets(f, r) ∧
                 feedback_type(f) ∈ {explicit_rating, correction},
-            Then: обновить competence(u), preference(u),
-                  interaction_history(u) с учётом f; пересчитать
-                  cognitive_load(u) по последним 10 взаимодействиям.]
+            Then: зарегистрировать UserInteractionEvent с субъектом u,
+                  обратной связью f, результатом r, временем, контекстом
+                  и provenance; включить событие в E_q и производную H_u.
+                  Актуальный снимок U_t(u) внутри цикла не изменяется.
+                  Новая версия U_(t+1)(u) может быть создана только
+                  посттерминальной актуализацией с основанием и provenance.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -170,5 +173,27 @@ rule -> rule_context_aware_layout: ...
             Then: применить тёмную тему; снизить количество
                   одновременно показываемых элементов; увеличить
                   размер шрифта на 10%.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+
+rule -> rule_actualize_user_model: ...
+(*
+    <- concept_sc_rule;;
+    => nrel_main_idtf:
+        [Прав.(посттерминальная актуализация модели пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [If: x_q ∈ X_term ∧ request_user_model_snapshot(q, U_t)
+                ∧ LifecycleMonitoring(q, E_q),
+            Then: создать U_(t+1) = actualize(U_t, E_q, fb_q);
+                  установить previous_user_model_version(U_(t+1), U_t),
+                  связи с исходными событиями, обратной связью и данным
+                  правилом, новые версию, время и ProvenanceRecord.
+                  Подтверждённые пользователем цели, ограничения и критерии
+                  приемлемости автоматически не изменяются. U_t остаётся
+                  неизменным снимком завершённого цикла.]
+           (* <- lang_ru;; *);;
     *);;
 *);;

@@ -22,5 +22,6 @@ section_definitions_processes
 <- rrel_key_sc_element: definition_provenance_record;
 <- rrel_key_sc_element: definition_service_publication;
 <- rrel_key_sc_element: affirmation_lifecycle_iteration;
+<- rrel_key_sc_element: affirmation_user_model_actualization_postterminal;
 <- rrel_key_sc_element: affirmation_subtask_executability;
 <- rrel_key_sc_element: affirmation_conflict_condition;;

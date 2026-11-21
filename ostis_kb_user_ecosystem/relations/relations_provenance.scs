@@ -18,9 +18,14 @@ nrel_derived_from
 <- binary_relation;
 <- oriented_relation;
 <- transitive_relation;
-=> nrel_first_domain: concept_processing_result;
-=> nrel_second_domain: concept_processing_result;;
+<- antireflexive_relation;
+=> nrel_first_domain: concept_result;
+=> nrel_second_domain: concept_result;
+=> nrel_second_domain: concept_user_request;;
 
+// В формальном ядре derivedFrom: Result → Result. Допустимая область
+// UserRequest — операциональное расширение для завершения цепочки
+// происхождения исходным запросом, используемое существующим агентом.
 nrel_caused_by
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -28,8 +33,9 @@ nrel_caused_by
     [caused_by*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_processing_result;
-=> nrel_second_domain: concept_lifecycle_process;;
+<- functional_relation;
+=> nrel_first_domain: concept_processing_failure;
+=> nrel_second_domain: concept_execution_act;;
 
 nrel_based_on_knowledge
 <- sc_node_non_role_relation;
@@ -38,8 +44,8 @@ nrel_based_on_knowledge
     [based_on_knowledge*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_processing_result;
-=> nrel_second_domain: concept_knowledge_source;;
+=> nrel_first_domain: concept_result;
+=> nrel_second_domain: concept_knowledge_fragment;;
 
 nrel_supported_by_explanation
 <- sc_node_non_role_relation;
@@ -48,7 +54,7 @@ nrel_supported_by_explanation
     [supported_by_explanation*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_processing_result;
+=> nrel_first_domain: concept_result;
 => nrel_second_domain: concept_explanation;;
 
 nrel_explained_by
@@ -58,11 +64,10 @@ nrel_explained_by
     [explained_by*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_integrated_result;
+<- functional_relation;
+=> nrel_first_domain: concept_result;
 => nrel_second_domain: concept_explanation;;
 
-// recorded_in — акт исполнения фиксируется записью аудита;
-// функционально и всюду определено.
 nrel_recorded_in
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -74,8 +79,8 @@ nrel_recorded_in
 => nrel_first_domain: concept_execution_act;
 => nrel_second_domain: concept_audit_record;;
 
-// generated_by — частичный результат порождён актом исполнения;
-// функционально и всюду определено.
+// generated_by относится только к ProcessingResult. IntegratedResult
+// не является его подклассом и не требует отдельного ExecutionAct.
 nrel_generated_by
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -87,8 +92,6 @@ nrel_generated_by
 => nrel_first_domain: concept_processing_result;
 => nrel_second_domain: concept_execution_act;;
 
-// validated_by — обратное к verifies (R_exec): фиксирует в графе
-// происхождения, кем подтверждён интегрированный результат.
 nrel_validated_by
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -99,9 +102,6 @@ nrel_validated_by
 => nrel_first_domain: concept_integrated_result;
 => nrel_second_domain: concept_intelligent_mediator;;
 
-// Область определения has_provenance — объединение результатов
-// и записей аудита: провенансную запись обязаны иметь и результат
-// обработки, и фиксирующая действие запись аудита.
 nrel_has_provenance
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
@@ -110,8 +110,13 @@ nrel_has_provenance
 <- binary_relation;
 <- oriented_relation;
 <- functional_relation;
-=> nrel_first_domain: concept_processing_result;
+=> nrel_first_domain: concept_result;
 => nrel_first_domain: concept_audit_record;
+=> nrel_first_domain: concept_user_model;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_first_domain: concept_user_assertion;
+=> nrel_first_domain: concept_process_allocation;
+=> nrel_first_domain: concept_conflict_resolution_act;
 => nrel_second_domain: concept_provenance_record;;
 
 nrel_recorded_by_sc_agent

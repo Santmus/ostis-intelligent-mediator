@@ -19,23 +19,15 @@
 //   2) result_level       -- узел, под которым размещаются индикатор и,
 //                            при неполной цепочке, нарушение
 //
-// nrel_derived_from объявлено транзитивным (relations/relations_provenance.scs),
-// но НЕ антирефлексивным -- обход выполняется с множеством посещённых
-// узлов, чтобы цикл в графе (в т.ч. образованный некорректными данными)
-// не привёл к бесконечному циклу, а не потому что циклы ожидаются в
-// нормальном случае.
+// nrel_derived_from объявлено транзитивным и антирефлексивным
+// (relations/relations_provenance.scs). Множество посещённых узлов
+// дополнительно защищает обход от циклов в некорректных данных.
 //
-// Наблюдение по домену отношения (не исправляется здесь): nrel_derived_from
-// объявлено как concept_processing_result -> concept_processing_result
-// (relations/relations_provenance.scs), тогда как concept_user_request --
-// подкласс concept_interaction_entity, а не concept_processing_result
-// (concepts/interactions.scs). Формально дуга derived_from(result, request)
-// выходит за объявленный домен отношения, но именно такую цепочку
-// требует и текст этого правила, и affirmation_derived_from_chain
-// (axioms/axioms_provenance.scs: "восстановления полного пути формирования
-// любого результата от исходного запроса"). Агент только читает уже
-// существующие дуги и не создаёт новых derived_from -- вопрос
-// согласования домена с формулировкой правила его не касается.
+// Формальное ядро отношения: concept_result -> concept_result.
+// Дополнительно объявлена область concept_user_request для завершающей
+// дуги derived_from(result, request), которую требуют это правило и
+// affirmation_derived_from_chain. Агент только читает существующие дуги
+// и не создаёт новых derived_from.
 //
 // Результат: valid = ∃ путь nrel_derived_from* от integrated_result до
 // узла, классифицированного concept_user_request; записывается как

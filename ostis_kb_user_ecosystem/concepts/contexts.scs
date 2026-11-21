@@ -1,8 +1,8 @@
 // =====================================================================
 // concepts/contexts.scs
 // Подраздел: пятикомпонентный контекст взаимодействия как сущность
-// первого класса. C = <C_g, C_h, C_s, C_d, C_u> (формула 8).
-// Опирается на модель Дея [22] и её современные развития [23; 36; 38].
+// первого класса. C = <C_g, C_h, C_s, C_d, C_u> (eq:five_context).
+// Опирается на исследования контекста и модели пользователя OSTIS.
 // =====================================================================
 
 section_concept_contexts
@@ -132,7 +132,7 @@ concept_low_light_context
 concept_low_light_context <= nrel_inclusion: concept_user_situation_context;;
 
 // ---------------------------------------------------------------------
-// Функция контекстной совместимости ctx_compat(C, s) (формула 9).
+// Функция ctx_compat(C, s) (eq:context_compatibility).
 // ---------------------------------------------------------------------
 
 concept_context_compatibility_function
@@ -147,15 +147,32 @@ definition -> definition_ctx_compat: ...
     => nrel_main_idtf: [Опр.(ctx_compat)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [ctx_compat(C, s) = Σ_{k ∈ {g,h,s,d,u}} ω_k · sim_k(C_k, profile_k(s)),
-            Σ ω_k = 1. Скалярная мера контекстной совместимости системы s
-            относительно контекста C, вычисляемая как нормализованная
-            взвешенная свёртка покомпонентных оценок:
-            sim_g — совпадение целей и постусловий системы;
-            sim_h — совместимость истории с допустимыми сценариями;
-            sim_s — индикатор доступности и нагрузки;
-            sim_d — согласованность доменных онтологий;
-            sim_u — соответствие модальности интерфейса.]
+        -> [ctx_compat(C, s) = Σ_{k ∈ {g,h,s,d,u}} ω_k · sim_k(C_k, p_k(s)),
+            ω_k ≥ 0, Σ ω_k = 1. Здесь p_g(s) = Post_s,
+            p_h(s) — статистика исполнения в реестре, p_s(s) = Stat(s),
+            p_d(s) = K_s, p_u(s) — поддерживаемые модальности и каналы
+            из L_s. Мера учитывает цели, историю, состояние, предметную
+            онтологию и пользовательскую ситуацию.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_ctx_compat_monotonicity: ...
+(*
+    -> rrel_key_sc_element: concept_context_compatibility_function;;
+    => nrel_main_idtf: [Утв.(монотонность контекстной совместимости)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Если C' уточняет C, то есть C_k ⊆ C'_k для каждого
+            k ∈ {g,h,s,d,u}, и каждая sim_k монотонно не убывает
+            по первому аргументу при фиксированном втором, то
+            ctx_compat(C, s) ≤ ctx_compat(C', s). Неотрицательные
+            веса сохраняют это неравенство при суммировании.
+            Для непустого B примером является cov(A, B) = |A ∩ B| / |B|;
+            коэффициент Жаккара условию не удовлетворяет.
+            Монотонность относится только к покомпонентному уточнению,
+            а не к произвольному обновлению контекста.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -199,8 +216,19 @@ concept_event_feedback_received
 => nrel_main_idtf: [событие: получение обратной связи] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
-// Отношения эволюции контекста.
+// Гипотезы и отношения эволюции контекста.
 // ---------------------------------------------------------------------
+
+concept_hypothesis
+<- sc_node_class;
+=> nrel_main_idtf: [гипотеза] (* <- lang_ru;; *);
+=> nrel_main_idtf: [hypothesis] (* <- lang_en;; *);;
+
+concept_context_hypothesis
+<- sc_node_class;
+=> nrel_main_idtf: [гипотеза о контексте] (* <- lang_ru;; *);
+=> nrel_main_idtf: [context hypothesis] (* <- lang_en;; *);;
+concept_context_hypothesis <= nrel_inclusion: concept_hypothesis;;
 
 nrel_context_updated_by_event
 <- sc_node_non_role_relation;
@@ -209,6 +237,7 @@ nrel_context_updated_by_event
     [updated_by_event*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- functional_relation;
 => nrel_first_domain: concept_interaction_context;
 => nrel_second_domain: concept_interaction_event;;
 
@@ -220,6 +249,7 @@ nrel_context_inherits_from
 <- binary_relation;
 <- oriented_relation;
 <- antireflexive_relation;
+<- transitive_relation;
 => nrel_first_domain: concept_interaction_context;
 => nrel_second_domain: concept_interaction_context;;
 
@@ -231,8 +261,8 @@ nrel_context_contradicts
 <- binary_relation;
 <- symmetric_relation;
 <- antireflexive_relation;
-=> nrel_first_domain: concept_interaction_context;
-=> nrel_second_domain: concept_interaction_context;;
+=> nrel_first_domain: concept_context_hypothesis;
+=> nrel_second_domain: concept_context_hypothesis;;
 
 nrel_context_dominates_over
 <- sc_node_non_role_relation;
@@ -242,9 +272,91 @@ nrel_context_dominates_over
 <- binary_relation;
 <- oriented_relation;
 <- antireflexive_relation;
-<- transitive_relation;
-=> nrel_first_domain: concept_interaction_context;
-=> nrel_second_domain: concept_interaction_context;;
+<- antisymmetric_relation;
+=> nrel_first_domain: concept_context_hypothesis;
+=> nrel_second_domain: concept_context_hypothesis;;
+
+// ---------------------------------------------------------------------
+// Задачно-зависимые проекции и семантический контракт исполнителя.
+// ---------------------------------------------------------------------
+
+concept_user_model_projection
+<- sc_node_class;
+=> nrel_main_idtf:
+    [задачно-зависимая проекция модели пользователя] (* <- lang_ru;; *);
+    [task-dependent user model projection] (* <- lang_en;; *);;
+concept_user_model_projection <= nrel_inclusion: concept_ontological_artifact;;
+
+definition -> definition_user_model_projection: ...
+(*
+    -> rrel_key_sc_element: concept_user_model_projection;;
+    => nrel_main_idtf: [Опр.(проекция модели пользователя)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Проекция Π_q(U_t(u)) содержит только сведения снимка U_t(u),
+            необходимые для обработки конкретного запроса q. Она не
+            заменяет UserModel и не копирует полные I_u, H_u или S_u,
+            если достаточно ограниченного набора компонентов.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_context_projection
+<- sc_node_class;
+=> nrel_main_idtf:
+    [разрешённая проекция контекста для участника] (* <- lang_ru;; *);
+    [permitted participant context projection] (* <- lang_en;; *);;
+concept_context_projection <= nrel_inclusion: concept_ontological_artifact;;
+
+definition -> definition_context_projection: ...
+(*
+    -> rrel_key_sc_element: concept_context_projection;;
+    => nrel_main_idtf: [Опр.(проекция контекста)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [view(C, s) — минимально необходимая проекция контекста C,
+            допустимая для передачи участнику s. Передача разрешена
+            только при permit(view(C, s), s, C) = 1. Пользовательская
+            часть проекции строится из Π_q(U_t(u)).]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+concept_semantic_contract
+<- sc_node_class;
+=> nrel_main_idtf:
+    [семантический контракт исполнителя] (* <- lang_ru;; *);
+    [executor semantic contract] (* <- lang_en;; *);;
+concept_semantic_contract <= nrel_inclusion: concept_ontological_artifact;;
+
+definition -> definition_semantic_contract: ...
+(*
+    -> rrel_key_sc_element: concept_semantic_contract;;
+    => nrel_main_idtf: [Опр.(семантический контракт исполнителя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Семантический контракт связывает подзадачу, исполнителя,
+            политику доступа и разрешённую проекцию view(C, s). Он может
+            включать только данные, необходимые для назначенной подзадачи.
+            Полная UserModel остаётся в защищённой области персонального
+            ассистента или посредника.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+affirmation -> affirmation_context_view_minimization: ...
+(*
+    -> rrel_key_sc_element: concept_context_projection;;
+    => nrel_main_idtf: [Утв.(минимизация проекции контекста)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Передача view(C, s) участнику s допускается только при
+            permit(view(C, s), s, C) = 1. Семантический контракт не
+            может содержать полную модель пользователя вместо проекции.
+            Общая логическая семантическая память не означает доступ
+            всех участников к полному профилю.] (* <- lang_ru;; *);;
+    *);;
+*);;
 
 // ---------------------------------------------------------------------
 // Ограничение целостности контекста.

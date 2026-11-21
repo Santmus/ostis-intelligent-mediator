@@ -45,10 +45,12 @@ concept_test_outcome_fail
 
 test_formula_4_on_request_001 <- concept_test_constraint_check;;
 test_formula_4_on_request_001 => nrel_main_idtf:
-    [T1. Формула (4) на request_001: ∃! u. formulates(u, request_001)
-     ∧ ∃g. has_goal(request_001, g)] (* <- lang_ru;; *);;
+    [T1. Авторство и разрешение request_001:
+     ∃!u. formulates(u, request_001) ∧ interprets(request_001, intent_001)
+     ∧ intent_goal(intent_001, goal_optimal_route)] (* <- lang_ru;; *);;
 test_formula_4_on_request_001 => nrel_test_against_constraint:
-    constraint_request_authorship;;
+    constraint_request_authorship;
+    constraint_resolved_request_intent;;
 test_formula_4_on_request_001 => nrel_question_subject: request_001;;
 test_formula_4_on_request_001 => nrel_test_outcome:
     concept_test_outcome_pass;;
@@ -57,9 +59,10 @@ test_formula_4_on_request_001 => nrel_expected_answer:
 
 answer_t1 <- concept_expected_answer;;
 answer_t1 => nrel_main_idtf:
-    [Выполнено: formulates(user_alice, request_001)
-     и has_goal(request_001, goal_optimal_route).]
-    (* <- lang_ru;; *);;
+    [Выполнено: у request_001 один автор user_alice; запрос относится
+     к Q_resolved и связан с intent_001, цель которого —
+     goal_optimal_route. Прямая связь has_goal(request_001, goal)
+     не используется.] (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
 // T2: Проверка формулы (5) — ацикличность графа подзадач.
@@ -280,10 +283,10 @@ test_resource_exhaustion_terminal => nrel_expected_answer: answer_t12;;
 
 answer_t12 <- concept_expected_answer;;
 answer_t12 => nrel_main_idtf:
-    [Ресурсы исчерпаны: Φ(x) = <0, 0>. Зафиксирован
-     структурированный отказ failure_rec_001 = <No_Competence,
-     recovery_rec_001, audit_rec_refusal> и выполнен переход
-     в терминальное состояние x_refuse.] (* <- lang_ru;; *);;
+    [b_rem = 0 и d_rem = 0, но n_clar_rem = 2. Потенциал не обязан
+     быть нулевым: Φ(x) = <2, 0, n_pend>. Зафиксирован отказ
+     failure_rec_001 и выполнен переход в x_refuse.]
+    (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------
 // T13: Отрицательный тест — переход из терминального состояния.
@@ -368,4 +371,173 @@ answer_t5 => nrel_main_idtf:
     [Нарушено: agent_integrity_checker создаёт экземпляр
      concept_acyclicity_constraint_violation; запускается
      rule_check_acyclicity → пересмотр шаблона декомпозиции.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T16: Каноническая модель пользователя, её версия и provenance.
+// ---------------------------------------------------------------------
+
+test_user_model_version_provenance <- concept_test_constraint_check;;
+test_user_model_version_provenance => nrel_main_idtf:
+    [T16. user_model_alice содержит компоненты U(u), версию, время
+     и provenance; история представлена UserInteractionEvent.]
+    (* <- lang_ru;; *);;
+test_user_model_version_provenance => nrel_test_against_constraint:
+    affirmation_user_model_version_provenance;;
+test_user_model_version_provenance => nrel_question_subject: user_model_alice;;
+test_user_model_version_provenance => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_user_model_version_provenance => nrel_expected_answer: answer_t16;;
+
+answer_t16 <- concept_expected_answer;;
+answer_t16 => nrel_main_idtf:
+    [Выполнено: заданы I_u, R_u, G_u, P_u, K_u, S_u и производная H_u;
+     версия 1 и временная метка связаны с prov_user_model_alice;
+     user_event_alice_001 имеет собственный provenance.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T17: Холодный старт без устойчивых целей и истории.
+// ---------------------------------------------------------------------
+
+test_user_model_cold_start <- concept_test_constraint_check;;
+test_user_model_cold_start => nrel_main_idtf:
+    [T17. Допустима ли user_model_doctor_smith без G_u и H_u?]
+    (* <- lang_ru;; *);;
+test_user_model_cold_start => nrel_test_against_constraint:
+    affirmation_user_model_cold_start;;
+test_user_model_cold_start => nrel_question_subject: user_model_doctor_smith;;
+test_user_model_cold_start => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_user_model_cold_start => nrel_expected_answer: answer_t17;;
+
+answer_t17 <- concept_expected_answer;;
+answer_t17 => nrel_main_idtf:
+    [Выполнено: модель содержит I_u, R_u, P_u и K_u, имеет версию
+     и provenance. Отсутствие G_u и H_u не блокирует match.]
+    (* <- lang_ru;; *);;
+
+
+// ---------------------------------------------------------------------
+// T18: Посттерминальная актуализация с сохранением снимка U_t.
+// ---------------------------------------------------------------------
+
+test_user_model_actualization <- concept_test_constraint_check;;
+test_user_model_actualization => nrel_main_idtf:
+    [T18. actualization_alice_001 выполняется после x_present и создаёт
+     user_model_alice_v2 с основанием и provenance.]
+    (* <- lang_ru;; *);;
+test_user_model_actualization => nrel_test_against_constraint:
+    affirmation_user_model_actualization_postterminal;;
+test_user_model_actualization => nrel_question_subject: actualization_alice_001;;
+test_user_model_actualization => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_user_model_actualization => nrel_expected_answer: answer_t18;;
+
+answer_t18 <- concept_expected_answer;;
+answer_t18 => nrel_main_idtf:
+    [Выполнено: request_001 сохраняет снимок user_model_alice;
+     user_model_alice_v2 связан с предыдущей версией, событием,
+     обратной связью, rule_actualize_user_model и prov_user_model_alice_v2.
+     Переход из терминального состояния не создаётся.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T19: Минимизация пользовательской части семантического контракта.
+// ---------------------------------------------------------------------
+
+test_semantic_contract_minimization <- concept_test_constraint_check;;
+test_semantic_contract_minimization => nrel_main_idtf:
+    [T19. semantic_contract_energy_estimation содержит только разрешённую
+     задачно-зависимую проекцию, а не полную UserModel.]
+    (* <- lang_ru;; *);;
+test_semantic_contract_minimization => nrel_test_against_constraint:
+    affirmation_context_view_minimization;;
+test_semantic_contract_minimization => nrel_question_subject:
+    semantic_contract_energy_estimation;;
+test_semantic_contract_minimization => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_semantic_contract_minimization => nrel_expected_answer: answer_t19;;
+
+answer_t19 <- concept_expected_answer;;
+answer_t19 => nrel_main_idtf:
+    [Выполнено: контракт связан с подзадачей, исполнителем и политикой;
+     view содержит preference_alice_safety и цель, но не полные
+     I_u, H_u или S_u. Назначение использует этот контракт.]
+    (* <- lang_ru;; *);;
+
+
+// ---------------------------------------------------------------------
+// T20: Дизъюнктность частичного и интегрированного результатов.
+// ---------------------------------------------------------------------
+
+test_result_taxonomy <- concept_test_constraint_check;;
+test_result_taxonomy => nrel_main_idtf:
+    [T20. result_energy и integrated_result_001 принадлежат разным
+     дизъюнктным ветвям Result и имеют разные условия порождения.]
+    (* <- lang_ru;; *);;
+test_result_taxonomy => nrel_test_against_constraint:
+    axiom_result_taxonomy;
+    constraint_result_generated_by_act;;
+test_result_taxonomy => nrel_question_subject: integrated_result_001;;
+test_result_taxonomy => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_result_taxonomy => nrel_expected_answer: answer_t20;;
+
+answer_t20 <- concept_expected_answer;;
+answer_t20 => nrel_main_idtf:
+    [Выполнено: result_energy — ProcessingResult с produced_by,
+     generated_by и контекстом; integrated_result_001 — IntegratedResult
+     с aggregates, verified, объяснением, контекстом и provenance.
+     Интегрированный результат не классифицирован ProcessingResult
+     и не имеет обязательного generated_by.]
+    (* <- lang_ru;; *);;
+
+
+// ---------------------------------------------------------------------
+// T21: Конечность связанной последовательности уточнений.
+// ---------------------------------------------------------------------
+
+test_clarification_round_decrease <- concept_test_constraint_check;;
+test_clarification_round_decrease => nrel_main_idtf:
+    [T21. Новый связанный цикл после x_clar уменьшает n_clar_rem
+     с 2 до 1; переход из терминального состояния не создаётся.]
+    (* <- lang_ru;; *);;
+test_clarification_round_decrease => nrel_test_against_constraint:
+    constraint_clarification_round_decrease;;
+test_clarification_round_decrease => nrel_question_subject: request_clar_002;;
+test_clarification_round_decrease => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_clarification_round_decrease => nrel_expected_answer: answer_t21;;
+
+answer_t21 <- concept_expected_answer;;
+answer_t21 => nrel_main_idtf:
+    [Выполнено: state_clar_001 терминален с n_clar_rem = 2;
+     request_clar_002 — новый запрос с continues_request и
+     n_clar_rem = 1. При нулевом остатке новый цикл запрещён.]
+    (* <- lang_ru;; *);;
+
+// ---------------------------------------------------------------------
+// T22: Служебные переходы не могут образовывать бесконечную серию.
+// ---------------------------------------------------------------------
+
+test_phase_transition_bound <- concept_test_constraint_check;;
+test_phase_transition_bound => nrel_main_idtf:
+    [T22. Не более N_ph служебных переходов подряд могут сохранять Φ;
+     затем обязателен ресурсный переход либо терминальный исход.]
+    (* <- lang_ru;; *);;
+test_phase_transition_bound => nrel_test_against_constraint:
+    constraint_phase_transition_bound;
+    affirmation_termination;;
+test_phase_transition_bound => nrel_question_subject:
+    concept_termination_potential;;
+test_phase_transition_bound => nrel_test_outcome:
+    concept_test_outcome_pass;;
+test_phase_transition_bound => nrel_expected_answer: answer_t22;;
+
+answer_t22 <- concept_expected_answer;;
+answer_t22 => nrel_main_idtf:
+    [Выполнено: Φ = <n_clar_rem, d_rem, n_pend + b_rem> не возрастает
+     на служебных переходах и строго убывает на ресурсных. Ограничение
+     N_ph исключает бесконечную траекторию без ресурсных переходов.]
     (* <- lang_ru;; *);;

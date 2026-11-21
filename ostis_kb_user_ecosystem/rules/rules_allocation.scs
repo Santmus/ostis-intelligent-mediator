@@ -1,8 +1,7 @@
 // =====================================================================
 // rules/rules_allocation.scs
-// Множество F_rule (часть π_all) — правила распределения подзадач
-// и формирования коалиции. Операционализируются sc-агентом
-// agent_task_allocator. Реализуют формулы (11)-(13).
+// Правила семантической применимости, допустимости и формирования
+// коалиции. Операционализируются agent_task_allocator.
 // =====================================================================
 
 section_rules_allocation
@@ -17,19 +16,17 @@ rule -> rule_compute_match_function: ...
 (*
     <- concept_sc_rule;;
     => nrel_main_idtf:
-        [Прав.(вычисление функции match(σ, s))] (* <- lang_ru;; *);;
+        [Прав.(вычисление функции match(σ, s | C))] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [If: concept_subtask(σ) ∧ ¬assigned_to(σ, _)
-                ∧ concept_intelligent_system(s)
+        -> [If: concept_subtask(σ) ∧ concept_intelligent_system(s)
                 ∧ has_capability_profile(s, Cap_s),
-            Then: вычислить
-                  match(σ, s) = w_T·sim_T(τ_σ, T_s)
-                              + w_I·sim_I(In_σ, In_s)
-                              + w_O·sim_O(Out_σ, Out_s)
-                              + w_C·ctx_compat(C, s)
-                              + w_Q·qos_score(s, τ_σ)
-                              + w_R·trust(s, τ_σ, h).]
+            Then: match(σ, s | C) = w_T·sim_T(τ_σ, T_s)
+                  + w_In·sim_In(σ, In_s) + w_Out·sim_Out(σ, Out_s)
+                  + w_C·ctx_compat(C, s) + w_Q·qos(Q_s, σ)
+                  + w_R·trust(s, σ | C_h(s)).
+                  sim_T задаётся мерой Ву—Палмера; остальные компоненты
+                  и веса фиксируются по правилам верификации модели.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -41,17 +38,15 @@ rule -> rule_assignment_admissibility: ...
         [Прав.(допустимость назначения)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [assign(σ, s) ← match(σ, s | C) ≥ θ ∧ valid(C, L_s) = 1
-            ∧ permit(view(C, s), s, C) = 1 ∧ available(s, C) = 1.
-            При выполнении условия порождается экземпляр n-арной
-            конструкции concept_process_allocation со связями
-            rrel_subtask, rrel_assignee, rrel_context,
-            rrel_assignment_time, rrel_required_confidence,
-            rrel_priority.
-            (Прежняя редакция содержала только первые два конъюнкта —
-            приведено в соответствие с гл. 2 и с
-            affirmation_assign_admissibility 13.09.2026.)]
-           (* <- lang_ru;; *);;
+        -> [assignable(σ, s, C) = 1 ⟺ match(σ, s | C) ≥ θ
+            ∧ valid(C, L_s) = 1
+            ∧ permit(view(C, s), s, C) = 1
+            ∧ available(s, C) = 1.
+            S_(σ,C) = {s ∈ S | assignable(σ, s, C) = 1}.
+            При назначении создаётся concept_process_allocation
+            с ролями rrel_subtask, rrel_assignee, rrel_context,
+            rrel_assignment_time, rrel_required_confidence и
+            rrel_priority.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -62,68 +57,26 @@ rule -> rule_coalition_optimization: ...
         [Прав.(оптимизация коалиции для запроса)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [χ* = arg max_{χ : T(q) → P(S) ∖ {∅}}
+        -> [χ* = arg max_{χ : T(q) ⇀ P(S) ∖ {∅}}
                  Σ_{σ ∈ T(q)} Σ_{s ∈ χ(σ)} match(σ, s | C)
-            s.t. ∀σ ∀s ∈ χ(σ). assign(σ, s) = 1, |χ(σ)| = k(σ),
-            coverage(χ, T(q)) ∧ consistent(C, χ).
-            При нахождении χ* формируется
-            concept_community_of_intelligent_systems и устанавливаются
-            связи nrel_includes для каждой ИС-участницы и
-            nrel_assigned_to для каждой подзадачи — последнее НЕ
-            функционально: при k(σ) > 1 подзадача назначается
-            нескольким участникам.
-            (Прежняя редакция записывала χ : T(q) → S — приведено в
-            соответствие с гл. 2 13.09.2026.)]
+            s.t. ∀σ ∀s ∈ χ(σ). assignable(σ, s, C) = 1,
+            |χ(σ)| = k(σ), cover(χ, T(q)) = 1,
+            consistent(C, χ) = 1.
+            При k(σ) > 1 подзадача назначается нескольким участникам,
+            поэтому nrel_assigned_to не функционально.
+            При сепарабельных ограничениях покомпонентный выбор k(σ)
+            наибольших match точен; при связывающих ограничениях
+            жадная процедура является эвристикой.]
            (* <- lang_ru;; *);;
     *);;
 *);;
 
-// ---------------------------------------------------------------------
-// Класс действия для программной (C++) реализации распределителя --
-// sc-агент AgentAllocateSubtasks
-// (ostis_ps_user_ecosystem/src/agent/agent_allocate_subtasks.*).
-// Объём согласован комиссией 13.09.2026
-// (agents_vault/AgentAllocateSubtasks Commission.md).
-//
-// Агент операционализирует rule_assignment_admissibility (проверка
-// допустимости) и шаг 2.3 жадной процедуры гл. 2 (выбор k(σ)
-// кандидатов с наибольшим match), после чего порождает акт назначения.
-//
-// ЧТО АГЕНТ ПРОВЕРЯЕТ САМ (три конъюнкта из четырёх):
-//   available(s, C) -- запись реестра участника имеет статус
-//       concept_registry_status_active (основание --
-//       affirmation_registry_required_for_assignment,
-//       concepts/competency_registry.scs);
-//   permit(view(C,s), s, C) -- политика записи реестра
-//       (nrel_entry_policy) разрешает участника отношением
-//       nrel_permits (relations/relations_control.scs);
-//   match(σ, s | C) >= θ -- сравнение с порогом θ, переданным
-//       аргументом действия.
-//
-// ЧТО АГЕНТ НЕ ВЫЧИСЛЯЕТ (принимается фактом от вызывающей стороны --
-// тот же приём, что у AgentHandleNoAdmissibleAssignment,
-// AgentExcludeFromCoalition, AgentReassignOnResourceExhaustion):
-//   значение match -- из шести слагаемых rule_compute_match_function
-//       формализованы только sim_T (мера Ву—Палмера, гл. 2,
-//       eq:sim_type -- в KB пока отсутствует, отдельная задача
-//       AgentComputeSimType) и trust; вычисление взвешенной суммы с
-//       четырьмя неопределёнными слагаемыми было бы изобретением
-//       формулы. Значение берётся из concept_match_assessment
-//       (nrel_match_value);
-//   valid(C, L_s) -- предиката сравнения контекста с ресурсными
-//       ограничениями L_s не задают ни гл. 2, ни KB (экземпляры L_s --
-//       естественно-языковые ссылки). Конъюнкт НЕ считается
-//       выполненным по умолчанию: он не проверяется, и это именованный
-//       открытый хвост, а не молчаливое умолчание;
-//   k(σ) -- кратность назначения определяется типом маршрута, но
-//       ни один concept_route_* в базе не привязан к запросу и
-//       носителя k(σ) нет; передаётся аргументом действия;
-//   consistent(C, χ) -- связывающее ограничение между назначениями
-//       разных подзадач; при непустом множестве таких условий задача
-//       перестаёт быть сепарабельной и гарантий у жадной процедуры
-//       нет (гл. 2). Агент работает над одной подзадачей.
-// ---------------------------------------------------------------------
-
+// AgentAllocateSubtasks проверяет available, permit и порог match,
+// после чего выбирает k(σ) кандидатов с наибольшими значениями.
+// Значение match поступает из concept_match_assessment: sim_T задана
+// в KB, но агент её не вычисляет; свободные компоненты суммы также
+// остаются внешними по отношению к этой реализации. valid(C,L_s)
+// не считается выполненным по умолчанию, а k(σ) передаётся аргументом.
 action_allocate_subtasks
 <- sc_node_class;
 => nrel_main_idtf:
@@ -131,21 +84,9 @@ action_allocate_subtasks
     (* <- lang_ru;; *);
     [action: allocate subtask to admissible executors] (* <- lang_en;; *);;
 
-// ---------------------------------------------------------------------
-// Класс действия для программной (C++) реализации механической части
-// правила ниже -- sc-агент AgentHandleNoAdmissibleAssignment
-// (ostis_ps_user_ecosystem/src/agent/agent_handle_no_admissible_assignment.*).
-// Посылка "S_(σ,C) = ∅" не проверяется агентом -- match() определена
-// лишь частично (rule_compute_match_function: 4 из 6 слагаемых не
-// формализованы -- sim_T задана в гл. 2 мерой Ву—Палмера, trust
-// вычислим; см. Implementation Backlog.md),
-// поэтому агент принимает это условие уже установленным вызывающей
-// стороной (тот же приём, что у AgentExcludeFromCoalition/
-// AgentReassignOnResourceExhaustion в отношении failed/resource_exhausted).
-// "Запустить rule_recursive_decomposition" не выполняется -- сама
-// декомпозиция (rule_apply_decomposition_pattern) не реализована.
-// ---------------------------------------------------------------------
-
+// AgentHandleNoAdmissibleAssignment принимает пустоту S_(σ,C) как
+// установленный вызывающей стороной факт. Повторная декомпозиция
+// этим агентом не выполняется.
 action_handle_no_admissible_assignment
 <- sc_node_class;
 => nrel_main_idtf:
@@ -159,17 +100,13 @@ rule -> rule_handle_no_admissible_assignment: ...
         [Прав.(нет допустимого назначения)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [If: S_(σ,C) = ∅, то есть ∀s ∈ S. assign(σ, s) = 0
-                (ни один участник не удовлетворяет всем четырём
-                конъюнктам rule_assignment_admissibility),
-            Then: запустить rule_recursive_decomposition для σ
-                  либо инициировать concept_integrity_violation
-                  и вернуть управление agent_task_decomposer.
-            Более общий случай |S_(σ,C)| < k(σ) (допустимые есть, но их
-            меньше требуемой кратности) обнаруживается
-            AgentAllocateSubtasks и приводит к тому же выбору ветви.
-            (Прежняя редакция посылки содержала только два конъюнкта —
-            приведено в соответствие с гл. 2 13.09.2026.)]
+        -> [If: S_(σ,C) = ∅, то есть ∀s ∈ S.
+                assignable(σ, s, C) = 0,
+            Then: запустить ограниченную повторную декомпозицию σ
+                  либо вернуть структурированный отказ с кодом,
+                  соответствующим блокирующему условию.
+                  Если 0 < |S_(σ,C)| < k(σ), применяется та же ветвь:
+                  недостаток кратности не маскируется успешным назначением.]
            (* <- lang_ru;; *);;
     *);;
 *);;

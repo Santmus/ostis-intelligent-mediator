@@ -10,7 +10,7 @@
 //   π_exp  ExplanationConstruction
 //   π_tr   TrustAssessment
 //   π_rec  CoalitionReconfiguration
-// Согласовано с табл. 3 и принципами OSTIS-посредника [13; 19; 29].
+// Согласовано с принципами коллективного решения задач в OSTIS.
 // =====================================================================
 
 section_concept_lifecycle_processes
@@ -61,7 +61,7 @@ definition -> definition_lifecycle_process: ...
 
 concept_lifecycle_process <= nrel_subdividing: ...
 (*
-    => nrel_main_idtf: [Разбиение процессов жизненного цикла (Π-set)]
+    => nrel_main_idtf: [Восемь основных и два вспомогательных процесса жизненного цикла]
        (* <- lang_ru;; *);;
     -> concept_process_interpretation;
        concept_process_decomposition;
@@ -70,7 +70,9 @@ concept_lifecycle_process <= nrel_subdividing: ...
        concept_process_integration;
        concept_process_explanation;
        concept_process_trust_assessment;
-       concept_process_coalition_reconfiguration;;
+       concept_process_coalition_reconfiguration;
+       concept_process_lifecycle_monitoring;
+       concept_process_user_model_actualization;;
 *);;
 
 // ---------------------------------------------------------------------
@@ -83,19 +85,20 @@ concept_process_interpretation
     [процесс интерпретации запроса] (* <- lang_ru;; *);
     [RequestInterpretation] (* <- lang_en;; *);
 => nrel_realizes_mapping:
-    [ι : Q_ext × C → Q_form];
+    [ι_(U_t,C) : Q ⇀ J];
 => nrel_process_description:
-    [Отображение исходного пользовательского запроса в формализованный
-     sc-граф с привязкой к концептам предметной онтологии и текущему
-     контексту; результат — sc-граф запроса с явным указанием цели,
-     контекста и ожидаемого типа результата.];;
+    [Частичное отображение допустимого запроса в структурированное
+     намерение с учётом снимка модели пользователя U_t(u) и контекста C.
+     Для однозначно разрешённого запроса результатом является Intent;
+     при неоднозначности формируется запрос уточнения из Q_clar,
+     а произвольная интерпретация не выбирается.];;
 
 concept_process_decomposition
 <- sc_node_class;
 => nrel_main_idtf:
     [процесс декомпозиции запроса] (* <- lang_ru;; *);
     [TaskDecomposition] (* <- lang_en;; *);
-=> nrel_realizes_mapping: [δ : Q_form → 2^T];
+=> nrel_realizes_mapping: [decompose : J × F → G_q];
 => nrel_process_description:
     [Порождение ориентированного ацикличного графа подзадач T(q)
      на основе шаблонов декомпозиции, накопленных в базе знаний
@@ -107,11 +110,10 @@ concept_process_allocation
     [процесс распределения подзадач] (* <- lang_ru;; *);
     [TaskAllocation] (* <- lang_en;; *);
 => nrel_realizes_mapping:
-    [α : T × S → 0;1 на основе match(σ, s)];
+    [α : T × S → 0;1 на основе match(σ, s | C)];
 => nrel_process_description:
-    [Семантическое сопоставление подзадач и интеллектуальных систем
-     по функции match(σ, s) с ограничениями коалиционного покрытия
-     и совместимости (12, 13).];;
+    [Сопоставление подзадач и участников по match(σ, s | C)
+     с проверкой assignable, cover, кратности k(σ) и consistent.];;
 
 concept_process_cooperative_processing
 <- sc_node_class;
@@ -135,7 +137,7 @@ concept_process_integration
 => nrel_process_description:
     [Формирование семантически согласованного объединения частичных
      решений с применением правил агрегации, разрешения конфликтов
-     и валидации ограничений (7).];;
+     и валидации ограничений F_constr.];;
 
 concept_process_explanation
 <- sc_node_class;
@@ -166,7 +168,7 @@ concept_process_coalition_reconfiguration
 => nrel_process_description:
     [Компенсационный процесс, активируемый при отказе системы,
      истечении ресурсов или нарушении ограничений F_constr; включает
-     повторное решение задачи (13) при модифицированном множестве S.];;
+     повторное решение задачи формирования коалиции при модифицированном множестве S.];;
 
 // ---------------------------------------------------------------------
 // Восьмишаговая итеративная схема исполнения цикла.
@@ -185,7 +187,7 @@ affirmation -> affirmation_lifecycle_iteration: ...
                 concept_user_request;
             (2) построение и валидация контекста C;
             (3) декомпозиция на подзадачи и фиксация графа зависимостей;
-            (4) вычисление match(σ, s) и выбор коалиции по задаче (13);
+            (4) вычисление match(σ, s | C) и выбор коалиции;
             (5) запуск кооперативного протокола и обмен промежуточными
                 результатами в общей семантической памяти;
             (6) семантическая агрегация частичных результатов
@@ -210,3 +212,49 @@ nrel_process_description
 <- sc_node_non_role_relation;
 => nrel_main_idtf: [описание_процесса*] (* <- lang_ru;; *);
 <- binary_relation;;
+
+
+// ---------------------------------------------------------------------
+// Вспомогательные процессы мониторинга и посттерминальной актуализации.
+// ---------------------------------------------------------------------
+
+concept_process_lifecycle_monitoring
+<- sc_node_class;
+=> nrel_main_idtf:
+    [мониторинг жизненного цикла] (* <- lang_ru;; *);
+    [LifecycleMonitoring] (* <- lang_en;; *);;
+concept_process_lifecycle_monitoring <= nrel_inclusion: concept_lifecycle_process;;
+concept_process_lifecycle_monitoring => nrel_process_description:
+    [Сбор конечного множества E_q событий UserInteractionEvent:
+     действия и ошибки пользователя, время действий, обращения
+     к подсказкам, результаты, обратная связь и последствия адаптаций.];;
+
+concept_process_user_model_actualization
+<- sc_node_class;
+=> nrel_main_idtf:
+    [посттерминальная актуализация модели пользователя] (* <- lang_ru;; *);
+    [UserModelActualization] (* <- lang_en;; *);;
+concept_process_user_model_actualization <= nrel_inclusion: concept_lifecycle_process;;
+concept_process_user_model_actualization => nrel_realizes_mapping:
+    [U_(t+1)(u) = actualize(U_t(u), E_q, fb_q), x_q ∈ X_term];;
+concept_process_user_model_actualization => nrel_process_description:
+    [Постобработка после достижения запросом терминального состояния.
+     Создаёт новую версию UserModel, связанную с предыдущей версией,
+     исходными событиями, обратной связью, применёнными правилами
+     и provenance. Не является нетерминальным переходом и не входит
+     в область действия потенциала завершаемости.];;
+
+affirmation -> affirmation_user_model_actualization_postterminal: ...
+(*
+    -> rrel_key_sc_element: concept_process_user_model_actualization;;
+    => nrel_main_idtf: [Утв.(посттерминальность актуализации модели пользователя)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [UserModelActualization выполняется только при x_q ∈ X_term.
+            Актуализация не создаёт переход между рабочими состояниями.
+            Если она инициирует новый запрос, начинается новый цикл
+            с собственными ограничениями b_q, d_max и n_clar.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;

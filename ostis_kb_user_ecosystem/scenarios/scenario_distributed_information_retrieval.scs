@@ -18,6 +18,8 @@ user_researcher => nrel_main_idtf:
     [Исследователь — материаловед] (* <- lang_ru;; *);;
 
 request_research_query <- concept_user_request;;
+request_research_query <- concept_valid_user_request;;
+request_research_query <- concept_resolved_user_request;;
 request_research_query <- concept_request_information;;
 request_research_query => nrel_main_idtf:
     [Запрос: подобрать материал для гибкого солнечного модуля,
@@ -26,13 +28,15 @@ request_research_query => nrel_main_idtf:
     (* <- lang_ru;; *);;
 user_researcher => nrel_formulates: request_research_query;;
 
+intent_research_query <- concept_intent;;
+request_research_query => nrel_interprets: intent_research_query;;
 goal_material_selection <- concept_goal;;
 goal_material_selection <- concept_goal_informational;;
 goal_material_selection => nrel_main_idtf:
     [Цель: получить ранжированный список материалов-кандидатов
      с детальным обоснованием по 3 критериям]
     (* <- lang_ru;; *);;
-request_research_query => nrel_has_goal: goal_material_selection;;
+intent_research_query => nrel_intent_goal: goal_material_selection;;
 
 // Контекст с акцентом на мультидоменность.
 interaction_context_research <- concept_interaction_context;;
@@ -56,7 +60,11 @@ situation_researcher_workstation => nrel_main_idtf:
 history_researcher_queries <- concept_history_context;;
 state_research_environment <- concept_system_context;;
 
-interaction_context_research -> rrel_goal_context: goal_material_selection;;
+interaction_context_research => nrel_context_version: [1];;
+interaction_context_research => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_research <- concept_goal_context;;
+goal_context_research => nrel_contains: goal_material_selection;;
+interaction_context_research -> rrel_goal_context: goal_context_research;;
 interaction_context_research -> rrel_history_context: history_researcher_queries;;
 interaction_context_research -> rrel_system_context: state_research_environment;;
 interaction_context_research -> rrel_domain_context: domain_materials;;
@@ -176,6 +184,10 @@ result_final_ranking_research => nrel_main_idtf:
 system_ranker_research => nrel_produces: result_final_ranking_research;;
 
 integrated_research_result <- concept_integrated_result;;
+integrated_research_result => nrel_generated_in_context:
+    interaction_context_research;;
+integrated_research_result => nrel_has_provenance: prov_integrated_research_result;;
+prov_integrated_research_result <- concept_provenance_record;;
 integrated_research_result => nrel_main_idtf:
     [Интегрированный результат: топ-3 рекомендованных материала
      для гибких солнечных модулей с детальным обоснованием

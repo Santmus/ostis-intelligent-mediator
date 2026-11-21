@@ -45,18 +45,12 @@
 // Новый подкласс, в отличие от AgentCheckAcyclicity/
 // AgentValidateCardinalityConstraint, здесь не потребовался.
 //
-// Наблюдение по терминологии (не исправляется здесь): текст ЭТОГО
-// правила требует explained_by(ir,e) (relations/relations_provenance.scs,
-// nrel_explained_by: concept_integrated_result -> concept_explanation --
-// та же связь, что проверяет AgentValidateIntegration и создаёт
-// AgentBuildExplanation), тогда как соседняя АКСИОМА
-// axiom_decision_requires_explanation (axioms/axioms_security.scs)
-// требует supported_by_explanation(d,e) (nrel_supported_by_explanation:
-// concept_processing_result -> concept_explanation) -- другое отношение
-// для похожего по смыслу требования. Реализовано буквально по тексту
-// ПРАВИЛА (nrel_explained_by), поскольку операционализируется именно
-// rule_right_to_explanation; согласование терминологии правила и
-// аксиомы этого агента не касается.
+// Правило требует explained_by(ir,e), тогда как соседняя аксиома
+// axiom_decision_requires_explanation использует
+// supported_by_explanation(d,e). Это разные отношения с общим доменом
+// concept_result (relations/relations_provenance.scs). Реализовано
+// буквально по тексту ПРАВИЛА (nrel_explained_by), поскольку
+// операционализируется именно rule_right_to_explanation.
 //
 // Не реализовано:
 //  - "agent_explanation_builder обязан построить" -- агент не вызывает

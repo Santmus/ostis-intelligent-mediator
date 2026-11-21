@@ -33,7 +33,6 @@ trust_level_safety_assessor => nrel_main_idtf:
      (специализированная экспертная система, сертифицирована)]
     (* <- lang_ru;; *);;
 
-intelligent_system_energy_model => nrel_has_trust_level: trust_level_energy;;
 intelligent_system_route_planner => nrel_has_trust_level: trust_level_route_planner;;
 system_safety_assessor => nrel_has_trust_level: trust_level_safety_assessor;;
 

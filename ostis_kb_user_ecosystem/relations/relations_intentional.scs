@@ -18,18 +18,18 @@ nrel_formulates
 <- binary_relation;
 <- oriented_relation;
 <- antireflexive_relation;
-<- functional_relation;
+<- inverse_functional_relation;
 => nrel_first_domain: concept_user;
 => nrel_second_domain: concept_user_request;;
 
-nrel_has_goal
+nrel_has_persistent_goal
 <- sc_node_non_role_relation;
 => nrel_main_idtf:
-    [имеет_цель*] (* <- lang_ru;; *);
-    [has_goal*] (* <- lang_en;; *);
+    [имеет_устойчивую_цель*] (* <- lang_ru;; *);
+    [has_persistent_goal*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
-=> nrel_first_domain: concept_user_request;
+=> nrel_first_domain: concept_user_model;
 => nrel_second_domain: concept_goal;;
 
 nrel_satisfies
@@ -73,15 +73,147 @@ nrel_has_competence
 => nrel_first_domain: concept_user_model;
 => nrel_second_domain: concept_user_competence;;
 
-nrel_has_history
+nrel_has_identification
 <- sc_node_non_role_relation;
-=> nrel_main_idtf:
-    [имеет_историю*] (* <- lang_ru;; *);
-    [has_history*] (* <- lang_en;; *);
+=> nrel_main_idtf: [имеет_идентификационные_сведения*] (* <- lang_ru;; *);
 <- binary_relation;
 <- oriented_relation;
 => nrel_first_domain: concept_user_model;
-=> nrel_second_domain: concept_user_interaction_history;;
+=> nrel_second_domain: concept_user_identification;;
+
+nrel_has_user_domain_role
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [имеет_роль_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_domain_role;;
+
+nrel_has_situation_state
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [имеет_ситуационное_состояние*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_situation_state;;
+
+nrel_has_interaction_history
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [имеет_историю_взаимодействия*] (* <- lang_ru;; *);
+    [has_interaction_history*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_interaction_event;;
+
+nrel_user_model_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [версия_модели_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_model;;
+
+nrel_user_model_timestamp
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [время_версии_модели_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_model;;
+
+nrel_previous_user_model_version
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [предыдущая_версия_модели_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- antireflexive_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_model;;
+
+nrel_event_subject
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [субъект_события_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_second_domain: concept_user;;
+
+nrel_event_action_model
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [событие_типизировано_моделью_действий*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_second_domain: concept_user_action_model;;
+
+nrel_event_timestamp
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [время_события_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_interaction_event;;
+
+nrel_event_context
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [контекст_события_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_second_domain: concept_interaction_context;;
+
+nrel_event_result
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [результат_события_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_second_domain: concept_result;;
+
+nrel_event_feedback
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [обратная_связь_события_пользователя*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_interaction_event;
+=> nrel_second_domain: concept_user_feedback;;
+
+nrel_assertion_source
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [источник_утверждения_о_пользователе*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_assertion;;
+
+nrel_assertion_timestamp
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [время_утверждения_о_пользователе*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_assertion;;
+
+nrel_assertion_confidence
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [достоверность_утверждения_о_пользователе*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_assertion;;
+
+nrel_assertion_valid_until
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [срок_актуальности_утверждения_о_пользователе*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_dynamic_user_assertion;;
 
 nrel_provides_feedback
 <- sc_node_non_role_relation;
@@ -101,11 +233,11 @@ nrel_feedback_targets
 <- binary_relation;
 <- oriented_relation;
 => nrel_first_domain: concept_user_feedback;
-=> nrel_second_domain: concept_processing_result;;
+=> nrel_second_domain: concept_result;;
 
 // ---------------------------------------------------------------------
 // Намерение: интерпретация запроса ι(q) и компоненты кортежа
-// j = <g, o, a, Γ, y, π>.
+// j = <g, o, a, Γ, y, ρ>.
 // ---------------------------------------------------------------------
 
 nrel_interprets
@@ -188,3 +320,62 @@ nrel_has_requirement
 <- oriented_relation;
 => nrel_first_domain: concept_user_request;
 => nrel_second_domain: concept_intent_constraint;;
+
+nrel_request_user_model_snapshot
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [снимок_модели_пользователя_запроса*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_user_request;
+=> nrel_second_domain: concept_user_model;;
+
+nrel_monitors_event
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [мониторинг_фиксирует_событие*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_process_lifecycle_monitoring;
+=> nrel_second_domain: concept_user_interaction_event;;
+
+nrel_actualization_for_request
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [актуализация_по_итогам_запроса*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_process_user_model_actualization;
+=> nrel_second_domain: concept_user_request;;
+
+nrel_actualization_terminal_state
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [актуализация_после_терминального_состояния*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_process_user_model_actualization;
+=> nrel_second_domain: concept_terminal_state;;
+
+nrel_actualization_source_event
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [основание_актуализации_событие*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_interaction_event;;
+
+nrel_actualization_feedback
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [основание_актуализации_обратная_связь*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_user_feedback;;
+
+nrel_actualized_by_rule
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [актуализировано_правилом*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_user_model;
+=> nrel_second_domain: concept_sc_rule;;

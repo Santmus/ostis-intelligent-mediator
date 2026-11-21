@@ -2,7 +2,7 @@
 // axioms/axioms_constraints.scs
 // Множество F_constr — интегральные ограничения целостности модели.
 // Формализуются в форме first-order constraints; проверяются sc-агентом
-// agent_integrity_checker. Соотносятся с подходом SHACL [28].
+// agent_integrity_checker. Соотносятся с подходом SHACL.
 // =====================================================================
 
 section_axioms_constraints
@@ -29,14 +29,30 @@ constraint -> constraint_request_authorship: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 4): авторство и цель запроса] (* <- lang_ru;; *);;
+        [Огр.(авторство запроса)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [∀q ∈ Request. ∃! u ∈ User. formulates(u, q)
-            ∧ ∃g ∈ Goal. has_goal(q, g).
-            Каждому запросу сопоставлен ровно один автор-пользователь
-            и хотя бы одна цель. Нарушение → agent_integrity_checker
-            создаёт экземпляр concept_integrity_violation.]
+        -> [∀q ∈ Request. ∃! u ∈ User. formulates(u, q).
+            Каждому запросу сопоставлен ровно один автор-пользователь.
+            Нарушение → agent_integrity_checker создаёт экземпляр
+            concept_integrity_violation.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_resolved_request_intent: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(намерение и цель разрешённого запроса)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [∀q ∈ ResolvedUserRequest. ∃!j ∈ Intent.
+            interprets(q, j) ∧ ∃g ∈ Goal. intent_goal(j, g).
+            Намерение и цель обязательны только для Q_resolved.
+            Допустимый неоднозначный запрос из Q_valid ∖ Q_resolved
+            завершает текущий цикл уточнением без Intent, плана
+            и декомпозиции.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -45,7 +61,7 @@ constraint -> constraint_decomposition_acyclic: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 5): ацикличность декомпозиции] (* <- lang_ru;; *);;
+        [Огр.(ацикличность декомпозиции)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [acyclic(depends_on) ∧
@@ -58,7 +74,7 @@ constraint -> constraint_result_provenance: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 6): провенанс результата обработки] (* <- lang_ru;; *);;
+        [Огр.(провенанс результата обработки)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [∀r ∈ ProcessingResult. ∃is, ctx, p.
@@ -149,15 +165,15 @@ constraint -> constraint_result_generated_by_act: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(результат порождён актом исполнения)] (* <- lang_ru;; *);;
+        [Огр.(частичный результат порождён актом исполнения)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [∀z ∈ ProcessingResult. ∃!a ∈ ExecutionAct.
             generated_by(z, a).
-            Ни один частичный результат не может существовать без
-            указания породившего его акта исполнения; итоговый
-            результат дополнительно связан с процедурой агрегации
-            (aggregates) и проверки (verifies, validated_by).]
+            Каждый частичный результат имеет породивший его акт исполнения.
+            IntegratedResult не является подклассом ProcessingResult:
+            для него обязательны агрегация частичных результатов,
+            проверка и provenance, но не отдельный ExecutionAct.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -218,17 +234,45 @@ constraint -> constraint_separate_resource_decrease: ...
         [Огр.(раздельное убывание b_q и d_max)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Переход переназначения (x_exec → x_assign) уменьшает
-            b_rem на единицу и не изменяет d_rem и структуру T(q).
-            Переход перепланирования (x_* → x_replan → x_plan)
-            уменьшает d_rem на единицу и порождает новую версию плана
-            replans(pv_new, pv_prev). Смешение ресурсов — расход d_max
-            при переназначении либо b_q при перепланировании —
-            нарушает лексикографическое убывание Φ и запрещено.
-            При b_rem = 0 переназначение недопустимо; при d_rem = 0
-            недопустимо перепланирование; при одновременном исчерпании
-            обоих ресурсов обязателен переход в x_refuse либо x_clar.]
+        -> [Переназначение уменьшает b_rem и не изменяет d_rem и T(q).
+            Перепланирование уменьшает d_rem и порождает новую версию
+            плана. Завершение подзадачи уменьшает n_pend. На каждом
+            ресурсном переходе Φ(x_(t+1)) <_lex Φ(x_t); на служебном
+            переходе Φ(x_(t+1)) ≤_lex Φ(x_t). При b_rem = 0 и d_rem = 0
+            обязателен терминальный исход, но остаток n_clar_rem
+            может быть ненулевым.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_clarification_round_decrease: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(убывание числа связанных раундов уточнения)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [x_clar является терминальным исходом текущего цикла.
+            Если после ответа пользователя открывается новый запрос q'
+            с continues_request(q', q), то n_clar_rem(q') =
+            n_clar_rem(q) − 1. Открытие нового цикла при нулевом остатке
+            запрещено. Связанная последовательность уточнений конечна.]
            (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_phase_transition_bound: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf:
+        [Огр.(конечность серии служебных переходов)] (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [Контроллер допускает не более N_ph последовательных
+            служебных переходов без строгого убывания потенциала.
+            Затем обязателен ресурсный переход либо терминальный исход.
+            Поэтому бесконечная траектория не может состоять только
+            из переходов, сохраняющих Φ.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -247,28 +291,46 @@ constraint -> constraint_plan_version_acyclic: ...
     *);;
 *);;
 
+constraint -> constraint_context_inheritance_acyclic: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf: [Огр.(ацикличность наследования контекста)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [¬∃C. inherits_from⁺(C, C). Наследование контекста
+            транзитивно, иррефлексивно и ациклично.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
+constraint -> constraint_context_dominance_acyclic: ...
+(*
+    <- concept_sc_constraint;;
+    => nrel_main_idtf: [Огр.(ацикличность доминирования гипотез контекста)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [¬∃C. dominates_over⁺(C, C). Доминирование антисимметрично,
+            иррефлексивно и ациклично; транзитивность отдельно
+            не постулируется.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
 constraint -> constraint_assignment_admissibility: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 12): допустимость назначения подзадачи]
-       (* <- lang_ru;; *);;
+        [Огр.(допустимость назначения подзадачи)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [∀σ ∈ Subtask, s ∈ IntelligentSystem.
-            assign(σ, s) → match(σ, s | C) ≥ θ ∧ valid(C, L_s) = 1
-            ∧ permit(view(C, s), s, C) = 1 ∧ available(s, C) = 1.
-            Назначение допустимо только при одновременном выполнении
-            четырёх независимых условий: достаточное значение функции
-            применимости; выполнимость ресурсных ограничений системы s
-            в контексте C; разрешённость передачи участнику s
-            минимально необходимой проекции контекста view(C, s)
-            политикой доступа; фактическая доступность участника s.
-            (Гл. 2, формула допустимости назначения. Прежняя редакция
-            этого ограничения содержала только первые два конъюнкта и
-            расходилась с affirmation_assign_admissibility
-            (concepts/capabilities.scs), актуализированным ранее, —
-            приведено в соответствие 13.09.2026.)]
+            assigned_to(σ, s) → assignable(σ, s, C) = 1.
+            assignable(σ, s, C) = 1 ⟺ match(σ, s | C) ≥ θ
+            ∧ valid(C, L_s) = 1
+            ∧ permit(view(C, s), s, C) = 1
+            ∧ available(s, C) = 1.
+            Все четыре условия независимы и обязательны.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -277,23 +339,15 @@ constraint -> constraint_coalition_coverage: ...
 (*
     <- concept_sc_constraint;;
     => nrel_main_idtf:
-        [Огр.(формула 13): покрытие декомпозиции коалицией]
-       (* <- lang_ru;; *);;
+        [Огр.(покрытие декомпозиции коалицией)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
         -> [∀σ ∈ T(q). χ(σ) ≠ ∅ ∧ |χ(σ)| = k(σ)
-            ∧ ∀s ∈ χ(σ). assign(σ, s), при consistent(C, χ).
-            Отображение назначения χ : T(q) → P(S) ∖ {∅} должно
-            покрывать всю декомпозицию запроса, сопоставляя каждой
-            подзадаче непустое множество допустимых исполнителей
-            мощности k(σ), и удовлетворять условию согласованности с
-            контекстом. Кратность k(σ) определяется типом маршрута:
-            k(σ) = 1 для одиночного и последовательного, k(σ) > 1 для
-            параллельного и коалиционного.
-            (Прежняя редакция записывала χ(σ) = s, то есть ровно одного
-            исполнителя на подзадачу, что по гл. 2 исключало бы
-            параллельный маршрут и формирование коалиции —
-            приведено в соответствие 13.09.2026.)]
+            ∧ ∀s ∈ χ(σ). assignable(σ, s, C) = 1.
+            cover(χ, T(q)) = 1 ∧ consistent(C, χ) = 1.
+            χ : T(q) ⇀ P(S) ∖ {∅}. Кратность k(σ) определяется
+            типом маршрута: 1 для одиночного и последовательного,
+            больше 1 для параллельного исполнения или коалиции.]
            (* <- lang_ru;; *);;
     *);;
 *);;

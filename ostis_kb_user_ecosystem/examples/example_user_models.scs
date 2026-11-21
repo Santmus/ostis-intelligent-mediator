@@ -43,31 +43,75 @@ consent_alice_001 => nrel_main_idtf:
     [Согласие на обработку маршрутных и геолокационных данных
      действительно до 2026-12-31] (* <- lang_ru;; *);;
 
+role_alice_driver <- concept_user_domain_role;;
+role_alice_driver => nrel_main_idtf:
+    [Предметная роль: водитель электромобиля] (* <- lang_ru;; *);;
+
+usage_context_alice <- concept_usage_context_model;;
+user_action_model_alice <- concept_user_action_model;;
+environment_model_alice <- concept_environment_model;;
+device_model_alice <- concept_device_model;;
+usage_context_alice <= nrel_section_decomposition:
+{
+    user_model_alice;
+    user_action_model_alice;
+    environment_model_alice;
+    device_model_alice
+};;
+
+user_history_alice <- concept_user_interaction_history;;
+user_event_alice_001 <- concept_user_interaction_event;;
+user_event_alice_001 => nrel_main_idtf:
+    [Событие: пользователь подтвердил выбор безопасного маршрута]
+    (* <- lang_ru;; *);;
+user_event_alice_001 => nrel_event_subject: user_alice;;
+user_event_alice_001 => nrel_event_action_model: user_action_model_alice;;
+user_event_alice_001 => nrel_event_context: interaction_context_001;;
+user_event_alice_001 => nrel_event_timestamp: [2025-09-12T14:10:00Z];;
+user_event_alice_001 => nrel_event_result: integrated_result_001;;
+user_event_alice_001 => nrel_event_feedback: feedback_alice_001;;
+user_event_alice_001 => nrel_has_provenance: prov_user_event_alice_001;;
+prov_user_event_alice_001 <- concept_provenance_record;;
+user_history_alice => nrel_contains: user_event_alice_001;;
+
+goal_optimal_route <- concept_user_goal;;
 user_model_alice <= nrel_section_decomposition:
 {
     profile_alice;
+    role_alice_driver;
+    goal_optimal_route;
     competence_alice_ev;
     competence_alice_routing;
     preference_alice_safety;
     preference_low_energy;
     cognitive_load_alice;
-    consent_alice_001;
-    history_alice_001
+    user_history_alice
 };;
 
+user_model_alice => nrel_has_identification: profile_alice;;
+user_model_alice => nrel_has_user_domain_role: role_alice_driver;;
+user_model_alice => nrel_has_situation_state: cognitive_load_alice;;
 user_model_alice => nrel_has_preference: preference_alice_safety;;
 user_model_alice => nrel_has_competence: competence_alice_ev;;
 user_model_alice => nrel_has_competence: competence_alice_routing;;
-user_model_alice => nrel_has_history: history_alice_001;;
+user_model_alice => nrel_has_interaction_history: user_event_alice_001;;
+user_model_alice => nrel_user_model_version: [1];;
+user_model_alice => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_alice => nrel_has_provenance: prov_user_model_alice;;
+prov_user_model_alice <- concept_provenance_record;;
 
 // ---------------------------------------------------------------------
-// Профиль для пользователя-врача.
+// Модель пользователя-врача: холодный старт без G_u и H_u допустим.
 // ---------------------------------------------------------------------
 
 profile_doctor_smith <- concept_user_profile;;
 profile_doctor_smith => nrel_main_idtf:
     [Профиль: эндокринолог, 12 лет практики, специализация на CAH]
     (* <- lang_ru;; *);;
+
+role_doctor_smith <- concept_user_domain_role;;
+role_doctor_smith => nrel_main_idtf:
+    [Предметная роль: врач-эндокринолог] (* <- lang_ru;; *);;
 
 competence_doctor_smith <- concept_user_competence;;
 competence_doctor_smith => nrel_main_idtf:
@@ -82,8 +126,184 @@ preference_doctor_smith => nrel_main_idtf:
 user_model_doctor_smith <= nrel_section_decomposition:
 {
     profile_doctor_smith;
+    role_doctor_smith;
     competence_doctor_smith;
     preference_doctor_smith
 };;
+user_model_doctor_smith => nrel_has_identification: profile_doctor_smith;;
+user_model_doctor_smith => nrel_has_user_domain_role: role_doctor_smith;;
 user_model_doctor_smith => nrel_has_preference: preference_doctor_smith;;
 user_model_doctor_smith => nrel_has_competence: competence_doctor_smith;;
+user_model_doctor_smith => nrel_user_model_version: [1];;
+user_model_doctor_smith => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_doctor_smith => nrel_has_provenance: prov_user_model_doctor_smith;;
+prov_user_model_doctor_smith <- concept_provenance_record;;
+
+
+// ---------------------------------------------------------------------
+// Защищённые проекции и семантический контракт для request_001.
+// ---------------------------------------------------------------------
+
+request_001 => nrel_request_user_model_snapshot: user_model_alice;;
+
+policy_alice_user_model <- concept_access_control_policy;;
+policy_alice_user_model <- concept_policy_abac;;
+user_model_alice => nrel_user_model_access_policy: policy_alice_user_model;;
+
+policy_alice_energy_view <- concept_access_control_policy;;
+policy_alice_energy_view <- concept_policy_abac;;
+policy_alice_energy_view => nrel_permits: intelligent_system_energy_model;;
+
+user_projection_alice_request_001 <- concept_user_model_projection;;
+user_projection_alice_request_001 => nrel_user_projection_of_model:
+    user_model_alice;;
+user_projection_alice_request_001 => nrel_user_projection_for_request:
+    request_001;;
+user_projection_alice_request_001 => nrel_contains: preference_alice_safety;;
+
+context_view_alice_energy <- concept_context_projection;;
+context_view_alice_energy => nrel_context_view_of: interaction_context_001;;
+context_view_alice_energy => nrel_context_view_for_executor:
+    intelligent_system_energy_model;;
+context_view_alice_energy => nrel_context_view_includes_user_projection:
+    user_projection_alice_request_001;;
+context_view_alice_energy => nrel_contains: goal_optimal_route;;
+
+semantic_contract_energy_estimation <- concept_semantic_contract;;
+semantic_contract_energy_estimation => nrel_contract_for_subtask:
+    subtask_energy_estimation;;
+semantic_contract_energy_estimation => nrel_contract_for_executor:
+    intelligent_system_energy_model;;
+semantic_contract_energy_estimation => nrel_contract_context_view:
+    context_view_alice_energy;;
+semantic_contract_energy_estimation => nrel_contract_access_policy:
+    policy_alice_energy_view;;
+assignment_act_001 => nrel_assignment_uses_contract:
+    semantic_contract_energy_estimation;;
+
+// ---------------------------------------------------------------------
+// Мониторинг и посттерминальная актуализация U_t -> U_(t+1).
+// ---------------------------------------------------------------------
+
+monitoring_alice_001 <- concept_process_lifecycle_monitoring;;
+monitoring_alice_001 => nrel_monitors_event: user_event_alice_001;;
+
+preference_alice_concise <- concept_user_preference;;
+preference_alice_concise <- concept_confirmed_user_assertion;;
+preference_alice_concise => nrel_main_idtf:
+    [Подтверждённое предпочтение: краткое представление результата]
+    (* <- lang_ru;; *);;
+preference_alice_concise => nrel_assertion_source: user_event_alice_001;;
+preference_alice_concise => nrel_assertion_timestamp: [2025-09-12T14:12:00Z];;
+preference_alice_concise => nrel_assertion_confidence: [1.0];;
+preference_alice_concise => nrel_has_provenance: prov_preference_alice_concise;;
+prov_preference_alice_concise <- concept_provenance_record;;
+
+user_model_alice_v2 <- concept_user_model;;
+user_model_alice_v2 => nrel_has_identification: profile_alice;;
+user_model_alice_v2 => nrel_has_user_domain_role: role_alice_driver;;
+user_model_alice_v2 => nrel_has_persistent_goal: goal_optimal_route;;
+user_model_alice_v2 => nrel_has_preference: preference_alice_safety;;
+user_model_alice_v2 => nrel_has_preference: preference_low_energy;;
+user_model_alice_v2 => nrel_has_preference: preference_alice_concise;;
+user_model_alice_v2 => nrel_has_competence: competence_alice_ev;;
+user_model_alice_v2 => nrel_has_competence: competence_alice_routing;;
+user_model_alice_v2 => nrel_has_situation_state: cognitive_load_alice;;
+user_model_alice_v2 => nrel_has_interaction_history: user_event_alice_001;;
+user_model_alice_v2 => nrel_user_model_version: [2];;
+user_model_alice_v2 => nrel_user_model_timestamp: [2025-09-12T14:12:00Z];;
+user_model_alice_v2 => nrel_previous_user_model_version: user_model_alice;;
+user_model_alice_v2 => nrel_actualization_source_event: user_event_alice_001;;
+user_model_alice_v2 => nrel_actualization_feedback: feedback_alice_001;;
+user_model_alice_v2 => nrel_actualized_by_rule: rule_actualize_user_model;;
+user_model_alice_v2 => nrel_user_model_access_policy: policy_alice_user_model;;
+user_model_alice_v2 => nrel_has_provenance: prov_user_model_alice_v2;;
+prov_user_model_alice_v2 <- concept_provenance_record;;
+
+actualization_alice_001
+<- concept_process_user_model_actualization;
+-> rrel_source_user_model: user_model_alice;
+-> rrel_actualization_basis: user_event_alice_001;
+-> rrel_actualization_basis: feedback_alice_001;
+-> rrel_actualization_rule: rule_actualize_user_model;
+-> rrel_result_user_model: user_model_alice_v2;;
+actualization_alice_001 => nrel_actualization_for_request: request_001;;
+actualization_alice_001 => nrel_actualization_terminal_state:
+    state_001_presentation;;
+
+
+// ---------------------------------------------------------------------
+// Версионируемые модели остальных пользователей и снимки всех Q_valid.
+// Пустые G_u и H_u допустимы при холодном старте.
+// ---------------------------------------------------------------------
+
+policy_default_user_models <- concept_access_control_policy;;
+policy_default_user_models <- concept_policy_abac;;
+user_model_doctor_smith => nrel_user_model_access_policy:
+    policy_default_user_models;;
+user_model_ivan => nrel_user_model_access_policy: policy_default_user_models;;
+
+user_model_boris <- concept_user_model;;
+user_model_boris => nrel_user_model_version: [1];;
+user_model_boris => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_boris => nrel_user_model_access_policy: policy_default_user_models;;
+user_model_boris => nrel_has_provenance: prov_user_model_boris;;
+prov_user_model_boris <- concept_provenance_record;;
+user_boris => nrel_has_user_model: user_model_boris;;
+
+user_model_credit_analyst <- concept_user_model;;
+user_model_credit_analyst => nrel_user_model_version: [1];;
+user_model_credit_analyst => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_credit_analyst => nrel_user_model_access_policy:
+    policy_default_user_models;;
+user_model_credit_analyst => nrel_has_provenance:
+    prov_user_model_credit_analyst;;
+prov_user_model_credit_analyst <- concept_provenance_record;;
+user_credit_analyst => nrel_has_user_model: user_model_credit_analyst;;
+
+user_model_researcher <- concept_user_model;;
+user_model_researcher => nrel_user_model_version: [1];;
+user_model_researcher => nrel_user_model_timestamp: [2025-09-12T14:00:00Z];;
+user_model_researcher => nrel_user_model_access_policy:
+    policy_default_user_models;;
+user_model_researcher => nrel_has_provenance: prov_user_model_researcher;;
+prov_user_model_researcher <- concept_provenance_record;;
+user_researcher => nrel_has_user_model: user_model_researcher;;
+
+user_model_security_officer <- concept_user_model;;
+user_model_security_officer => nrel_user_model_version: [1];;
+user_model_security_officer => nrel_user_model_timestamp:
+    [2025-09-12T14:00:00Z];;
+user_model_security_officer => nrel_user_model_access_policy:
+    policy_default_user_models;;
+user_model_security_officer => nrel_has_provenance:
+    prov_user_model_security_officer;;
+prov_user_model_security_officer <- concept_provenance_record;;
+user_security_officer => nrel_has_user_model: user_model_security_officer;;
+
+user_model_traffic_operator <- concept_user_model;;
+user_model_traffic_operator => nrel_user_model_version: [1];;
+user_model_traffic_operator => nrel_user_model_timestamp:
+    [2025-09-12T14:00:00Z];;
+user_model_traffic_operator => nrel_user_model_access_policy:
+    policy_default_user_models;;
+user_model_traffic_operator => nrel_has_provenance:
+    prov_user_model_traffic_operator;;
+prov_user_model_traffic_operator <- concept_provenance_record;;
+user_traffic_operator => nrel_has_user_model: user_model_traffic_operator;;
+
+request_medical_001 => nrel_request_user_model_snapshot:
+    user_model_doctor_smith;;
+request_learning_path => nrel_request_user_model_snapshot: user_model_ivan;;
+request_loan_decision => nrel_request_user_model_snapshot:
+    user_model_credit_analyst;;
+request_research_query => nrel_request_user_model_snapshot:
+    user_model_researcher;;
+request_incident_response => nrel_request_user_model_snapshot:
+    user_model_security_officer;;
+request_traffic_optimization => nrel_request_user_model_snapshot:
+    user_model_traffic_operator;;
+request_rec_001 => nrel_request_user_model_snapshot: user_model_boris;;
+request_rec_002 => nrel_request_user_model_snapshot: user_model_boris;;
+request_clar_001 => nrel_request_user_model_snapshot: user_model_boris;;
+request_clar_002 => nrel_request_user_model_snapshot: user_model_boris;;

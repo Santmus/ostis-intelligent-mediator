@@ -25,18 +25,22 @@ user_model_doctor_smith <- concept_user_model;;
 
 // Запрос.
 request_medical_001 <- concept_user_request;;
+request_medical_001 <- concept_valid_user_request;;
+request_medical_001 <- concept_resolved_user_request;;
 request_medical_001 <- concept_request_diagnostic;;
 request_medical_001 => nrel_main_idtf:
     [Запрос: дифференциальная диагностика случая CAH
      (врождённая гиперплазия коры надпочечников)] (* <- lang_ru;; *);;
 user_doctor_smith => nrel_formulates: request_medical_001;;
 
-// Цель.
+// Намерение и его цель.
+intent_medical_001 <- concept_intent;;
+request_medical_001 => nrel_interprets: intent_medical_001;;
 goal_differential_diagnosis <- concept_goal;;
 goal_differential_diagnosis <- concept_goal_diagnostic;;
 goal_differential_diagnosis => nrel_main_idtf:
     [Цель: дифференциальная диагностика] (* <- lang_ru;; *);;
-request_medical_001 => nrel_has_goal: goal_differential_diagnosis;;
+intent_medical_001 => nrel_intent_goal: goal_differential_diagnosis;;
 
 // Контекст C_med = <C_g, C_h, C_s, C_d, C_u>.
 interaction_context_medical_diagnostics <- concept_interaction_context;;
@@ -45,8 +49,13 @@ interaction_context_medical_diagnostics => nrel_main_idtf:
      история «случай CAH», состояние «доступно 3 системы»,
      предметная область «эндокринология»,
      ситуация «врач, планшет, RU»] (* <- lang_ru;; *);;
+interaction_context_medical_diagnostics => nrel_context_version: [1];;
+interaction_context_medical_diagnostics => nrel_context_timestamp:
+    [2025-09-12T14:00:00Z];;
+goal_context_medical_diagnostics <- concept_goal_context;;
+goal_context_medical_diagnostics => nrel_contains: goal_differential_diagnosis;;
 interaction_context_medical_diagnostics -> rrel_goal_context:
-    goal_differential_diagnosis;;
+    goal_context_medical_diagnostics;;
 interaction_context_medical_diagnostics -> rrel_history_context:
     history_case_cah;;
 interaction_context_medical_diagnostics -> rrel_system_context:
@@ -143,6 +152,10 @@ result_diagnosis => nrel_main_idtf:
 // Интегрированный диагноз.
 integrated_diagnosis_001 <- concept_integrated_result;;
 integrated_diagnosis_001 <- concept_collective_decision;;
+integrated_diagnosis_001 => nrel_generated_in_context:
+    interaction_context_medical_diagnostics;;
+integrated_diagnosis_001 => nrel_has_provenance: prov_integrated_diagnosis_001;;
+prov_integrated_diagnosis_001 <- concept_provenance_record;;
 integrated_diagnosis_001 => nrel_main_idtf:
     [Интегрированный диагноз: CAH (21-OH дефицит)
      с указанием уровня доверия и обоснованием] (* <- lang_ru;; *);;

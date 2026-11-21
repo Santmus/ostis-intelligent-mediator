@@ -18,13 +18,17 @@ rule -> rule_apply_decomposition_pattern: ...
         [Прав.(применение шаблона декомпозиции)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [If: concept_user_request(q) ∧ has_goal(q, g) ∧ has_context(q, C)
+        -> [If: concept_resolved_user_request(q) ∧ interprets(q, j)
+                ∧ intent_goal(j, g) ∧ has_context(q, C)
                 ∧ ¬∃σ. decomposed_into(q, σ),
-            Then: выбрать шаблон p ∈ concept_task_decomposition_pattern,
-                  максимизирующий sim_T(τ_q, τ_p) при удовлетворении
-                  C; инстанцировать подзадачи σ_1, …, σ_n и связи
-                  decomposed_into(q, σ_i), depends_on(σ_i, σ_j)
-                  согласно шаблону.] (* <- lang_ru;; *);;
+            Then: выбрать шаблон dp ∈ concept_task_decomposition_pattern,
+                  максимизирующий sim_T(τ_q, τ_dp) при удовлетворении C;
+                  сформировать план p и связь has_plan(j, p);
+                  инстанцировать подзадачи σ_1, …, σ_n и связи
+                  decomposes(p, σ_i), decomposed_into(q, σ_i),
+                  depends_on(σ_i, σ_j) согласно шаблону. Полученный
+                  граф G_q = <T(q), E_q> должен быть DAG.]
+           (* <- lang_ru;; *);;
     *);;
 *);;
 

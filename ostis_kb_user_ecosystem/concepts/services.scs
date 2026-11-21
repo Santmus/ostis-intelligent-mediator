@@ -1,7 +1,7 @@
 // =====================================================================
 // concepts/services.scs
 // Подраздел: интеллектуальные сервисы экосистемы. Дескрипторы
-// возможностей в стиле OWL-S [30] / WSMO, адаптированные под SC-код.
+// возможностей в стиле OWL-S / WSMO, адаптированные под SC-код.
 // =====================================================================
 
 section_concept_services
@@ -153,3 +153,12 @@ definition -> definition_service_publication: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+
+nrel_provides_service
+<- sc_node_non_role_relation;
+=> nrel_main_idtf: [предоставляет_интеллектуальный_сервис*] (* <- lang_ru;; *);
+<- binary_relation;
+<- oriented_relation;
+=> nrel_first_domain: concept_intelligent_system;
+=> nrel_second_domain: concept_intelligent_service;;

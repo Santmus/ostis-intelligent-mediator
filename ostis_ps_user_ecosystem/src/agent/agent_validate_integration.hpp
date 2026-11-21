@@ -6,7 +6,7 @@
 //   Перед фиксацией интегрированного результата ir убедиться, что:
 //   (a) ∃e. explained_by(ir, e);  (b) ¬∃c. conflicts_with(ir, c).
 // Обе связи уже существуют в онтологии: nrel_explained_by (ориентированное,
-// домен concept_integrated_result -> concept_explanation,
+// домен concept_result -> concept_explanation,
 // relations/relations_provenance.scs) и nrel_conflicts_with (симметричное,
 // антирефлексивное, relations/relations_trust.scs). Первое условие теперь
 // содержательно, а не тавтологически ложно: [[AgentBuildExplanation]]

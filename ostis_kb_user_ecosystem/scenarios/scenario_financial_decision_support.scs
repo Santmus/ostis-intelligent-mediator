@@ -24,18 +24,22 @@ user_credit_analyst => nrel_main_idtf:
     [Кредитный аналитик] (* <- lang_ru;; *);;
 
 request_loan_decision <- concept_user_request;;
+request_loan_decision <- concept_valid_user_request;;
+request_loan_decision <- concept_resolved_user_request;;
 request_loan_decision <- concept_request_decision_support;;
 request_loan_decision => nrel_main_idtf:
     [Запрос: одобрение/отклонение заявки на корпоративный кредит
      ООО «Альфа» (8 млн ₽, 36 мес)] (* <- lang_ru;; *);;
 user_credit_analyst => nrel_formulates: request_loan_decision;;
 
+intent_loan_decision <- concept_intent;;
+request_loan_decision => nrel_interprets: intent_loan_decision;;
 goal_credit_decision <- concept_goal;;
 goal_credit_decision <- concept_goal_decisional;;
 goal_credit_decision => nrel_main_idtf:
     [Цель: принять обоснованное и комплаентное решение по заявке]
     (* <- lang_ru;; *);;
-request_loan_decision => nrel_has_goal: goal_credit_decision;;
+intent_loan_decision => nrel_intent_goal: goal_credit_decision;;
 
 // Контекст с акцентом на регуляторный и доменный.
 interaction_context_loan <- concept_interaction_context;;
@@ -61,7 +65,11 @@ situation_analyst => nrel_main_idtf:
     [Ситуация: рабочее место аналитика, RU, требуется аудит-лог]
     (* <- lang_ru;; *);;
 
-interaction_context_loan -> rrel_goal_context: goal_credit_decision;;
+interaction_context_loan => nrel_context_version: [1];;
+interaction_context_loan => nrel_context_timestamp: [2025-09-12T14:00:00Z];;
+goal_context_loan <- concept_goal_context;;
+goal_context_loan => nrel_contains: goal_credit_decision;;
+interaction_context_loan -> rrel_goal_context: goal_context_loan;;
 interaction_context_loan -> rrel_history_context: history_alpha_company;;
 interaction_context_loan -> rrel_system_context: system_state_dss;;
 interaction_context_loan -> rrel_domain_context: domain_corporate_lending;;
@@ -155,6 +163,9 @@ system_regulatory_checker => nrel_produces: result_compliance_status;;
 
 // Коллективное решение со взвешенной агрегацией.
 collective_loan_decision <- concept_collective_decision;;
+collective_loan_decision => nrel_generated_in_context: interaction_context_loan;;
+collective_loan_decision => nrel_has_provenance: prov_collective_loan_decision;;
+prov_collective_loan_decision <- concept_provenance_record;;
 collective_loan_decision => nrel_main_idtf:
     [Решение: УСЛОВНО ОДОБРИТЬ — при предоставлении залога
      ≥ 110% и страховании потребительских залогов] (* <- lang_ru;; *);;

@@ -1,18 +1,12 @@
 // =====================================================================
 // concepts/processing_plan.scs
-// Подраздел: план обработки запроса, версии плана и два независимых
-// ресурса восстановления маршрута.
+// План, версии плана и ограничения завершаемости: b_q и d_max для
+// маршрута, n_clar для связанных циклов уточнения, N_ph для серий
+// служебных переходов без убывания потенциала.
 //
-// Финальная модель (гл. 2) строго различает:
-//   b_q   — бюджет переназначений: ограничивает перебор исполнителей
-//           ПРИ НЕИЗМЕННОЙ структуре задачи (меняется χ, не меняется T(q));
-//   d_max — предельная глубина перепланирования: ограничивает
-//           перестроение САМОЙ структуры графа подзадач T(q).
-// Ресурсы убывают раздельно: переназначение расходует b_q,
-// перепланирование расходует d_max. Это различение обеспечивает
-// лексикографическую функцию потенциала
-//   Φ(x) = <d_rem(x), n_pend(x) + b_rem(x)>
-// и, следовательно, завершаемость обработки (Req_7).
+// Φ(x) = <n_clar_rem(x), d_rem(x), n_pend(x) + b_rem(x)>.
+// На ресурсных переходах потенциал строго убывает, на служебных —
+// не возрастает. Терминальный исход не требует нулевого потенциала.
 // =====================================================================
 
 section_concept_processing_plan
@@ -26,6 +20,8 @@ section_concept_processing_plan
 <- rrel_key_sc_element: concept_plan_version;
 <- rrel_key_sc_element: concept_reassignment_budget;
 <- rrel_key_sc_element: concept_replanning_depth;
+<- rrel_key_sc_element: concept_clarification_round_limit;
+<- rrel_key_sc_element: concept_phase_transition_limit;
 <- rrel_key_sc_element: concept_reassignment_event;
 <- rrel_key_sc_element: concept_replanning_event;
 <- rrel_key_sc_element: concept_failure_event;;
@@ -145,6 +141,60 @@ definition -> definition_replanning_depth: ...
             подзадач n_pend, поэтому расходуется отдельно от бюджета
             переназначений. Каждое перепланирование уменьшает остаток
             d_rem на единицу.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Лимит связанных циклов уточнения n_clar.
+// ---------------------------------------------------------------------
+
+concept_clarification_round_limit
+<- sc_node_class;
+=> nrel_main_idtf:
+    [предельное число раундов уточнения] (* <- lang_ru;; *);
+    [clarification round limit] (* <- lang_en;; *);
+=> nrel_idtf: [n_clar];;
+concept_clarification_round_limit <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_clarification_round_limit: ...
+(*
+    -> rrel_key_sc_element: concept_clarification_round_limit;;
+    => nrel_main_idtf: [Опр.(лимит раундов уточнения n_clar)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [n_clar ∈ ℕ₀ ограничивает число связанных циклов уточнения.
+            x_clar завершает текущий цикл без убывания потенциала;
+            начало нового связанного цикла после ответа пользователя
+            уменьшает n_clar_rem на единицу. При нулевом остатке
+            новый цикл уточнения не открывается.] (* <- lang_ru;; *);;
+    *);;
+*);;
+
+// ---------------------------------------------------------------------
+// Ограничение серии служебных переходов N_ph.
+// ---------------------------------------------------------------------
+
+concept_phase_transition_limit
+<- sc_node_class;
+=> nrel_main_idtf:
+    [лимит последовательных служебных переходов] (* <- lang_ru;; *);
+    [consecutive service transition limit] (* <- lang_en;; *);
+=> nrel_idtf: [N_ph];;
+concept_phase_transition_limit <= nrel_inclusion: concept_entity_group_control;;
+
+definition -> definition_phase_transition_limit: ...
+(*
+    -> rrel_key_sc_element: concept_phase_transition_limit;;
+    => nrel_main_idtf: [Опр.(лимит служебных переходов N_ph)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [N_ph ∈ ℕ₀ — максимальное число последовательных переходов
+            между фиксированными фазами, которые сохраняют потенциал.
+            После исчерпания серии контроллер обязан выполнить ресурсный
+            переход либо перейти в терминальное состояние.]
+           (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -292,8 +342,12 @@ nrel_decomposes_into_subtask
     [decomposes*] (* <- lang_en;; *);
 <- binary_relation;
 <- oriented_relation;
+<- inverse_functional_relation;
 => nrel_first_domain: concept_processing_plan;
 => nrel_second_domain: concept_subtask;;
+
+// Обратная функциональность действует внутри фиксированной версии плана:
+// подзадача принадлежит не более чем одному плану этой версии.
 
 // ---------------------------------------------------------------------
 // Остатки ресурсов как измеримые характеристики состояния обработки.
@@ -319,8 +373,28 @@ nrel_remaining_replanning_depth
 <- functional_relation;
 => nrel_first_domain: concept_mediation_state;;
 
+nrel_remaining_clarification_rounds
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [остаток_раундов_уточнения*] (* <- lang_ru;; *);
+    [remaining_clarification_rounds*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_mediation_state;;
+
+nrel_remaining_phase_transitions
+<- sc_node_non_role_relation;
+=> nrel_main_idtf:
+    [остаток_служебных_переходов_без_убывания*] (* <- lang_ru;; *);
+    [remaining_nondecreasing_phase_transitions*] (* <- lang_en;; *);
+<- binary_relation;
+<- oriented_relation;
+<- functional_relation;
+=> nrel_first_domain: concept_mediation_state;;
+
 // ---------------------------------------------------------------------
-// Функция потенциала и раздельное убывание ресурсов.
+// Трёхкомпонентный потенциал и условия завершаемости.
 // ---------------------------------------------------------------------
 
 concept_termination_potential
@@ -336,13 +410,12 @@ definition -> definition_termination_potential: ...
     => nrel_main_idtf: [Опр.(функция потенциала Φ)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Φ(x) = <d_rem(x), n_pend(x) + b_rem(x)> ∈ ℕ₀ × ℕ₀
-            с лексикографическим порядком: <d, m> <_lex <d', m'>
-            тогда и только тогда, когда d < d' либо d = d' и m < m'.
-            Скалярная сумма мерой убывания служить не может: повторная
-            декомпозиция заменяет одну подзадачу несколькими, увеличивая
-            n_pend на коэффициент ветвления и уменьшая бюджет лишь
-            на единицу.] (* <- lang_ru;; *);;
+        -> [Φ(x) = <n_clar_rem(x), d_rem(x), n_pend(x) + b_rem(x)>
+            ∈ ℕ₀³ с лексикографическим порядком. Скалярная сумма
+            n_pend + b_rem не используется как самостоятельная мера:
+            повторная декомпозиция может увеличить n_pend сильнее,
+            чем уменьшается бюджет. Терминальный исход не требует
+            Φ(x) = <0,0,0>.] (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -350,20 +423,23 @@ affirmation -> affirmation_separate_resource_decrease: ...
 (*
     -> rrel_key_sc_element: concept_reassignment_budget;;
     -> rrel_key_sc_element: concept_replanning_depth;;
+    -> rrel_key_sc_element: concept_clarification_round_limit;;
+    -> rrel_key_sc_element: concept_phase_transition_limit;;
     => nrel_main_idtf:
-        [Утв.(раздельное убывание ресурсов восстановления)]
+        [Утв.(убывание потенциала на ресурсных переходах)]
        (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Переназначение уменьшает b_rem на единицу и не изменяет
-            d_rem и n_pend — убывает младшая компонента Φ.
-            Перепланирование уменьшает d_rem на единицу — убывает
-            старшая компонента Φ, при этом младшая может возрасти.
-            Завершение либо исключение подзадачи уменьшает n_pend
-            на единицу при неизменном d_rem. Следовательно, при каждом
-            нетерминальном переходе Φ(x_{t+1}) <_lex Φ(x_t), а вполне
-            упорядоченность ℕ₀ × ℕ₀ по <_lex исключает бесконечные
-            строго убывающие цепочки.] (* <- lang_ru;; *);;
+        -> [Переназначение уменьшает b_rem и не изменяет d_rem и n_pend.
+            Перепланирование уменьшает d_rem; младшая компонента может
+            возрасти. Завершение подзадачи уменьшает n_pend.
+            Начало нового связанного цикла после x_clar уменьшает
+            n_clar_rem. Поэтому на ресурсных переходах Φ строго убывает.
+            Служебные переходы могут сохранять Φ, но их серия ограничена
+            N_ph, и на них Φ не возрастает. Бесконечная нетерминальная
+            траектория содержала бы бесконечную строго убывающую
+            подпоследовательность в ℕ₀³, что невозможно.]
+           (* <- lang_ru;; *);;
     *);;
 *);;
 
@@ -374,14 +450,15 @@ affirmation -> affirmation_termination: ...
         [Утв.(завершаемость обработки запроса)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Для любого корректного запроса q с конечным графом подзадач
-            T(q), положительным бюджетом переназначений b_q ∈ ℕ,
-            ограниченной глубиной перепланирования d_max ∈ ℕ и конечным
-            ветвлением декомпозиции жизненный цикл обработки достигает
-            терминального состояния (x_present, x_partial, x_clar
-            либо x_refuse) за конечное число переходов. При истечении
-            внешнего временного ресурса достижение терминального
-            состояния обеспечивается отдельным переходом в x_refuse,
-            не зависящим от значения Φ.] (* <- lang_ru;; *);;
+        -> [Для любого q ∈ Q_valid, у которого каждый достижимый после
+            разрешения намерения план является конечным DAG, при
+            положительном b_q, конечных d_max, n_clar и N_ph, конечном
+            ветвлении декомпозиции каждый экземпляр жизненного цикла
+            достигает x_present, x_partial, x_clar, x_refuse или x_cancel
+            за конечное число переходов. Связанная последовательность
+            циклов уточнения также конечна. Тайм-аут независимо ведёт
+            в x_refuse. UserModelActualization выполняется после
+            терминального исхода и не входит в область потенциала.]
+           (* <- lang_ru;; *);;
     *);;
 *);;

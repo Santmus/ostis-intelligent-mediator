@@ -65,7 +65,8 @@ concept_sc_agent <= nrel_subdividing: ...
        agent_integrity_checker;
        agent_provenance_registrar;
        agent_context_updater;
-       agent_conflict_detector;;
+       agent_conflict_detector;
+       agent_user_model_updater;;
 *);;
 
 // ---------------------------------------------------------------------
@@ -81,22 +82,24 @@ agent_request_interpreter
     [agent_request_interpreter] (* <- lang_en;; *);
 => nrel_implements_process: concept_process_interpretation;
 => nrel_realizes_mapping:
-    [ι : Q_ext × C → Q_form];
+    [ι_(U_t,C) : Q ⇀ J];
 => nrel_primary_condition:
-    [появление неинтерпретированного экземпляра concept_user_request];
+    [появление экземпляра concept_valid_user_request без отношения
+     nrel_interprets и без терминального уточнения текущего цикла];
 => nrel_agent_input:
-    [сырой пользовательский запрос, текущий контекст];
+    [допустимый запрос, снимок модели пользователя U_t(u), контекст C];
 => nrel_agent_output:
-    [sc-граф запроса с явной целью, контекстом и типом результата];;
+    [намерение Intent с целью и компонентами <g, o, a, Γ, y, ρ>
+     либо запрос уточнения Q_clar];;
 
 agent_task_decomposer
 <- sc_node_class;
 => nrel_main_idtf:
     [агент декомпозиции запроса] (* <- lang_ru;; *);
 => nrel_implements_process: concept_process_decomposition;
-=> nrel_realizes_mapping: [δ : Q_form → 2^T];
+=> nrel_realizes_mapping: [decompose : J × F → G_q];
 => nrel_primary_condition:
-    [появление concept_user_request с интерпретацией, но без
+    [появление concept_resolved_user_request с намерением, но без
      отношения nrel_decomposed_into];
 => nrel_agent_input: [sc-граф запроса];
 => nrel_agent_output: [ориентированный ацикличный граф подзадач];;
@@ -107,12 +110,13 @@ agent_task_allocator
     [агент распределения подзадач] (* <- lang_ru;; *);
 => nrel_implements_process: concept_process_allocation;
 => nrel_realizes_mapping:
-    [α : T × S → 0;1 на основе match(σ, s)];
+    [α : T × S → 0;1 на основе match(σ, s | C)];
 => nrel_primary_condition:
     [появление concept_subtask без отношения nrel_assigned_to];
 => nrel_agent_input:
-    [подзадачи, профили возможностей Cap(s), доверие trust(s,τ,h)];
-=> nrel_agent_output: [распределение χ : T(q) → P(S) ∖ {∅}, |χ(σ)| = k(σ), удовлетворяющее (12), (13)];;
+    [подзадачи, Cap(s), контекст, trust(s, σ | C_h(s))];
+=> nrel_agent_output: [χ : T(q) ⇀ P(S) ∖ {∅}, |χ(σ)| = k(σ),
+     assignable = 1, cover = 1, consistent = 1];;
 
 agent_cooperative_executor
 <- sc_node_class;
@@ -263,3 +267,22 @@ affirmation -> affirmation_sc_agent_loose_coupling: ...
            (* <- lang_ru;; *);;
     *);;
 *);;
+
+
+// Онтологическая спецификация перспективного агента; программная
+// реализация в TrustModule на данном этапе не добавляется.
+agent_user_model_updater
+<- sc_node_class;
+=> nrel_main_idtf:
+    [агент посттерминальной актуализации модели пользователя] (* <- lang_ru;; *);
+    [agent_user_model_updater] (* <- lang_en;; *);
+=> nrel_implements_process: concept_process_user_model_actualization;
+=> nrel_realizes_mapping:
+    [U_(t+1)(u) = actualize(U_t(u), E_q, fb_q), x_q ∈ X_term];
+=> nrel_primary_condition:
+    [достижение запросом терминального состояния при наличии зафиксированного
+     снимка U_t(u) и конечного множества событий E_q];
+=> nrel_agent_input:
+    [U_t(u), события UserInteractionEvent, явная обратная связь fb_q];
+=> nrel_agent_output:
+    [новая версия U_(t+1)(u) с предыдущей версией, основанием и provenance];;

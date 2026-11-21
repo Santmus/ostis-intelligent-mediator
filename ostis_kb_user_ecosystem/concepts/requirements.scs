@@ -151,7 +151,7 @@ requirement_Req_1
     [Для любого q ∈ Q_valid существует интерпретация намерения либо
      процедура уточнения.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+    [П-3; А; С] (* <- lang_ru;; *);;
 
 concept_process_interpretation => nrel_satisfies_requirement: requirement_Req_1;;
 concept_intent => nrel_satisfies_requirement: requirement_Req_1;;
@@ -167,7 +167,7 @@ requirement_Req_2
      возвращает результат, уточнение либо состояние отказа.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+    [П-3, П-7; А; С] (* <- lang_ru;; *);;
 
 concept_intelligent_mediator => nrel_satisfies_requirement: requirement_Req_2;;
 
@@ -180,7 +180,7 @@ requirement_Req_3
     [Определены функция агрегации, процедура верификации и условия
      признания результата согласованным.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Концептуальные (когнитивная редукция сложности)] (* <- lang_ru;; *);;
+    [П-3; А] (* <- lang_ru;; *);;
 
 concept_process_integration => nrel_satisfies_requirement: requirement_Req_3;;
 concept_integrated_result => nrel_satisfies_requirement: requirement_Req_3;;
@@ -195,10 +195,10 @@ requirement_Req_4
 => nrel_requirement_text:
     [Декомпозируемость пользовательской задачи.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
-    [Существует граф подзадач T(q) в виде DAG для каждого q ∈ Q_valid.]
-    (* <- lang_ru;; *);
+    [Функция decompose строит DAG G_q = <T(q), E_q> для каждого
+     q ∈ Q_resolved.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+    [П-3; Л] (* <- lang_ru;; *);;
 
 concept_process_decomposition => nrel_satisfies_requirement: requirement_Req_4;;
 concept_subtask_dependency_graph => nrel_satisfies_requirement: requirement_Req_4;;
@@ -209,10 +209,11 @@ requirement_Req_5
 => nrel_requirement_text:
     [Семантическое распределение подзадач.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
-    [Для каждой пары (σ, s): match(σ, s | C) ≥ θ, permit = 1,
-     available = 1.] (* <- lang_ru;; *);
+    [Для каждой пары (σ, s): match(σ, s | C) ≥ θ,
+     valid(C, L_s) = 1, permit = 1, available = 1.]
+    (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+    [П-7; Л] (* <- lang_ru;; *);;
 
 concept_process_allocation => nrel_satisfies_requirement: requirement_Req_5;;
 concept_capability_profile => nrel_satisfies_requirement: requirement_Req_5;;
@@ -222,12 +223,12 @@ requirement_Req_6
 <- concept_requirement_architectural;
 => nrel_main_idtf: [Req_6] (* <- lang_ru;; *);
 => nrel_requirement_text:
-    [Открытость и эволюционность состава сообщества.] (* <- lang_ru;; *);
+    [Открытость и эволюционность состава.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
     [Операция добавления интеллектуальной системы сохраняет
      ограничения F и не нарушает инварианты модели.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+    [Л; А; С] (* <- lang_ru;; *);;
 
 concept_community_of_intelligent_systems => nrel_satisfies_requirement: requirement_Req_6;;
 affirmation_ecosystem_dynamic_composition => nrel_satisfies_requirement: requirement_Req_6;;
@@ -238,11 +239,11 @@ requirement_Req_7
 => nrel_requirement_text:
     [Завершаемость обработки.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
-    [При конечном множестве подзадач существует конечная убывающая
-     мера Φ; при исчерпании ресурсов или тайм-аута достигается
-     терминальное состояние.] (* <- lang_ru;; *);
+    [Потенциал не возрастает и строго убывает на ресурсных переходах;
+     серии служебных переходов ограничены; исчерпание ресурсов или
+     тайм-аут ведёт к терминальному состоянию.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Распределённость ответственности; фрагментация] (* <- lang_ru;; *);;
+    [А; Л] (* <- lang_ru;; *);;
 
 concept_lifecycle_process => nrel_satisfies_requirement: requirement_Req_7;;
 concept_process_coalition_reconfiguration => nrel_satisfies_requirement: requirement_Req_7;;
@@ -266,8 +267,7 @@ requirement_Req_8
     [Для каждой сущности e определён тип как класс онтологии.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Недостаточность посредников; семантическое рассогласование]
-    (* <- lang_ru;; *);;
+    [П-7; Л] (* <- lang_ru;; *);;
 
 concept_ontological_interaction_model => nrel_satisfies_requirement: requirement_Req_8;;
 
@@ -280,8 +280,7 @@ requirement_Req_9
     [Для каждого q ∈ Q_valid определена интерпретация ι(q) либо
      процедура уточнения.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Недостаточность посредников; семантическое рассогласование]
-    (* <- lang_ru;; *);;
+    [П-4, П-7; А] (* <- lang_ru;; *);;
 
 concept_intent => nrel_satisfies_requirement: requirement_Req_9;;
 nrel_interprets => nrel_satisfies_requirement: requirement_Req_9;;
@@ -296,8 +295,7 @@ requirement_Req_10
      допустимым отображением, определена функция медиации.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Недостаточность посредников; семантическое рассогласование]
-    (* <- lang_ru;; *);;
+    [П-7; Л; С] (* <- lang_ru;; *);;
 
 concept_relation_set => nrel_satisfies_requirement: requirement_Req_10;;
 concept_strategy_ontology_alignment_based => nrel_satisfies_requirement: requirement_Req_10;;
@@ -310,8 +308,7 @@ requirement_Req_11
 => nrel_verification_criterion:
     [Система ограничений целостности выполнима.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Недостаточность посредников; семантическое рассогласование]
-    (* <- lang_ru;; *);;
+    [Л; А] (* <- lang_ru;; *);;
 
 concept_axiom_set => nrel_satisfies_requirement: requirement_Req_11;;
 concept_constraint_set => nrel_satisfies_requirement: requirement_Req_11;;
@@ -331,14 +328,26 @@ requirement_Req_12
 <- concept_requirement_adaptivity;
 => nrel_main_idtf: [Req_12] (* <- lang_ru;; *);
 => nrel_requirement_text:
-    [Единая динамическая модель пользователя.] (* <- lang_ru;; *);
+    [Версионируемая модель пользователя и контролируемые проекции.]
+    (* <- lang_ru;; *);
 => nrel_verification_criterion:
-    [Профиль пользователя обновляется и используется всеми функциями
-     посредника.] (* <- lang_ru;; *);
+    [Для каждого цикла фиксируется U_t(u); проекции используются при
+     интерпретации, распределении, интеграции и объяснении;
+     посттерминальная актуализация формирует версию с основанием и
+     происхождением; передача ограничена view и permit.]
+    (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+    [П-5; Л] (* <- lang_ru;; *);;
 
 concept_user_model => nrel_satisfies_requirement: requirement_Req_12;;
+concept_usage_context_model => nrel_satisfies_requirement: requirement_Req_12;;
+concept_user_interaction_event => nrel_satisfies_requirement: requirement_Req_12;;
+concept_process_user_model_actualization => nrel_satisfies_requirement: requirement_Req_12;;
+concept_user_model_projection => nrel_satisfies_requirement: requirement_Req_12;;
+concept_context_projection => nrel_satisfies_requirement: requirement_Req_12;;
+concept_semantic_contract => nrel_satisfies_requirement: requirement_Req_12;;
+concept_interaction_context => nrel_satisfies_requirement: requirement_Req_12;;
+concept_access_control_policy => nrel_satisfies_requirement: requirement_Req_12;;
 
 requirement_Req_13
 <- concept_requirement_adaptivity;
@@ -349,7 +358,7 @@ requirement_Req_13
     [Контекст C — явный аргумент функций интерпретации, распределения
      и агрегации.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+    [П-5; Л] (* <- lang_ru;; *);;
 
 concept_interaction_context => nrel_satisfies_requirement: requirement_Req_13;;
 concept_context_compatibility_function => nrel_satisfies_requirement: requirement_Req_13;;
@@ -358,13 +367,12 @@ requirement_Req_14
 <- concept_requirement_adaptivity;
 => nrel_main_idtf: [Req_14] (* <- lang_ru;; *);
 => nrel_requirement_text:
-    [Согласование целей пользователя и характеристик компонентов.]
-    (* <- lang_ru;; *);
+    [Согласование целей пользователя и компонентов.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
     [Определено отображение целей в метрики компонентов.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Ограниченная адаптивность; несоответствие целей] (* <- lang_ru;; *);;
+    [П-4; Л] (* <- lang_ru;; *);;
 
 concept_capability_match_function => nrel_satisfies_requirement: requirement_Req_14;;
 
@@ -382,8 +390,7 @@ requirement_Req_15
     [Существует граф трассируемости для любого результата.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Прозрачность и объяснимость; распределённость ответственности]
-    (* <- lang_ru;; *);;
+    [П-1, П-2; Н] (* <- lang_ru;; *);;
 
 concept_provenance_record => nrel_satisfies_requirement: requirement_Req_15;;
 concept_audit_record => nrel_satisfies_requirement: requirement_Req_15;;
@@ -395,14 +402,12 @@ requirement_Req_16
 <- concept_requirement_transparency_trust;
 => nrel_main_idtf: [Req_16] (* <- lang_ru;; *);
 => nrel_requirement_text:
-    [Объяснимость результатов и распределения подзадач.]
-    (* <- lang_ru;; *);
+    [Объяснимость результатов и распределения.] (* <- lang_ru;; *);
 => nrel_verification_criterion:
     [Существует конструкция объяснения для любого значимого решения.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Прозрачность и объяснимость; распределённость ответственности]
-    (* <- lang_ru;; *);;
+    [П-1; Н, Л] (* <- lang_ru;; *);;
 
 concept_explanation => nrel_satisfies_requirement: requirement_Req_16;;
 concept_process_explanation => nrel_satisfies_requirement: requirement_Req_16;;
@@ -417,8 +422,7 @@ requirement_Req_17
      обновляется по результатам взаимодействия.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Прозрачность и объяснимость; распределённость ответственности]
-    (* <- lang_ru;; *);;
+    [Л; Н] (* <- lang_ru;; *);;
 
 concept_trust_vector => nrel_satisfies_requirement: requirement_Req_17;;
 concept_trust_level => nrel_satisfies_requirement: requirement_Req_17;;
@@ -432,8 +436,7 @@ requirement_Req_18
     [Анализ графа трассируемости определяет ответственные компоненты.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Прозрачность и объяснимость; распределённость ответственности]
-    (* <- lang_ru;; *);;
+    [П-2; Н] (* <- lang_ru;; *);;
 
 concept_participant_role => nrel_satisfies_requirement: requirement_Req_18;;
 concept_audit_record => nrel_satisfies_requirement: requirement_Req_18;;
@@ -452,7 +455,7 @@ requirement_Req_19
     [Любая передача данных фиксируется и подчинена единой политике.]
     (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Приватность и безопасность] (* <- lang_ru;; *);;
+    [П-6; Н] (* <- lang_ru;; *);;
 
 concept_access_control_policy => nrel_satisfies_requirement: requirement_Req_19;;
 concept_property_data_minimization => nrel_satisfies_requirement: requirement_Req_19;;
@@ -466,7 +469,7 @@ requirement_Req_20
     [Определены границы автономности, классы подтверждаемых действий,
      процедуры реагирования.] (* <- lang_ru;; *);
 => nrel_requirement_source:
-    [Приватность и безопасность] (* <- lang_ru;; *);;
+    [П-6; Н] (* <- lang_ru;; *);;
 
 concept_route_escalation => nrel_satisfies_requirement: requirement_Req_20;;
 concept_state_clarification => nrel_satisfies_requirement: requirement_Req_20;;

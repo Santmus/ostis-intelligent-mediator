@@ -65,6 +65,12 @@ concept_source_external_service_api
 => nrel_main_idtf:
     [внешний сервисный API] (* <- lang_ru;; *);;
 
+concept_knowledge_fragment
+<- sc_node_class;
+=> nrel_main_idtf:
+    [фрагмент знаний] (* <- lang_ru;; *);
+    [knowledge fragment] (* <- lang_en;; *);;
+
 // ---------------------------------------------------------------------
 // Граф знаний и онтологический артефакт.
 // ---------------------------------------------------------------------

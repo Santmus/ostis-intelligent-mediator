@@ -40,6 +40,23 @@ axiom -> axiom_user_disjoint_from_intelligent_system: ...
     *);;
 *);;
 
+axiom -> axiom_result_taxonomy: ...
+(*
+    <- concept_sc_axiom;;
+    => nrel_main_idtf:
+        [Акс.(таксономия частичных и интегрированных результатов)]
+       (* <- lang_ru;; *);;
+    <= nrel_sc_text_translation: ...
+    (*
+        -> [ProcessingResult ⊑ Result; IntegratedResult ⊑ Result;
+            ProcessingResult ⊓ IntegratedResult ⊑ ⊥.
+            Частичный результат порождается актом исполнения.
+            Интегрированный результат агрегирует частичные результаты
+            и не требует собственного ExecutionAct.]
+           (* <- lang_ru;; *);;
+    *);;
+*);;
+
 axiom -> axiom_integrated_disjoint_from_conflict: ...
 (*
     <- concept_sc_axiom;;
@@ -49,9 +66,10 @@ axiom -> axiom_integrated_disjoint_from_conflict: ...
     <= nrel_sc_text_translation: ...
     (*
         -> [IntegratedResult ⊓ ResultConflict ⊑ ⊥.
-            Интегрированный результат не может быть одновременно
-            конфликтом результатов: при наличии неразрешённого
-            конфликта результат не считается интегрированным.]
+            Это ограничение принадлежности классам: один объект не
+            является одновременно результатом и конфликтом. Оно не
+            исключает связь результата с разрешённым конфликтом;
+            публикации препятствует только неразрешённый конфликт.]
            (* <- lang_ru;; *);;
     *);;
 *);;
@@ -99,22 +117,26 @@ axiom -> axiom_execution_act_existential: ...
     <= nrel_sc_text_translation: ...
     (*
         -> [ExecutionAct ⊑ ∃executes.Subtask ⊓ ∃recorded_in.AuditRecord;
-            ProcessingResult ⊑ ∃generated_by.ExecutionAct;
+            Result ⊑ ∃generated_in_context.InteractionContext
+                ⊓ ∃has_provenance.ProvenanceRecord;
+            ProcessingResult ⊑ ∃produced_by.IntelligentSystem
+                ⊓ ∃generated_by.ExecutionAct;
             IntegratedResult ⊑ ∃aggregates.ProcessingResult.]
            (* <- lang_ru;; *);;
     *);;
 *);;
 
-axiom -> axiom_request_has_goal: ...
+axiom -> axiom_intent_has_goal: ...
 (*
     <- concept_sc_axiom;;
     => nrel_main_idtf:
-        [Акс.(запрос имеет хотя бы одну цель)] (* <- lang_ru;; *);;
+        [Акс.(намерение имеет хотя бы одну цель)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [Request ⊑ (≥ 1 has_goal.Goal).
-            Каждому пользовательскому запросу сопоставлена не менее
-            одной декларативной цели.]
+        -> [Intent ⊑ (≥ 1 intent_goal.Goal).
+            Каждому структурированному намерению сопоставлена не менее
+            одной декларативная цель. Допустимый неоднозначный запрос
+            может завершиться уточнением без построения Intent.]
            (* <- lang_ru;; *);;
     *);;
 *);;

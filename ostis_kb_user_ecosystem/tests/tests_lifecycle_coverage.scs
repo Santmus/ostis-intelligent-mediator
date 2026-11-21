@@ -164,11 +164,11 @@ answer_coverage_terminal_states => nrel_main_idtf:
 
 test_coverage_recovery_resources <- concept_test_coverage;;
 test_coverage_recovery_resources => nrel_main_idtf:
-    [Покрытие маршрутов восстановления: переназначение (b_q)
-     и перепланирование (d_max) представлены раздельными переходами,
-     событиями и сценарными фрагментами] (* <- lang_ru;; *);;
+    [Покрытие восстановления: b_q, d_max, n_clar и N_ph
+     представлены раздельными ограничениями и сценариями]
+    (* <- lang_ru;; *);;
 test_coverage_recovery_resources => nrel_question_subject:
-    concept_routing_event;;
+    concept_termination_potential;;
 test_coverage_recovery_resources => nrel_test_outcome:
     concept_test_outcome_pass;;
 test_coverage_recovery_resources => nrel_expected_answer:
@@ -176,11 +176,11 @@ test_coverage_recovery_resources => nrel_expected_answer:
 
 answer_coverage_recovery_resources <- concept_expected_answer;;
 answer_coverage_recovery_resources => nrel_main_idtf:
-    [Переназначение: concept_reassignment_event, переход
-     x_exec → x_assign, отношение reassigns, ресурс b_q.
-     Перепланирование: concept_replanning_event, переход
-     x_* → x_replan → x_plan, отношение replans, ресурс d_max.
-     Оба маршрута представлены в scenario_lifecycle_recovery.]
+    [Переназначение расходует b_q, перепланирование — d_max.
+     Новый связанный цикл уточнения уменьшает n_clar_rem.
+     N_ph ограничивает служебные переходы без убывания Φ.
+     Сценарии содержат исчерпание ресурсов маршрута при ненулевом
+     n_clar_rem и связанные циклы уточнения 2 → 1.]
     (* <- lang_ru;; *);;
 
 // ---------------------------------------------------------------------

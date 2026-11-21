@@ -67,4 +67,3 @@ prov_record_integration_001 => nrel_main_idtf:
     [Провенансная запись: интеграция трёх частичных результатов
      в integrated_result_001 sc-агентом agent_result_integrator
      с применением rule_aggregate_results] (* <- lang_ru;; *);;
-integrated_result_001 => nrel_has_provenance: prov_record_integration_001;;

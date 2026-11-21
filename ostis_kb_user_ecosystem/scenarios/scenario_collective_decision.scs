@@ -60,6 +60,9 @@ argument_for_r1 => nrel_main_idtf:
 
 // Коллективное решение.
 collective_decision_001 <- concept_collective_decision;;
+collective_decision_001 => nrel_generated_in_context: interaction_context_001;;
+collective_decision_001 => nrel_has_provenance: prov_collective_decision_001;;
+prov_collective_decision_001 <- concept_provenance_record;;
 collective_decision_001 => nrel_main_idtf:
     [Коллективное решение: выбран маршрут r_1 как энергоэффективный
      и удовлетворяющий ограничениям безопасности] (* <- lang_ru;; *);;

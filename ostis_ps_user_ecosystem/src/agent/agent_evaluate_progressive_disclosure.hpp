@@ -13,13 +13,12 @@
 //   1) explanation           -- узел, от которого измеряется глубина
 //                                цепочки nrel_derived_from (агент не
 //                                проверяет его класс -- тот же приём,
-//                                что у AgentValidateProvenanceChain: и
-//                                там, и здесь nrel_derived_from
-//                                формально определено как
-//                                concept_processing_result ->
-//                                concept_processing_result, а не для
-//                                concept_explanation; наблюдение, а не
-//                                исправляемая здесь несогласованность)
+//                                что у AgentValidateProvenanceChain:
+//                                nrel_derived_from формально определено
+//                                для concept_result и завершающего
+//                                concept_user_request, но не для
+//                                concept_explanation; агент доверяет
+//                                вызывающей стороне)
 //   2) partial_results_group -- узел-контейнер, чьи ДЕТИ (дуги
 //                                ConstPermPosArc) -- считаемые частичные
 //                                результаты; agent сам их не отбирает

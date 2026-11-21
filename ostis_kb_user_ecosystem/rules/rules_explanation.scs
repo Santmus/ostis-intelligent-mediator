@@ -40,7 +40,7 @@ rule -> rule_build_local_explanation: ...
         [Прав.(построение локального объяснения)] (* <- lang_ru;; *);;
     <= nrel_sc_text_translation: ...
     (*
-        -> [If: concept_processing_result(r) ∧ ¬supported_by_explanation(r, _),
+        -> [If: concept_result(r) ∧ ¬supported_by_explanation(r, _),
             Then: создать concept_explanation_local(e),
                   supported_by_explanation(r, e); зафиксировать
                   использованные правила, источники знаний, входные

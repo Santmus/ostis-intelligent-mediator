@@ -22,7 +22,7 @@ section_user_intelligent_ecosystem_interaction
 // Декомпозиция на подразделы (sections). Каждый подраздел реализован
 // в отдельном .scs-файле и подключается через include/import-связи
 // sc-machine. Структура отражает декомпозицию модели M_int = <E,R,A,F>
-// на семь функциональных подмножеств отношений и шесть групп классов.
+// на семь функциональных подмножеств отношений и семь групп сущностей.
 // ---------------------------------------------------------------------
 
 section_user_intelligent_ecosystem_interaction
@@ -154,7 +154,16 @@ section_user_intelligent_ecosystem_interaction
 <- rrel_key_sc_element: concept_processing_route;
 <- rrel_key_sc_element: concept_competency_registry;
 <- rrel_key_sc_element: concept_user;
+<- rrel_key_sc_element: concept_usage_context_model;
 <- rrel_key_sc_element: concept_user_model;
+<- rrel_key_sc_element: concept_user_action_model;
+<- rrel_key_sc_element: concept_environment_model;
+<- rrel_key_sc_element: concept_device_model;
+<- rrel_key_sc_element: concept_user_interaction_event;
+<- rrel_key_sc_element: concept_process_user_model_actualization;
+<- rrel_key_sc_element: concept_user_model_projection;
+<- rrel_key_sc_element: concept_context_projection;
+<- rrel_key_sc_element: concept_semantic_contract;
 <- rrel_key_sc_element: concept_intelligent_system;
 <- rrel_key_sc_element: concept_ostis_system;
 <- rrel_key_sc_element: concept_community_of_intelligent_systems;
@@ -164,15 +173,22 @@ section_user_intelligent_ecosystem_interaction
 <- rrel_key_sc_element: concept_sc_agent;
 <- rrel_key_sc_element: concept_intelligent_service;
 <- rrel_key_sc_element: concept_capability_profile;
+<- rrel_key_sc_element: concept_task_type_similarity_function;
 <- rrel_key_sc_element: concept_interaction_context;
 <- rrel_key_sc_element: concept_user_request;
+<- rrel_key_sc_element: concept_valid_user_request;
+<- rrel_key_sc_element: concept_resolved_user_request;
+<- rrel_key_sc_element: concept_clarification_request;
 <- rrel_key_sc_element: concept_subtask;
 <- rrel_key_sc_element: concept_processing_plan;
 <- rrel_key_sc_element: concept_plan_version;
+<- rrel_key_sc_element: concept_clarification_round_limit;
+<- rrel_key_sc_element: concept_phase_transition_limit;
 <- rrel_key_sc_element: concept_execution_act;
 <- rrel_key_sc_element: concept_audit_record;
 <- rrel_key_sc_element: concept_mediation_state;
 <- rrel_key_sc_element: concept_state_transition;
+<- rrel_key_sc_element: concept_result;
 <- rrel_key_sc_element: concept_processing_result;
 <- rrel_key_sc_element: concept_integrated_result;
 <- rrel_key_sc_element: concept_lifecycle_process;
@@ -201,9 +217,8 @@ section_user_intelligent_ecosystem_interaction
 section_user_intelligent_ecosystem_interaction
 => nrel_section_base_ontology: ontology_OSTIS_meta_system;
 => nrel_section_compliance: [SC-machine 0.10.x, OSTIS Technology, OWL 2 SROIQ, PROV-O, SHACL, FIPA-ACL];
-=> nrel_section_version: [1.2.0-mediation-lifecycle];
-=> nrel_section_authors: [Радченко (на основе финальной онтологической модели);
-                          сообщество OSTIS-research; источники из библиографии];;
+=> nrel_section_version: [2.0.0-dissertation-sync];
+=> nrel_section_authors: [Казаченко Е. А.];;
 
 // ---------------------------------------------------------------------
 // Внешние онтологии-предки, на которые опирается модель.
